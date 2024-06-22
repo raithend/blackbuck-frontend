@@ -8,8 +8,9 @@ import {
     CardHeader,
     CardTitle,
   } from "@/components/ui/card"
-import { HomeIcon, UserRoundCheckIcon, BellIcon, HeartIcon, SettingsIcon, UserRoundIcon} from "lucide-react"
+import { HomeIcon, UserRoundCheckIcon, BellIcon, HeartIcon, SettingsIcon } from "lucide-react"
 import { Button } from "@/components/ui/button";
+import UserAvatar from "./use-avatar";
 
 export function Navbar() {
     return(
@@ -72,10 +73,7 @@ export function Navbar() {
                     </Link>
                     <Link href="./profile">
                         <Button variant="ghost" className="flex items-center justify-center px-6 py-8">
-                            <Avatar className="h-8 w-8">
-                                <AvatarImage src="https://github.com/shadcn.png" />
-                                <AvatarFallback><UserRoundIcon/></AvatarFallback>  
-                            </Avatar>                            
+                            <UserAvatar/>                       
                             <div className="hidden lg:block text-xl m-4">
                                 プロフィール
                             </div>

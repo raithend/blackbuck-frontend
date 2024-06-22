@@ -26,7 +26,7 @@ export function Post() {
                 <CardHeader className="flex-row items-center p-2">
                     <div>
                         <Avatar>
-                            <AvatarImage src="https://github.com/shadcn.png" />
+                            <AvatarImage src="https://github.com/raithend.png" />
                             <AvatarFallback><UserRoundIcon/></AvatarFallback>
                         </Avatar>
                     </div>
