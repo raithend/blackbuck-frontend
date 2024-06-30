@@ -17,7 +17,8 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel"
 
-import { UserRoundIcon, HeartIcon, MessageCircleIcon } from "lucide-react"
+import { UserRoundIcon, HeartIcon } from "lucide-react"
+import { CommentButton } from "./comment-button";
 
 export function Post() {
     return(
@@ -82,7 +83,7 @@ export function Post() {
                         </div>
                         <div className="mt-4 flex justify-between">
                             <HeartIcon/>
-                            <MessageCircleIcon/>
+                            <CommentButton/>
                         </div>
                     </div>
                 </CardFooter>
