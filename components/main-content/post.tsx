@@ -19,6 +19,7 @@ import {
 
 import { UserRoundIcon, HeartIcon } from "lucide-react"
 import { CommentButton } from "./comment-button";
+import { HeartButton } from "./heart-button";
 
 export function Post() {
     return(
@@ -82,7 +83,7 @@ export function Post() {
                             </div>
                         </div>
                         <div className="mt-4 flex justify-between">
-                            <HeartIcon/>
+                            <HeartButton/>
                             <CommentButton/>
                         </div>
                     </div>
