@@ -25,7 +25,9 @@ Popover,
 PopoverContent,
 PopoverTrigger,
 } from "@/components/ui/popover"
-  
+import { TaxonomyCombobox } from "./taxonomy-combobox"
+import { LocationCombobox } from "./location-combobox";
+
 import { CameraIcon, ImageUp } from "lucide-react"
 
 export function PostButton() {
@@ -61,19 +63,11 @@ export function PostButton() {
                             </div>
                             <div className="grid grid-cols-3 items-center gap-4">
                                 <Label htmlFor="width">分類</Label>
-                                <Input
-                                    id="taxonomy"
-                                    defaultValue=""
-                                    className="col-span-2 h-8"
-                                />
+                                <TaxonomyCombobox/>
                             </div>
                             <div className="grid grid-cols-3 items-center gap-4">
                                 <Label htmlFor="width">撮影地</Label>
-                                <Input
-                                    id="location"
-                                    defaultValue=""
-                                    className="col-span-2 h-8"
-                                />
+                                <LocationCombobox/>
                             </div>
                         </div>
                         <Button  variant="outline">
