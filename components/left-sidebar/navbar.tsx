@@ -1,3 +1,4 @@
+import { auth } from "@/auth"
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
@@ -11,8 +12,11 @@ import {
 import { HomeIcon, UserRoundCheckIcon, BellIcon, HeartIcon, SettingsIcon } from "lucide-react"
 import { Button } from "@/components/ui/button";
 import UserAvatar from "./use-avatar";
+import { UseNavbarButton } from "./use-navbar-button";
 
-export function Navbar() {
+export async function Navbar() {
+    const session = await auth()
+
     return(
         <div className="hidden md:block">
             <Card>
@@ -25,7 +29,7 @@ export function Navbar() {
                     </Avatar>
                     <CardTitle className="hidden lg:block text-3xl ml-4">
                         <Link href="/">
-                            Blackbuck                        
+                            Blackbuck
                         </Link>
                     </CardTitle>
                 </CardHeader>
@@ -39,14 +43,7 @@ export function Navbar() {
                             </div>
                         </Button>
                     </Link>
-                    <Link href="./follow">
-                        <Button variant="ghost" className="flex items-center justify-center px-6 py-8">
-                            <UserRoundCheckIcon className="h-8 w-8" />
-                            <div className="hidden lg:block text-xl m-4">
-                                フォロー
-                            </div>
-                        </Button>
-                    </Link>
+                    <UseNavbarButton/>
                     <Link href="./notification">
                         <Button variant="ghost" className="flex items-center justify-center px-6 py-8">
                             <BellIcon className="h-8 w-8" />

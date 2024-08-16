@@ -1,15 +1,15 @@
-import { DialogContent } from "@radix-ui/react-dialog";
+import { Card } from "@/components/ui/card";
 import { FacebookSignIn, GoogleSignIn, TwitterSignIn } from "./sing-in";
 
 
-export function SignInDialog() {
+export function SignInCard() {
     return(
         <div>
-            <DialogContent className="w-[480px]">
+            <Card className="w-[480px]">
               <GoogleSignIn/>
               <TwitterSignIn/>
               <FacebookSignIn/>
-            </DialogContent>
+            </Card>
         </div>
     )
 }

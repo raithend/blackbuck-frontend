@@ -9,7 +9,7 @@ export default async function UserAvatar() {
  
   return (
     <Avatar className="h-8 w-8">
-        <AvatarImage src="https://github.com/shadcn.png" />
+        <AvatarImage src="https://github.com/raithend.png" />
         <AvatarFallback><UserRoundIcon/></AvatarFallback>  
     </Avatar>     
   )
