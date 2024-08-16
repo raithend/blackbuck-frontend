@@ -10,10 +10,7 @@ export function HeartButton() {
     return(
         <div>
             <button type="button" onClick={() => setCount(!flag)}>
-                {flag?<HeartIcon className="color = text-red-600 fill-red-600"/>
-                    :<HeartIcon/>
-                }
-
+                <HeartIcon className= {flag ? "color = text-red-600 fill-red-600 transition" : "" }/>
             </button>
         </div>
     )

@@ -19,7 +19,7 @@ import { MessageCircle } from "lucide-react"
 
 export function CommentButton() {
     return(         
-        <div className="flex items-center justify-center">
+        <div>
             <Dialog>
                 <DialogTrigger>
                     <MessageCircle/>
