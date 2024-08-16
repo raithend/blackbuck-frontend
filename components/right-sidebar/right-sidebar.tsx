@@ -11,7 +11,7 @@ import {
 
 import { SearchBox } from "../search-box";
 
-import { PostButton } from "../post-button";
+import { PostButton } from "../post-button/post-button";
 
 export function RightSidebar() {
     return(

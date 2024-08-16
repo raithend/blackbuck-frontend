@@ -2,7 +2,7 @@ import { LeftSidebar } from "@/components/left-sidebar/left-sidebar";
 import { RightSidebar } from "@/components/right-sidebar/right-sidebar";
 import { SmartphoneNavbar } from "@/components/smartphone-navbar";
 import { SmartphoneHeader } from "@/components/smartphone-header";
-import { PostButton } from "@/components/post-button";
+import { PostButton } from "@/components/post-button/post-button";
 
 export default function Layout({
 	children,
