@@ -5,9 +5,9 @@ import { FacebookSignIn, GoogleSignIn, GitHubSignIn } from "@/components/auth/si
 export default function Page() {
     return(
         <div>
-            <FacebookSignIn>Login</FacebookSignIn>
-            <GoogleSignIn>Login</GoogleSignIn>
-            <GitHubSignIn>Login</GitHubSignIn>
+            <FacebookSignIn/>
+            <GoogleSignIn/>
+            <GitHubSignIn/>
         </div>
     )
 }
