@@ -1,11 +1,7 @@
-import Image from "next/image";
-import { SignOut } from "@/components/auth/sing-out";
-
+import { SignOutCard } from "@/components/auth/sign-out-card";
 
 export default function Page() {
     return(
-        <div>
-            <SignOut/>
-        </div>
+        <SignOutCard/>
     )
 }

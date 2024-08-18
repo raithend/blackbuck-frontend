@@ -1,13 +1,9 @@
-import Image from "next/image";
-import { FacebookSignIn, GoogleSignIn, GitHubSignIn } from "@/components/auth/sing-in";
-
+import { SignInCard } from "@/components/auth/sing-in-card";
 
 export default function Page() {
     return(
         <div>
-            <FacebookSignIn/>
-            <GoogleSignIn/>
-            <GitHubSignIn/>
+            <SignInCard/>
         </div>
     )
 }
