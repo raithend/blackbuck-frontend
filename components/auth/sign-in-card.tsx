@@ -1,5 +1,5 @@
 import { Card } from "@/components/ui/card";
-import { FacebookSignIn, GoogleSignIn, TwitterSignIn } from "./sing-in";
+import { FacebookSignIn, GoogleSignIn, TwitterSignIn } from "./sign-in";
 
 
 export function SignInCard() {

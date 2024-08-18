@@ -1,5 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { SignOut } from "./sing-out";
+import { SignOut } from "./sign-out";
 
 
 export function SignOutCard() {
