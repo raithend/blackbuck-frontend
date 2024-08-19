@@ -5,7 +5,7 @@ import { UserRoundIcon } from "lucide-react"
 export default async function UserAvatar() {
   const session = await auth()
  
-  if (!session) return <UserRoundIcon className="h-8 w-8" />
+  if (!session?.user) return <UserRoundIcon className="h-8 w-8" />
  
   return (
     <Avatar className="h-8 w-8">

@@ -22,8 +22,11 @@ export default function RootLayout({
 					defaultTheme="system"
 					enableSystem
 					disableTransitionOnChange
-				>        
-          {children}
+				>
+          <div className="min-h-screen">
+            {children}          
+          </div>
+          <div className="h-px"/>
         </ThemeProvider>
       </body>
     </html>
