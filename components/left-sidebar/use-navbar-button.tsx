@@ -7,7 +7,7 @@ import { SignInCard } from "../auth/sign-in-card";
 export async function UseNavbarButton() {
   const session = await auth()
  
-  if (!session) return (
+  if (!session?.user) return (
     <Dialog>
         <DialogTrigger className="w-full">
             <NavbarButton/>
