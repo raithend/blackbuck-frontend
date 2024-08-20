@@ -21,23 +21,23 @@ import {
 
 const locations = [
   {
-    value: "Ueno zoo",
-    label: "恩賜上野動物園",
+    value: "上野動物園", 
+    label: "上野動物園",
   },
   {
-    value: "Tama Zoological Park",
+    value: "多摩動物公園",
     label: "多摩動物公園",
   },
   {
-    value: "ZOORASIA",
+    value: "よこはま動物園ズーラシア",
     label: "よこはま動物園ズーラシア",
   },
   {
-    value: "TENNOJI ZOO",
+    value: "天王寺動物園",
     label: "天王寺動物園",
   },
   {
-    value: "Higashiyama Zoo and Botanical Gardens",
+    value: "東山動植物園",
     label: "東山動植物園",
   },
 ]
@@ -65,7 +65,7 @@ export function LocationCombobox() {
         <Command>
           <CommandInput placeholder="撮影地を検索" />
           <CommandList>
-            <CommandEmpty>No location found.</CommandEmpty>
+            <CommandEmpty>撮影地が見つかりません</CommandEmpty>
             <CommandGroup>
               {locations.map((location) => (
                 <CommandItem

@@ -21,23 +21,23 @@ import {
 
 const taxonomies = [
   {
-    value: "Mammalia",
+    value: "哺乳綱",
     label: "哺乳綱",
   },
   {
-    value: "Reptilia",
+    value: "爬虫綱",
     label: "爬虫綱",
   },
   {
-    value: "Aves",
+    value: "鳥綱",
     label: "鳥綱",
   },
   {
-    value: "Amphibia",
+    value: "両生綱",
     label: "両生綱",
   },
   {
-    value: "Osteichthyes",
+    value: "硬骨魚綱",
     label: "硬骨魚綱",
   },
 ]
@@ -65,7 +65,7 @@ export function TaxonomyCombobox() {
         <Command>
           <CommandInput placeholder="分類を検索" />
           <CommandList>
-            <CommandEmpty>No taxonomy found.</CommandEmpty>
+            <CommandEmpty>分類が見つかりません</CommandEmpty>
             <CommandGroup>
               {taxonomies.map((taxonomy) => (
                 <CommandItem
