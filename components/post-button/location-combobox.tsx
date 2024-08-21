@@ -2,7 +2,6 @@
 
 import * as React from "react"
 import { Check, ChevronsUpDown } from "lucide-react"
-
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
@@ -19,28 +18,13 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 
-const locations = [
-  {
-    value: "上野動物園", 
-    label: "上野動物園",
-  },
-  {
-    value: "多摩動物公園",
-    label: "多摩動物公園",
-  },
-  {
-    value: "よこはま動物園ズーラシア",
-    label: "よこはま動物園ズーラシア",
-  },
-  {
-    value: "天王寺動物園",
-    label: "天王寺動物園",
-  },
-  {
-    value: "東山動植物園",
-    label: "東山動植物園",
-  },
-]
+import { aquarium } from "./location.ts.d/aquarium"
+import { famousLocations } from './location.ts.d/famous-locations';
+import { museum } from "./location.ts.d/museum"
+import { prefecture } from "./location.ts.d/prefecture"
+import { zoo } from "./location.ts.d/zoo"
+
+const locations = famousLocations
 
 export function LocationCombobox() {
   const [open, setOpen] = React.useState(false)
@@ -56,7 +40,7 @@ export function LocationCombobox() {
           className="w-[200px] justify-between"
         >
           {value
-            ? locations.find((location) => location.value === value)?.label
+            ? locations.find((location) => location === value)
             : "撮影地を選択"}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
@@ -69,8 +53,8 @@ export function LocationCombobox() {
             <CommandGroup>
               {locations.map((location) => (
                 <CommandItem
-                  key={location.value}
-                  value={location.value}
+                  key={location}
+                  value={location}
                   onSelect={(currentValue) => {
                     setValue(currentValue === value ? "" : currentValue)
                     setOpen(false)
@@ -79,10 +63,10 @@ export function LocationCombobox() {
                   <Check
                     className={cn(
                       "mr-2 h-4 w-4",
-                      value === location.value ? "opacity-100" : "opacity-0"
+                      value === location ? "opacity-100" : "opacity-0"
                     )}
                   />
-                  {location.label}
+                  {location}
                 </CommandItem>
               ))}
             </CommandGroup>

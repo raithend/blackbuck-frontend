@@ -27,7 +27,7 @@ export function PostButton() {
                         </div>
                     </Button>
                 </DialogTrigger>
-                <DialogContent className="w-[480px]">
+                <DialogContent className="w-[800px]">
                     <div className="grid gap-4">
                         <div className="grid gap-2">
                             <div className="grid grid-cols-3 items-center gap-4">
