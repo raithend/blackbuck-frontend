@@ -1,22 +1,17 @@
-import { auth } from "@/auth"
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
     Card,
     CardContent,
-    CardDescription,
-    CardFooter,
     CardHeader,
     CardTitle,
   } from "@/components/ui/card"
-import { HomeIcon, UserRoundCheckIcon, BellIcon, HeartIcon, SettingsIcon } from "lucide-react"
-import { Button } from "@/components/ui/button";
-import UserAvatar from "./use-avatar";
-import { UseNavbarButton } from "./use-navbar-button";
+import { Home, UserRoundCheck, Bell, Heart, Settings } from "lucide-react"
+import { NavbarItem } from "./navbar-item";
+import { UseNavbarItem } from "./use-navbar-item";
+import { UseProfileItem } from "./use-profile-item";
 
-export async function Navbar() {
-    const session = await auth()
-
+export function Navbar() {
     return(
         <div className="hidden md:block">
             <Card>
@@ -34,48 +29,15 @@ export async function Navbar() {
                     </CardTitle>
                 </CardHeader>
 
-                <CardContent className="p-0">
+                <CardContent className="p-0 flex flex-col">
                     <Link href="/">
-                        <Button variant="ghost" className="flex items-center justify-center px-6 py-8">
-                            <HomeIcon className="h-8 w-8" />
-                            <div className="hidden lg:block text-xl m-4">
-                                ホーム
-                            </div>
-                        </Button>
+                        <NavbarItem label="ホーム" icon={Home}/>
                     </Link>
-                    <UseNavbarButton/>
-                    <Link href="./notification">
-                        <Button variant="ghost" className="flex items-center justify-center px-6 py-8">
-                            <BellIcon className="h-8 w-8" />
-                            <div className="hidden lg:block text-xl m-4">
-                                通知
-                            </div>
-                        </Button>
-                    </Link>
-                    <Link href="./like">
-                        <Button variant="ghost" className="flex items-center justify-center px-6 py-8">
-                            <HeartIcon className="h-8 w-8" />
-                            <div className="hidden lg:block text-xl m-4">
-                                いいね
-                            </div>
-                        </Button>
-                    </Link>
-                    <Link href="./setting">
-                        <Button variant="ghost" className="flex items-center justify-center px-6 py-8">
-                            <SettingsIcon className="h-8 w-8" />
-                            <div className="hidden lg:block text-xl m-4">
-                                設定
-                            </div>
-                        </Button>
-                    </Link>
-                    <Link href="./profile">
-                        <Button variant="ghost" className="flex items-center justify-center px-6 py-8">
-                            <UserAvatar/>                       
-                            <div className="hidden lg:block text-xl m-4">
-                                プロフィール
-                            </div>
-                        </Button>
-                    </Link>
+                    <UseNavbarItem label="フォロー" url="./follow" icon={UserRoundCheck}/>
+                    <UseNavbarItem label="通知" url="./notification" icon={Bell}/>
+                    <UseNavbarItem label="いいね" url="./like" icon={Heart}/>
+                    <UseNavbarItem label="設定" url="./setting" icon={Settings}/>
+                    <UseProfileItem/>
                 </CardContent>
             </Card>
         </div>

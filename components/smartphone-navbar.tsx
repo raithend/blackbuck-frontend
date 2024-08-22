@@ -3,8 +3,9 @@ import {
     Card,
     CardContent,
   } from "@/components/ui/card"
-import { HomeIcon, UserRoundCheckIcon, BellIcon, HeartIcon, SettingsIcon } from "lucide-react"
-import { Button } from "@/components/ui/button";
+import { Home, UserRoundCheck, Bell, Heart, Settings } from "lucide-react"
+import { NavbarItem } from "./left-sidebar/navbar-item";
+import { UseNavbarItem } from "./left-sidebar/use-navbar-item";
 
 export function SmartphoneNavbar() {
     return(
@@ -12,30 +13,12 @@ export function SmartphoneNavbar() {
             <Card className="rounded-none">
                 <CardContent className="flex justify-between p-2">
                     <Link href="/">
-                        <Button variant="ghost" size="icon">
-                            <HomeIcon className="h-8 w-8" />
-                        </Button>
+                        <NavbarItem label="ホーム" icon={Home}/>
                     </Link>
-                    <Link href="./follow">
-                        <Button variant="ghost" size="icon">
-                            <UserRoundCheckIcon className="h-8 w-8" />
-                        </Button>
-                    </Link>
-                    <Link href="./notification">
-                        <Button variant="ghost" size="icon">
-                            <BellIcon className="h-8 w-8" />
-                        </Button>
-                    </Link>
-                    <Link href="./like">
-                        <Button variant="ghost" size="icon">
-                            <HeartIcon className="h-8 w-8" />
-                        </Button>
-                    </Link>
-                    <Link href="./setting">
-                        <Button variant="ghost" size="icon">
-                            <SettingsIcon className="h-8 w-8" />
-                        </Button>
-                    </Link>
+                    <UseNavbarItem label="フォロー" url="./follow" icon={UserRoundCheck}/>
+                    <UseNavbarItem label="通知" url="./notification" icon={Bell}/>
+                    <UseNavbarItem label="いいね" url="./like" icon={Heart}/>
+                    <UseNavbarItem label="設定" url="./setting" icon={Settings}/>
                 </CardContent>
             </Card>
         </div>
