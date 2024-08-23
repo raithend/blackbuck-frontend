@@ -1,8 +1,8 @@
 import { auth } from "@/auth"
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { SignInCard } from "../auth/sign-in-card";
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
+import { SignInDialog } from "@/components/auth/sign-in-dialog";
 import { UserRound } from "lucide-react"
  
 export async function UseProfileItem() {
@@ -18,9 +18,7 @@ export async function UseProfileItem() {
                 </div>            
             </div>
         </DialogTrigger>
-        <DialogContent>
-            <SignInCard/>
-        </DialogContent>
+        <SignInDialog/>
     </Dialog>
   )
  

@@ -1,8 +1,8 @@
 import { auth } from "@/auth"
 import Link from "next/link";
 import { NavbarItem } from "./navbar-item";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { SignInCard } from "../auth/sign-in-card";
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
+import { SignInDialog } from "@/components/auth/sign-in-dialog";
 import type { LucideIcon } from "lucide-react"
  
 export async function UseNavbarItem({ label, url,  icon: Icon }: { label: string, url: string, icon: LucideIcon }) {
@@ -13,9 +13,7 @@ export async function UseNavbarItem({ label, url,  icon: Icon }: { label: string
         <DialogTrigger>
             <NavbarItem label={label} icon={Icon} />
         </DialogTrigger>
-        <DialogContent>
-            <SignInCard/>
-        </DialogContent>
+        <SignInDialog/>
     </Dialog>
   )
  
