@@ -8,6 +8,7 @@ export function SignInCard() {
             <GoogleSignIn/>
             <TwitterSignIn/>
             <FacebookSignIn/>
+            <button onClick={() => signIn()}>サインイン</button>
         </Card>
     )
 }
