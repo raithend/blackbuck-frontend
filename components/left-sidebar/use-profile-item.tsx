@@ -28,7 +28,7 @@ export async function UseProfileItem() {
     <Link href="./profile">
         <div className="flex items-center m-2 p-0 rounded-full md:m-0 md:p-6 md:rounded-none hover:bg-accent hover:text-accent-foreground">
             <Avatar className="h-8 w-8">
-                <AvatarImage src="https://github.com/raithend.png" />
+                <AvatarImage src={session.user.image ?? undefined} />
                 <AvatarFallback><UserRound/></AvatarFallback>  
             </Avatar>
             <div className="hidden lg:block text-xl ml-4">

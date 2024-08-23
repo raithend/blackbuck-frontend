@@ -4,10 +4,10 @@ import { FacebookSignIn, GoogleSignIn, TwitterSignIn } from "./sign-in";
 
 export function SignInCard() {
     return(
-        <Card className="size-96 flex flex-col items-center justify-center flex-auto ">
+        <div className="items-center justify-self-center">
             <GoogleSignIn/>
             <TwitterSignIn/>
             <FacebookSignIn/>
-        </Card>
+        </div>
     )
 }
