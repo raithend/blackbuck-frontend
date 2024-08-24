@@ -1,11 +1,11 @@
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { ModeToggle } from "@/components/ui/mode-toggle";
+import { ModeRadioGroup } from "@/components/mode-radio-group";
 
 export default function Page() {
     return(
         <div>
-			<ModeToggle/>
+			<ModeRadioGroup/>
         </div>
     )
 }
