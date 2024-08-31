@@ -11,7 +11,7 @@ function SignInButton() {
           await signIn();
         }}
       >
-        <Button type="submit">Signin</Button>
+        <Button type="submit">Sign In</Button>
       </form>
     )
   } 
