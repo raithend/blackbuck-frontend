@@ -8,7 +8,12 @@ import Resend from "next-auth/providers/resend"
 import { SupabaseAdapter } from "@auth/supabase-adapter"
  
 export const config = {
-  providers: [Google, Twitter, Facebook, Resend],
+  providers: [
+    Google, 
+    Resend({
+      from: process.env.RESEND_FROM,
+    })
+  ],
   adapter: SupabaseAdapter({
     url: process.env.SUPABASE_URL ?? '',
     secret: process.env.SUPABASE_SERVICE_ROLE_KEY ?? '',
