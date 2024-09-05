@@ -10,7 +10,7 @@ export function ModeRadioGroup() {
   const { setTheme } = useTheme()
 
   return (
-    <RadioGroup defaultValue="option-three" className="flex">
+    <RadioGroup defaultValue="option-three" className="flex gap-16">
       <div className="flex items-center space-x-2">
         <RadioGroupItem value="option-one" id="option-one"  onClick={() => setTheme("light")}/>
         <Label htmlFor="option-one">ライト</Label>

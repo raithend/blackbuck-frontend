@@ -17,19 +17,21 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel"
 
-import { UserRoundIcon, HeartIcon } from "lucide-react"
+import { UserRound } from "lucide-react"
 import { CommentButton } from "./comment-button";
 import { HeartButton } from "./heart-button";
+
+
 
 export function Post() {
     return(
         <div>
-            <Card className="p-0 md:px-16">
-                <CardHeader className="flex-row items-center p-2">
+            <Card className="grid gap-2 p-0 md:px-16">
+                <CardHeader className="flex-row items-center p-0 m-4 md:m-0">
                     <div>
                         <Avatar>
                             <AvatarImage src="https://github.com/raithend.png" />
-                            <AvatarFallback><UserRoundIcon/></AvatarFallback>
+                            <AvatarFallback><UserRound/></AvatarFallback>
                         </Avatar>
                     </div>
                     <div className="pl-2">
@@ -69,20 +71,20 @@ export function Post() {
                     </Carousel>
                 </CardContent>
 
-                <CardFooter className="p-2">
-                    <div>
-                        <div>
-                            <div className="my-1">
-                                Taxonomy
-                            </div>
-                            <div className="my-1">
-                                Location
-                            </div>
-                            <div className="my-1">
+                <CardFooter className="ml-12 md:m-0 p-0">
+                    <div className="grid gap-4">
+                        <div className="grid gap-1">
+                            <div>
                                 Description
                             </div>
+                            <div>
+                                Location
+                            </div>
+                            <div>
+                                Taxonomy
+                            </div>
                         </div>
-                        <div className="mt-4 flex justify-between">
+                        <div className="flex justify-between">
                             <HeartButton/>
                             <CommentButton/>
                         </div>

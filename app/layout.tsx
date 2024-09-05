@@ -6,7 +6,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Blackbuck",
-  description: "Animal photo database.",
+  description: "Blackbuckは動物の画像を投稿するSNSアプリケーションです。",
 };
 
 export default function RootLayout({
@@ -23,10 +23,7 @@ export default function RootLayout({
 					enableSystem
 					disableTransitionOnChange
 				>
-          <div className="min-h-screen">
             {children}          
-          </div>
-          <div className="h-px"/>
         </ThemeProvider>
       </body>
     </html>
