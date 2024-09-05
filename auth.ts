@@ -1,6 +1,6 @@
 import NextAuth from "next-auth"
-import Credentials from "next-auth/providers/credentials"
 import Facebook from "next-auth/providers/facebook"
+import GitHub from "next-auth/providers/github"
 import Google from "next-auth/providers/google"
 import Twitter from "next-auth/providers/twitter"
 import Resend from "next-auth/providers/resend"
@@ -10,6 +10,7 @@ import { SupabaseAdapter } from "@auth/supabase-adapter"
 export const config = {
   providers: [
     Google, 
+    GitHub,
     Resend({
       from: process.env.RESEND_FROM,
     })
