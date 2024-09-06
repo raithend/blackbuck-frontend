@@ -21,8 +21,8 @@ import { LocationCombobox } from "./location-combobox";
 import { Image, ImageUp } from "lucide-react"
 
 function Dropzone() {
-    const onDrop = useCallback(acceptedFiles => {
-      // Do something with the files
+    const onDrop = useCallback((acceptedFiles: File[]) => {
+        console.log('受け取ったファイル:', acceptedFiles);
     }, [])
     const {getRootProps, getInputProps, isDragActive} = useDropzone({onDrop})
   
