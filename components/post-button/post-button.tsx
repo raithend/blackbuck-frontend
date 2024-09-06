@@ -1,4 +1,9 @@
+"use client"
+
+import React, {useCallback} from 'react'
+import {useDropzone} from 'react-dropzone'
 import { Button } from "@/components/ui/button"
+import { Card, CardContent } from '@/components/ui/card'
 import {
 Dialog,
 DialogContent,
@@ -10,10 +15,31 @@ DialogTrigger,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
 import { TaxonomyCombobox } from "./taxonomy-combobox"
 import { LocationCombobox } from "./location-combobox";
+import { Image, ImageUp } from "lucide-react"
 
-import { ImageUp } from "lucide-react"
+function Dropzone() {
+    const onDrop = useCallback(acceptedFiles => {
+      // Do something with the files
+    }, [])
+    const {getRootProps, getInputProps, isDragActive} = useDropzone({onDrop})
+  
+    return (
+        <div {...getRootProps()} 
+            className={`flex flex-col items-center justify-center h-full w-full
+            ${isDragActive ? 'bg-accent text-accent-foreground' : ''}`}>
+            <input {...getInputProps()} />
+            <div className="flex flex-col items-center">
+                <Image className="h-16 w-16 mb-4" />
+            </div>
+            <div >画像をドラッグアンドドロップ</div>
+            <div>または</div>
+            <div>コンピューターから選択</div>
+        </div>
+    )
+  }
 
 export function PostButton() {
     return(         
@@ -27,39 +53,37 @@ export function PostButton() {
                         </div>
                     </Button>
                 </DialogTrigger>
-                <DialogContent className="w-[800px]">
+
+                <DialogContent className="w-full max-w-xl">
+                    <DialogHeader>
+                        <DialogTitle>投稿を作成</DialogTitle>
+                    </DialogHeader>
                     <div className="grid gap-4">
-                        <div className="grid gap-2">
-                            <div className="grid grid-cols-3 items-center gap-4">
-                                <Label htmlFor="picture">画像</Label>
-                                <Input
-                                    id="picture"
-                                    type="file"
-                                    className="col-span-2 h-8"
-                                />
+                        <div className="grid gap-4">
+                            <div className="grid gap-2">
+                                <Label htmlFor="width">画像</Label>
+                                <Card className='h-72 w-full'>
+                                    <CardContent className='h-full p-0'>
+                                        <Dropzone/>
+                                    </CardContent>
+                                </Card>
                             </div>
-                            <div className="grid grid-cols-3 items-center gap-4">
+                            <div className="grid gap-2">
                                 <Label htmlFor="width">コメント</Label>
-                                <Input
-                                    id="comment"
-                                    defaultValue=""
-                                    className="col-span-2 h-8"
-                                />
+                                <Textarea/>
                             </div>
-                            <div className="grid grid-cols-3 items-center gap-4">
+                            <div className="grid gap-2">
                                 <Label htmlFor="width">分類</Label>
                                 <TaxonomyCombobox/>
                             </div>
-                            <div className="grid grid-cols-3 items-center gap-4">
+                            <div className="grid gap-2">
                                 <Label htmlFor="width">撮影地</Label>
                                 <LocationCombobox/>
                             </div>
                         </div>
-                        <Button  variant="outline">
-                            <div>
-                                投稿！
-                            </div>
-                        </Button>
+                        <div className='w-full flex justify-center'>
+                            <Button  variant="outline" className='w-24'>投稿 !</Button>
+                        </div>
                     </div>
                 </DialogContent>
             </Dialog>

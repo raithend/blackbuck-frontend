@@ -53,7 +53,7 @@ export function TaxonomyCombobox() {
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-[200px] justify-between"
+          className="w-full justify-between"
         >
           {value
             ? taxonomies.find((taxonomy) => taxonomy.value === value)?.label
@@ -61,7 +61,7 @@ export function TaxonomyCombobox() {
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[200px] p-0">
+      <PopoverContent className="w-full p-0">
         <Command>
           <CommandInput placeholder="分類を検索" />
           <CommandList>
