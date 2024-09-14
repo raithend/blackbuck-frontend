@@ -1,19 +1,18 @@
-import Image from "next/image";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import {
 	Card,
 	CardContent,
 	CardFooter,
 	CardHeader,
 	CardTitle,
-  } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button";
+} from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UserRoundIcon } from "lucide-react";
-
+import Image from "next/image";
 
 export default function Page() {
-    return(
+	return (
 		<div>
 			<Tabs defaultValue="followee">
 				<TabsList className="grid w-full grid-cols-2">
@@ -26,16 +25,14 @@ export default function Page() {
 							<div>
 								<Avatar>
 									<AvatarImage src="https://github.com/shadcn.png" />
-									<AvatarFallback><UserRoundIcon/></AvatarFallback>
+									<AvatarFallback>
+										<UserRoundIcon />
+									</AvatarFallback>
 								</Avatar>
 							</div>
 							<div className="pl-2">
-								<div className="text-base font-semibold">
-									UserName
-								</div>
-								<div>
-									UserID
-								</div>
+								<div className="text-base font-semibold">UserName</div>
+								<div>UserID</div>
 							</div>
 						</CardContent>
 					</Card>
@@ -43,5 +40,5 @@ export default function Page() {
 				<TabsContent value="follower">Change your password here.</TabsContent>
 			</Tabs>
 		</div>
-    )
+	);
 }

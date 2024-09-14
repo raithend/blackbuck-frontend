@@ -1,10 +1,10 @@
-import { Posts } from "./posts";
 import { PostButton } from "../post-button/post-button";
+import { Posts } from "./posts";
 
 export function MainContents() {
-    return(
-        <div>
-            <Posts/>
-        </div>
-    )
+	return (
+		<div>
+			<Posts />
+		</div>
+	);
 }
