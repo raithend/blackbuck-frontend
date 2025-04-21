@@ -14,7 +14,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Image, ImageUp } from "lucide-react";
+import { ImageIcon, ImageUp } from "lucide-react";
 import React, { useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import { LocationCombobox } from "./location-combobox";
@@ -34,7 +34,7 @@ function Dropzone() {
 		>
 			<input {...getInputProps()} />
 			<div className="flex flex-col items-center">
-				<Image className="h-16 w-16 mb-4" />
+				<ImageIcon className="h-16 w-16 mb-4" />
 			</div>
 			<div>画像をドラッグアンドドロップ</div>
 			<div>または</div>
