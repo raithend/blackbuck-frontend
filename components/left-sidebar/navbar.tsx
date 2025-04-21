@@ -1,3 +1,5 @@
+'use client'
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Bell, Heart, Home, Settings, UserRoundCheck } from "lucide-react";
@@ -5,8 +7,12 @@ import Link from "next/link";
 import { NavbarItem } from "./navbar-item";
 import { UseNavbarItem } from "./use-navbar-item";
 import { UseProfileItem } from "./use-profile-item";
+import { usePathname } from "next/navigation";
 
 export function Navbar() {
+	const pathname = usePathname();
+	const isHomePage = pathname === "/";
+
 	return (
 		<div className="hidden md:block">
 			<Card>
@@ -24,7 +30,7 @@ export function Navbar() {
 
 				<CardContent className="p-0 flex flex-col">
 					<Link href="/">
-						<NavbarItem label="ホーム" icon={Home} />
+						<NavbarItem label="ホーム" icon={Home} active={isHomePage} />
 					</Link>
 					<UseNavbarItem
 						label="フォロー"

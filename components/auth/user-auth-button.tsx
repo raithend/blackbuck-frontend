@@ -54,7 +54,7 @@ export function UserAuthButton() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          <Link href="/dashboard">
+          <Link href="/">
             ダッシュボード
           </Link>
         </DropdownMenuItem>
