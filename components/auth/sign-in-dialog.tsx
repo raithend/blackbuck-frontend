@@ -8,19 +8,6 @@ import { LoginForm } from '@/components/auth/login-form'
 import { SignupForm } from '@/components/auth/signup-form'
 import { useSupabaseSession } from '@/hooks/use-supabase-session'
 
-// function SignInButton() {
-// 	return (
-// 		<form
-// 			action={async () => {
-// 				"use server";
-// 				await signIn();
-// 			}}
-// 		>
-// 			<Button type="submit">Sign In</Button>
-// 		</form>
-// 	);
-// }
-
 interface SignInDialogProps {
 	trigger?: React.ReactNode
 	defaultTab?: 'login' | 'signup'
