@@ -1,4 +1,6 @@
 import { notFound } from "next/navigation";
+import { Globe } from "@/components/globe";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface SpeciesDetail {
   name: string;
@@ -28,27 +30,32 @@ export default async function SpeciesDetailPage({ params }: { params: { id: stri
   const species = await getSpecies(id);
 
   return (
-    <div className="container mx-auto py-8">
-      <div>
-        <h1 className="mb-2 text-4xl font-bold">{species.name}</h1>
-        <p className="mb-4 text-lg text-muted-foreground">
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-4xl">{species.name}</CardTitle>
+        <p className="text-lg text-muted-foreground">
           {species.scientificName}
         </p>
+      </CardHeader>
+      <CardContent className="space-y-8">
         <div className="space-y-4">
           <div>
-            <h2 className="mb-2 text-xl font-semibold">説明</h2>
+            <h2 className="text-xl font-semibold">説明</h2>
             <p>{species.description}</p>
           </div>
           <div>
-            <h2 className="mb-2 text-xl font-semibold">生息地</h2>
+            <h2 className="text-xl font-semibold">生息地</h2>
             <p>{species.habitat}</p>
           </div>
           <div>
-            <h2 className="mb-2 text-xl font-semibold">食性</h2>
+            <h2 className="text-xl font-semibold">食性</h2>
             <p>{species.diet}</p>
           </div>
         </div>
-      </div>
-    </div>
+        <div className="flex justify-center">
+          <Globe />
+        </div>
+      </CardContent>
+    </Card>
   );
 } 
