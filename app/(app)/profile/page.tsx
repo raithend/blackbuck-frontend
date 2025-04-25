@@ -1,6 +1,33 @@
-import { Button } from "@/components/ui/button";
-import Image from "next/image";
+"use client";
 
-export default function Page() {
-	return <div></div>;
+import { ProfileHeader } from "@/components/profile/profile-header";
+import { Posts } from "@/components/main-content/posts";
+import { useProfile } from "@/contexts/profile-context";
+import { useEffect } from "react";
+import { getProfile } from "@/lib/api";
+
+export default function ProfilePage() {
+	const { profile, setProfile } = useProfile();
+
+	useEffect(() => {
+		const fetchProfile = async () => {
+			try {
+				const data = await getProfile();
+				setProfile(data);
+			} catch (error) {
+				console.error("プロフィール情報の取得に失敗しました:", error);
+			}
+		};
+
+		fetchProfile();
+	}, [setProfile]);
+
+	return (
+		<div className="min-h-screen bg-background">
+			<div className="grid gap-2">
+				<ProfileHeader profile={profile} />
+				<Posts />
+			</div>
+		</div>
+	);
 }
