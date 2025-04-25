@@ -2,7 +2,7 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Bell, Heart, Home, Settings, UserRoundCheck } from "lucide-react";
+import { Bell, Bird, Heart, Home, Settings, UserRoundCheck } from "lucide-react";
 import Link from "next/link";
 import { NavbarItem } from "./navbar-item";
 import { UseNavbarItem } from "./use-navbar-item";
@@ -12,7 +12,7 @@ import { usePathname } from "next/navigation";
 export function Navbar() {
 	const pathname = usePathname();
 	const isHomePage = pathname === "/";
-
+	const isSpeciesPage = pathname === "/species";
 	return (
 		<div className="hidden md:block">
 			<Card>
@@ -39,6 +39,9 @@ export function Navbar() {
 					/>
 					<UseNavbarItem label="通知" url="/notification" icon={Bell} />
 					<UseNavbarItem label="いいね" url="/like" icon={Heart} />
+					<Link href="/species">
+						<NavbarItem label="生物図鑑" icon={Bird} active={isSpeciesPage} />
+					</Link>
 					<UseNavbarItem label="設定" url="/setting" icon={Settings} />
 					<UseProfileItem />
 				</CardContent>
