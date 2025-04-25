@@ -34,12 +34,12 @@ export function Navbar() {
 					</Link>
 					<UseNavbarItem
 						label="フォロー"
-						url="./follow"
+						url="/follow"
 						icon={UserRoundCheck}
 					/>
-					<UseNavbarItem label="通知" url="./notification" icon={Bell} />
-					<UseNavbarItem label="いいね" url="./like" icon={Heart} />
-					<UseNavbarItem label="設定" url="./setting" icon={Settings} />
+					<UseNavbarItem label="通知" url="/notification" icon={Bell} />
+					<UseNavbarItem label="いいね" url="/like" icon={Heart} />
+					<UseNavbarItem label="設定" url="/setting" icon={Settings} />
 					<UseProfileItem />
 				</CardContent>
 			</Card>
