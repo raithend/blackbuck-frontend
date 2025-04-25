@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
-import { Globe } from "@/components/globe";
+import { Globe } from "@/components/species/globe";
+import { Cladogram } from "@/components/species/cladogram";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface SpeciesDetail {
@@ -54,6 +55,10 @@ export default async function SpeciesDetailPage({ params }: { params: { id: stri
         </div>
         <div className="flex justify-center">
           <Globe />
+        </div>
+        <div>
+          <h2 className="mb-4 text-xl font-semibold">系統樹</h2>
+          <Cladogram speciesId={id} />
         </div>
       </CardContent>
     </Card>
