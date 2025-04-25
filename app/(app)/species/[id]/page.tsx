@@ -2,6 +2,12 @@ import { notFound } from "next/navigation";
 import { Globe } from "@/components/species/globe";
 import { Cladogram } from "@/components/species/cladogram";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 interface SpeciesDetail {
   name: string;
@@ -38,27 +44,37 @@ export default async function SpeciesDetailPage({ params }: { params: { id: stri
           {species.scientificName}
         </p>
       </CardHeader>
-      <CardContent className="space-y-8">
+      <CardContent>
         <div className="space-y-4">
           <div>
             <h2 className="text-xl font-semibold">説明</h2>
             <p>{species.description}</p>
           </div>
           <div>
-            <h2 className="text-xl font-semibold">生息地</h2>
-            <p>{species.habitat}</p>
-          </div>
-          <div>
             <h2 className="text-xl font-semibold">食性</h2>
             <p>{species.diet}</p>
           </div>
-        </div>
-        <div className="flex justify-center">
-          <Globe />
-        </div>
-        <div>
-          <h2 className="mb-4 text-xl font-semibold">系統樹</h2>
-          <Cladogram speciesId={id} />
+          <Accordion type="single" collapsible className="w-full">
+            <AccordionItem value="habitat">
+              <AccordionTrigger className="text-xl font-semibold">
+                生息地
+              </AccordionTrigger>
+              <AccordionContent>
+                <p>{species.habitat}</p>
+                <div className="mt-4">
+                  <Globe />
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="cladogram">
+              <AccordionTrigger className="text-xl font-semibold">
+                系統樹
+              </AccordionTrigger>
+              <AccordionContent>
+                <Cladogram speciesId={id} />
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
         </div>
       </CardContent>
     </Card>
