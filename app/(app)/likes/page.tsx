@@ -1,6 +1,7 @@
-import { Button } from "@/components/ui/button";
-import Image from "next/image";
+import { PostCards } from "@/components/post/post-cards";
 
 export default function Page() {
-	return <div></div>;
+	return <div>
+		<PostCards apiUrl="/api/v1/users/[id]/likes" />
+	</div>;
 }
