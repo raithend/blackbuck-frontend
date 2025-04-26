@@ -43,21 +43,15 @@ export default function SpeciesPage() {
   }
 
   return (
-    <div className="container mx-auto py-8">
-      <h1 className="mb-8 text-4xl font-bold">生物図鑑</h1>
-      <p className="mb-8 text-lg text-muted-foreground">
-        様々な生物について学び、その生態や特徴を理解しましょう。
-      </p>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {species.map((animal) => (
-          <Link key={animal.id} href={`/species/${animal.id}`}>
-            <div className="rounded-lg border p-4 transition-colors hover:bg-accent">
-              <h2 className="mb-2 text-2xl font-semibold">{animal.name}</h2>
-              <p className="text-muted-foreground">{animal.description}</p>
-            </div>
-          </Link>
-        ))}
-      </div>
+    <div className="grid gap-2">
+      {species.map((animal) => (
+        <Link key={animal.id} href={`/species/${animal.id}`}>
+          <div className="rounded-lg border p-4 transition-colors hover:bg-accent">
+            <h2 className="mb-2 text-2xl font-semibold">{animal.name}</h2>
+            <p className="text-muted-foreground">{animal.description}</p>
+          </div>
+        </Link>
+      ))}
     </div>
   );
 } 
