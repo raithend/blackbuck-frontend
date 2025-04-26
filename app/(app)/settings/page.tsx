@@ -1,11 +1,7 @@
-import { LogoutButton } from "@/components/auth/logout-button";
-import { ModeRadioGroup } from "@/components/mode-radio-group";
+"use client";
 
-export default function Page() {
-	return (
-		<div>
-			<ModeRadioGroup />
-			<LogoutButton />
-		</div>
-	);
+import { SettingsLayout } from "@/components/settings/settings-layout";
+
+export default function SettingsPage() {
+	return <SettingsLayout />;
 }
