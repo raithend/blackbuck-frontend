@@ -1,9 +1,9 @@
-import { MainContents } from "@/components/main-content/main-contents";
+import { PostCards } from "@/components/post/post-cards";
 
 export default function Page() {
 	return (
 		<main>
-			<MainContents />
+			<PostCards apiUrl="/api/v1/posts" />
 		</main>
 	);
 }
