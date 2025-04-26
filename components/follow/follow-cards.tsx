@@ -1,95 +1,33 @@
+// components/follow/follow-cards.tsx
 "use client";
 
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import { FollowCard } from "./follow-card";
-
-interface User {
-  id: string;
-  name: string;
-  username: string;
-  avatarUrl: string;
-  bio: string;
-}
+import { User } from "@/types/user";
 
 interface FollowCardsProps {
+  initialUsers: User[];
   apiUrl: string;
 }
 
-export function FollowCards({ apiUrl }: FollowCardsProps) {
-  const [users, setUsers] = useState<User[]>([]);
+export function FollowCards({ initialUsers = [], apiUrl }: FollowCardsProps) {
+  const users = useMemo(() => initialUsers, [initialUsers]);
   const [following, setFollowing] = useState<Set<string>>(new Set());
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const response = await fetch(apiUrl);
-        if (!response.ok) {
-          throw new Error("ユーザーデータの取得に失敗しました");
-        }
-        const data = await response.json();
-        setUsers(data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "予期せぬエラーが発生しました");
-      } finally {
-        setLoading(false);
+  const handleFollowStatusChange = (userId: string, isFollowing: boolean) => {
+    setFollowing((prev) => {
+      const newFollowing = new Set(prev);
+      if (isFollowing) {
+        newFollowing.add(userId);
+      } else {
+        newFollowing.delete(userId);
       }
-    };
-
-    fetchUsers();
-  }, [apiUrl]);
-
-  const handleFollow = async (userId: string) => {
-    try {
-      const response = await fetch(`${apiUrl}/follow`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ userId }),
-      });
-
-      if (!response.ok) {
-        throw new Error("フォローに失敗しました");
-      }
-
-      setFollowing((prev) => new Set([...prev, userId]));
-    } catch (err) {
-      console.error("フォローエラー:", err);
-    }
+      return newFollowing;
+    });
   };
 
-  const handleUnfollow = async (userId: string) => {
-    try {
-      const response = await fetch(`${apiUrl}/unfollow`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ userId }),
-      });
-
-      if (!response.ok) {
-        throw new Error("フォロー解除に失敗しました");
-      }
-
-      setFollowing((prev) => {
-        const newSet = new Set(prev);
-        newSet.delete(userId);
-        return newSet;
-      });
-    } catch (err) {
-      console.error("フォロー解除エラー:", err);
-    }
-  };
-
-  if (loading) {
-    return <div>読み込み中...</div>;
-  }
-
-  if (error) {
-    return <div className="text-red-500">{error}</div>;
+  if (!users || users.length === 0) {
+    return <div>ユーザーが見つかりません</div>;
   }
 
   return (
@@ -98,11 +36,11 @@ export function FollowCards({ apiUrl }: FollowCardsProps) {
         <FollowCard
           key={user.id}
           user={user}
-          onFollow={handleFollow}
-          onUnfollow={handleUnfollow}
           isFollowing={following.has(user.id)}
+          apiUrl={apiUrl}
+          onFollowStatusChange={handleFollowStatusChange}
         />
       ))}
     </div>
   );
-} 
+}

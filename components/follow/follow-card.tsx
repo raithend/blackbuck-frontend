@@ -5,27 +5,28 @@ import { FollowButton } from "./follow-button";
 
 interface FollowCardProps {
   user: User;
-  onFollow: (userId: string) => void;
-  onUnfollow: (userId: string) => void;
   isFollowing: boolean;
+  apiUrl: string;
+  onFollowStatusChange: (userId: string, isFollowing: boolean) => void;
 }
 
-export function FollowCard({ user, onFollow, onUnfollow, isFollowing }: FollowCardProps) {
+export function FollowCard({ user, isFollowing, apiUrl, onFollowStatusChange }: FollowCardProps) {
   return (
     <Card className="">
       <CardHeader className="flex flex-row items-center gap-4 py-2">
         <Avatar>
-          <AvatarImage src={user.avatarUrl} alt={user.name} />
-          <AvatarFallback>{user.name[0]}</AvatarFallback>
+          <AvatarImage src={user.avatarUrl} alt={user.username} />
+          <AvatarFallback>{user.username[0]}</AvatarFallback>
         </Avatar>
         <div className="flex-1">
-          <h3 className="text-lg font-semibold">{user.name}</h3>
-          <p className="text-sm text-muted-foreground">@{user.username}</p>
+          <h3 className="text-lg font-semibold">{user.username}</h3>
+          <p className="text-sm text-muted-foreground">@{user.id}</p>
         </div>
         <FollowButton
           isFollowing={isFollowing}
-          onFollow={() => onFollow(user.id)}
-          onUnfollow={() => onUnfollow(user.id)}
+          userId={user.id}
+          apiUrl={apiUrl}
+          onFollowStatusChange={onFollowStatusChange}
         />
       </CardHeader>
       <CardContent className="py-2">

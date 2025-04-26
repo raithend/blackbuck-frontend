@@ -2,23 +2,20 @@ import { NextResponse } from "next/server";
 
 const dummyFollowers = [
   {
-    id: "4",
-    name: "田中次郎",
-    username: "tanaka_jiro",
+    id: "tanaka_jiro",
+    username: "田中次郎",
     avatarUrl: "https://github.com/shadcn.png",
     bio: "旅行が好きです"
   },
   {
-    id: "5",
-    name: "中村美咲",
-    username: "nakamura_misaki",
+    id: "nakamura_misaki",
+    username: "中村美咲",
     avatarUrl: "https://github.com/shadcn.png",
     bio: "料理を勉強中"
   },
   {
-    id: "6",
-    name: "小林健太",
-    username: "kobayashi_kenta",
+    id: "kobayashi_kenta",
+    username: "小林健太",
     avatarUrl: "https://github.com/shadcn.png",
     bio: "スポーツが趣味です"
   }
