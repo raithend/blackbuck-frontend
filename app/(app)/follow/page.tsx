@@ -1,17 +1,13 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardFooter,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
+"use client";
+
+import { useParams } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { UserRoundIcon } from "lucide-react";
-import Image from "next/image";
+import { FollowCards } from "@/components/follow/follow-cards";
 
 export default function Page() {
+	const params = useParams();
+	const userId = params.id as string;
+
 	return (
 		<div>
 			<Tabs defaultValue="followee">
@@ -20,24 +16,11 @@ export default function Page() {
 					<TabsTrigger value="follower">フォロワー</TabsTrigger>
 				</TabsList>
 				<TabsContent value="followee">
-					<Card>
-						<CardContent className="flex flex-row items-center p-2">
-							<div>
-								<Avatar>
-									<AvatarImage src="https://github.com/shadcn.png" />
-									<AvatarFallback>
-										<UserRoundIcon />
-									</AvatarFallback>
-								</Avatar>
-							</div>
-							<div className="pl-2">
-								<div className="text-base font-semibold">UserName</div>
-								<div>UserID</div>
-							</div>
-						</CardContent>
-					</Card>
+					<FollowCards apiUrl={`/api/v1/users/${userId}/followees`} />
 				</TabsContent>
-				<TabsContent value="follower">Change your password here.</TabsContent>
+				<TabsContent value="follower">
+					<FollowCards apiUrl={`/api/v1/users/${userId}/followers`} />
+				</TabsContent>
 			</Tabs>
 		</div>
 	);
