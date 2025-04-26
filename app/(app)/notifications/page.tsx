@@ -1,6 +1,7 @@
-import { Button } from "@/components/ui/button";
-import Image from "next/image";
+"use client";
 
-export default function Page() {
-	return <div></div>;
+import { NotificationsLayout } from "@/components/notifications/notifications-layout";
+
+export default function NotificationsPage() {
+	return <NotificationsLayout />;
 }
