@@ -17,7 +17,7 @@ import {
 import { formatDistanceToNow } from "date-fns";
 import { ja } from "date-fns/locale";
 import { UserRound } from "lucide-react";
-import { CommentButton } from "./comment-button";
+import { CommentButton } from "@/components/comment/comment-button";
 import { HeartButton } from "./heart-button";
 
 interface PostCardProps {
@@ -79,7 +79,7 @@ export function PostCard({ post }: PostCardProps) {
 					<div className="flex justify-between items-center">
 						<div className="flex gap-2">
 							<HeartButton />
-							<CommentButton />
+							<CommentButton postId={post.id} />
 						</div>
 						<div className="text-sm text-gray-500 text-right">
 							最終更新：{formatDistanceToNow(post.updatedAt, { locale: ja })}
