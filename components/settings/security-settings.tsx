@@ -23,13 +23,6 @@ export function SecuritySettings() {
         </div>
         <Button>パスワードを変更</Button>
       </div>
-      <div className="space-y-4">
-        <h2 className="text-xl font-semibold">二要素認証</h2>
-        <p className="text-sm text-gray-500">
-          二要素認証を有効にすると、ログイン時に追加の認証が必要になります。
-        </p>
-        <Button variant="outline">二要素認証を設定</Button>
-      </div>
     </div>
   );
 } 

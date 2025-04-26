@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { LogoutButton } from "@/components/auth/logout-button";
+import { ModeRadioGroup } from "@/components/settings/mode-radio-group";
 
 export function AccountSettings() {
   return (
@@ -18,10 +20,14 @@ export function AccountSettings() {
           <Label htmlFor="bio">自己紹介</Label>
           <Textarea id="bio" placeholder="自己紹介を入力" />
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="email">メールアドレス</Label>
-          <Input id="email" type="email" placeholder="メールアドレスを入力" />
-        </div>
+      </div>
+      <div className="space-y-4">
+        <h2 className="text-xl font-semibold">表示</h2>
+        <ModeRadioGroup />
+      </div>
+      <div className="space-y-4">
+        <h2 className="text-xl font-semibold">ログアウト</h2>
+        <LogoutButton />
       </div>
       <div className="space-y-4">
         <h2 className="text-xl font-semibold">アカウントの削除</h2>
