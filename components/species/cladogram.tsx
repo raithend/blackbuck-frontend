@@ -13,20 +13,14 @@ const treeData = {
     {
       name: "ヒョウ属",
       children: [
-        {
-          name: "ライオン"
-        },
-        {
-          name: "トラ"
-        }
+        { name: "ライオン" },
+        { name: "トラ" }
       ]
     },
     {
       name: "ネコ属",
       children: [
-        {
-          name: "イエネコ"
-        }
+        { name: "イエネコ" }
       ]
     }
   ]
@@ -79,12 +73,17 @@ export function Cladogram({ speciesId }: CladogramProps) {
             <text
               dy=".31em"
               x={20}
-              className="fill-foreground text-sm"
+              className="text-sm"
+              style={{
+                fill: "hsl(var(--foreground))",
+                stroke: "none"
+              }}
             >
               {nodeDatum.name}
             </text>
           </g>
         )}
+        pathClassFunc={() => "stroke-foreground stroke-2"}
       />
     </div>
   );
