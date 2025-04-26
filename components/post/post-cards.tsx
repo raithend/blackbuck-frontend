@@ -11,7 +11,7 @@ export function PostCards({ apiUrl }: PostCardsProps) {
   const { posts, loading, error } = usePosts(apiUrl);
 
   if (loading) {
-    return <div>読み込み中...</div>;
+    return <div></div>;
   }
 
   if (error) {

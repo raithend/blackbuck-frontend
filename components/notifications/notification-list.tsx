@@ -11,7 +11,7 @@ export function NotificationList({ type }: NotificationListProps) {
   const { notifications, loading, error } = useNotifications(type);
 
   if (loading) {
-    return <div>読み込み中...</div>;
+    return <div></div>;
   }
 
   if (error) {

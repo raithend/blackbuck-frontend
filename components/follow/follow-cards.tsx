@@ -27,7 +27,7 @@ export function FollowCards({ initialUsers = [], apiUrl }: FollowCardsProps) {
   };
 
   if (!users || users.length === 0) {
-    return <div>ユーザーが見つかりません</div>;
+    return <div></div>;
   }
 
   return (
