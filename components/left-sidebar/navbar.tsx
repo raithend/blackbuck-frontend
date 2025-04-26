@@ -34,15 +34,15 @@ export function Navbar() {
 					</Link>
 					<UseNavbarItem
 						label="フォロー"
-						url="/follow"
+						url="/follows"
 						icon={UserRoundCheck}
 					/>
-					<UseNavbarItem label="通知" url="/notification" icon={Bell} />
-					<UseNavbarItem label="いいね" url="/like" icon={Heart} />
+					<UseNavbarItem label="通知" url="/notifications" icon={Bell} />
+					<UseNavbarItem label="いいね" url="/likes" icon={Heart} />
 					<Link href="/species">
 						<NavbarItem label="生物図鑑" icon={Bird} active={isSpeciesPage} />
 					</Link>
-					<UseNavbarItem label="設定" url="/setting" icon={Settings} />
+					<UseNavbarItem label="設定" url="/settings" icon={Settings} />
 					<UseProfileItem />
 				</CardContent>
 			</Card>

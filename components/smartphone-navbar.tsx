@@ -10,10 +10,10 @@ import { usePathname } from "next/navigation";
 export function SmartphoneNavbar() {
 	const pathname = usePathname();
 	const isHomePage = pathname === "/";
-	const isFollowPage = pathname.includes("/follow");
-	const isNotificationPage = pathname.includes("/notification");
-	const isLikePage = pathname.includes("/like");
-	const isSettingPage = pathname.includes("/setting");
+	const isFollowPage = pathname.includes("/follows");
+	const isNotificationPage = pathname.includes("/notifications");
+	const isLikePage = pathname.includes("/likes");
+	const isSettingPage = pathname.includes("/settings");
 
 	return (
 		<div>
@@ -22,28 +22,28 @@ export function SmartphoneNavbar() {
 					<Link href="/">
 						<NavbarItem label="ホーム" icon={Home} active={isHomePage} />
 					</Link>
-					<Link href="./follow">
+					<Link href="/follows">
 						<NavbarItem 
 							label="フォロー" 
 							icon={UserRoundCheck} 
 							active={isFollowPage}
 						/>
 					</Link>
-					<Link href="./notification">
+					<Link href="/notifications">
 						<NavbarItem 
 							label="通知" 
 							icon={Bell} 
 							active={isNotificationPage}
 						/>
 					</Link>
-					<Link href="./like">
+					<Link href="/likes">
 						<NavbarItem 
 							label="いいね" 
 							icon={Heart} 
 							active={isLikePage}
 						/>
 					</Link>
-					<Link href="./setting">
+					<Link href="/settings">
 						<NavbarItem 
 							label="設定" 
 							icon={Settings} 
