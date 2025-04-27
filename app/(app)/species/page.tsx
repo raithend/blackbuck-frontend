@@ -1,8 +1,7 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import useSWR from "swr";
 
 interface Species {
   id: string;
@@ -10,41 +9,28 @@ interface Species {
   description: string;
 }
 
-export default function SpeciesPage() {
-  const [species, setSpecies] = useState<Species[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchSpecies = async () => {
-      try {
-        const response = await fetch("/api/species");
-        if (!response.ok) {
-          throw new Error("生物データの取得に失敗しました");
-        }
-        const data = await response.json();
-        setSpecies(data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "エラーが発生しました");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchSpecies();
-  }, []);
-
-  if (loading) {
-    return <div className="container mx-auto py-8"></div>;
+const fetcher = async (url: string) => {
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error("生物データの取得に失敗しました");
   }
+  return response.json();
+};
+
+export default function Page() {
+  const { data: species, error, isLoading } = useSWR<Species[]>("/api/species", fetcher);
 
   if (error) {
-    return <div className="container mx-auto py-8 text-red-500">{error}</div>;
+    return <div>エラーが発生しました</div>;
+  }
+
+  if (isLoading) {
+    return <div>読み込み中...</div>;
   }
 
   return (
     <div className="grid gap-2">
-      {species.map((animal) => (
+      {species?.map((animal) => (
         <Link key={animal.id} href={`/species/${animal.id}`}>
           <div className="rounded-lg border p-4 transition-colors hover:bg-accent">
             <h2 className="mb-2 text-2xl font-semibold">{animal.name}</h2>
