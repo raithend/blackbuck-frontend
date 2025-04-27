@@ -2,7 +2,7 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Bell, Bird, Heart, Home, Settings, UserRoundCheck, UserRound } from "lucide-react";
+import { Bird, Heart, Home, Settings, UserRoundCheck } from "lucide-react";
 import Link from "next/link";
 import { NavbarItem } from "./navbar-item";
 import { AuthNavbarItem } from "./auth-navbar-item";
@@ -30,7 +30,6 @@ export function Navbar() {
 				<CardContent className="p-0 flex flex-col">
 					<NavbarItem label="ホーム" icon={Home} url="/" />
 					<AuthNavbarItem label="フォロー" icon={UserRoundCheck} url={user?.id ? `/users/${user.id}/follows` : "/login"} />
-					<AuthNavbarItem label="通知" icon={Bell} url={user?.id ? `/notifications` : "/login"} />
 					<AuthNavbarItem label="いいね" icon={Heart} url={user?.id ? `/users/${user.id}/likes` : "/login"} />
 					<NavbarItem label="生物図鑑" icon={Bird} url="/species" />
 					<AuthNavbarItem label="設定" icon={Settings} url={user?.id ? "/settings" : "/login"} />
