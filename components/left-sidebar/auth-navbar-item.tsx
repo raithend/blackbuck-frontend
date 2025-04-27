@@ -2,29 +2,22 @@
 
 import { SignInDialog } from "@/components/auth/sign-in-dialog";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
-import type { LucideIcon } from "lucide-react";
-import Link from "next/link";
 import { NavbarItem } from "./navbar-item";
 import { useSupabaseAuth } from "@/contexts/supabase-auth-context";
 
-export function UseNavbarItem({
+export function AuthNavbarItem({
 	label,
 	url,
 	icon: Icon,
-}: { label: string; url: string; icon: LucideIcon }) {
-	const { session, loading } = useSupabaseAuth();
-
-	// ローディング中は何も表示しない
-	if (loading) {
-		return <NavbarItem label={label} icon={Icon} />;
-	}
+}: { label: string; url: string; icon: React.ComponentType }) {
+	const { session } = useSupabaseAuth();
 
 	// セッションがない場合（未ログイン）はサインインダイアログを表示
 	if (!session) {
 		return (
 			<Dialog>
 				<DialogTrigger>
-					<NavbarItem label={label} icon={Icon} />
+					<NavbarItem label={label} icon={Icon} url={url} isActive={false} />
 				</DialogTrigger>
 				<SignInDialog />
 			</Dialog>
@@ -33,8 +26,9 @@ export function UseNavbarItem({
 
 	// ログイン済みの場合は通常のリンクを表示
 	return (
-		<Link href={url}>
-			<NavbarItem label={label} icon={Icon} />
-		</Link>
+		<div>
+			<p>session.user.id: {session?.user.id}</p>
+			<NavbarItem label={label} icon={Icon} url={url} isActive={false} />
+		</div>
 	);
 }

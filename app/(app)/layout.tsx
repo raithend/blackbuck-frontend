@@ -1,4 +1,4 @@
-import { LeftSidebar } from "@/components/left-sidebar/left-sidebar";
+import { Navbar } from "@/components/left-sidebar/navbar";
 import { PostButton } from "@/components/post-button/post-button";
 import { RightSidebar } from "@/components/right-sidebar/right-sidebar";
 import { SmartphoneHeader } from "@/components/smartphone-header";
@@ -15,7 +15,7 @@ export default function Layout({
 				<div className="flex flex-col justify-center md:flex-row">
 					<div className="hidden md:block md:w-20 lg:w-64 xl:w-80 flex-none">
 						<div className="sticky top-0">
-							<LeftSidebar />
+							<Navbar />
 						</div>
 					</div>
 

@@ -1,22 +1,41 @@
 'use client'
 
-import type { LucideIcon } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 interface NavbarItemProps {
 	label: string;
-	icon: LucideIcon;
-	active?: boolean;
+	icon: React.ComponentType;
+	url: string;
+	isActive?: boolean;
 }
 
 export function NavbarItem({
 	label,
 	icon: Icon,
-	active = false,
+	url,
+	isActive = true,
 }: NavbarItemProps) {
+	const pathname = usePathname();
+	isActive = (pathname !== url) && isActive;
+
+	if (!isActive) {
+		return (
+			<div className="flex items-center p-2 md:p-6 hover:bg-accent hover:text-accent-foreground2">
+				<Icon />
+				<div className="text-xs text-muted-foreground">{isActive.toString()}</div>
+				<div className="hidden lg:block text-xl ml-4">{label}</div>
+			</div>
+		);
+	}
+
 	return (
-		<div className={`flex items-center p-2 md:p-6 hover:bg-accent hover:text-accent-foreground ${active ? 'bg-accent text-accent-foreground' : ''}`}>
-			<Icon className="h-8 w-8" />
-			<div className="hidden lg:block text-xl ml-4">{label}</div>
-		</div>
+		<Link href={url}>
+			<div className="flex items-center p-2 md:p-6 hover:bg-accent hover:text-accent-foreground2">
+				<Icon />
+				<div className="text-xs text-muted-foreground">{isActive.toString()}</div>
+				<div className="hidden lg:block text-xl ml-4">{label}</div>
+			</div>		
+		</Link>
 	);
 }

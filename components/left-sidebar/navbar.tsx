@@ -2,17 +2,16 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Bell, Bird, Heart, Home, Settings, UserRoundCheck } from "lucide-react";
+import { Bell, Bird, Heart, Home, Settings, UserRoundCheck, UserRound } from "lucide-react";
 import Link from "next/link";
 import { NavbarItem } from "./navbar-item";
-import { UseNavbarItem } from "./use-navbar-item";
-import { UseProfileItem } from "./use-profile-item";
-import { usePathname } from "next/navigation";
+import { AuthNavbarItem } from "./auth-navbar-item";
+import { useProfile } from "@/contexts/profile-context";
+import { ProfileNavbarItem } from "./profile-navbar-item";
 
 export function Navbar() {
-	const pathname = usePathname();
-	const isHomePage = pathname === "/";
-	const isSpeciesPage = pathname === "/species";
+	const { profile } = useProfile();
+
 	return (
 		<div className="hidden md:block">
 			<Card>
@@ -29,21 +28,13 @@ export function Navbar() {
 				</CardHeader>
 
 				<CardContent className="p-0 flex flex-col">
-					<Link href="/">
-						<NavbarItem label="ホーム" icon={Home} active={isHomePage} />
-					</Link>
-					<UseNavbarItem
-						label="フォロー"
-						url="/follows"
-						icon={UserRoundCheck}
-					/>
-					<UseNavbarItem label="通知" url="/notifications" icon={Bell} />
-					<UseNavbarItem label="いいね" url="/likes" icon={Heart} />
-					<Link href="/species">
-						<NavbarItem label="生物図鑑" icon={Bird} active={isSpeciesPage} />
-					</Link>
-					<UseNavbarItem label="設定" url="/settings" icon={Settings} />
-					<UseProfileItem />
+					<NavbarItem label="ホーム" icon={Home} url="/" />
+					<AuthNavbarItem label="フォロー" icon={UserRoundCheck} url={profile?.id ? "/[id]/follows" : "/login"} />
+					<AuthNavbarItem label="通知" icon={Bell} url= {profile?.id ? "/[id]/notifications" : "/login"} />
+					<AuthNavbarItem label="いいね" icon={Heart} url={profile?.id ? "/[id]/likes" : "/login"} />
+					<NavbarItem label="生物図鑑" icon={Bird} url="/species" />
+					<AuthNavbarItem label="設定" icon={Settings} url={profile?.id ? "/settings" : "/login"} />
+					<ProfileNavbarItem />
 				</CardContent>
 			</Card>
 		</div>
