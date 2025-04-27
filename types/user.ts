@@ -1,6 +1,6 @@
 export interface User {
   id: string;
   username: string;
-  avatarUrl: string;
+  avatar_url: string;
   bio: string;
 } 

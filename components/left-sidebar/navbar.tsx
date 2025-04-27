@@ -6,11 +6,11 @@ import { Bell, Bird, Heart, Home, Settings, UserRoundCheck, UserRound } from "lu
 import Link from "next/link";
 import { NavbarItem } from "./navbar-item";
 import { AuthNavbarItem } from "./auth-navbar-item";
-import { useProfile } from "@/contexts/profile-context";
+import { useUser } from "@/contexts/user-context";
 import { ProfileNavbarItem } from "./profile-navbar-item";
 
 export function Navbar() {
-	const { profile } = useProfile();
+	const { user } = useUser();
 
 	return (
 		<div className="hidden md:block">
@@ -29,11 +29,11 @@ export function Navbar() {
 
 				<CardContent className="p-0 flex flex-col">
 					<NavbarItem label="ホーム" icon={Home} url="/" />
-					<AuthNavbarItem label="フォロー" icon={UserRoundCheck} url={profile?.id ? "/[id]/follows" : "/login"} />
-					<AuthNavbarItem label="通知" icon={Bell} url= {profile?.id ? "/[id]/notifications" : "/login"} />
-					<AuthNavbarItem label="いいね" icon={Heart} url={profile?.id ? "/[id]/likes" : "/login"} />
+					<AuthNavbarItem label="フォロー" icon={UserRoundCheck} url={user?.id ? `/users/${user.id}/follows` : "/login"} />
+					<AuthNavbarItem label="通知" icon={Bell} url={user?.id ? `/notifications` : "/login"} />
+					<AuthNavbarItem label="いいね" icon={Heart} url={user?.id ? `/users/${user.id}/likes` : "/login"} />
 					<NavbarItem label="生物図鑑" icon={Bird} url="/species" />
-					<AuthNavbarItem label="設定" icon={Settings} url={profile?.id ? "/settings" : "/login"} />
+					<AuthNavbarItem label="設定" icon={Settings} url={user?.id ? "/settings" : "/login"} />
 					<ProfileNavbarItem />
 				</CardContent>
 			</Card>

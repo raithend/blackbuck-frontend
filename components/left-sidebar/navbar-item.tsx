@@ -22,8 +22,7 @@ export function NavbarItem({
 	if (!isActive) {
 		return (
 			<div className="flex items-center p-2 md:p-6 hover:bg-accent hover:text-accent-foreground2">
-				<Icon />
-				<div className="text-xs text-muted-foreground">{isActive.toString()}</div>
+				<Icon className="w-8 h-8"/>
 				<div className="hidden lg:block text-xl ml-4">{label}</div>
 			</div>
 		);
@@ -32,8 +31,7 @@ export function NavbarItem({
 	return (
 		<Link href={url}>
 			<div className="flex items-center p-2 md:p-6 hover:bg-accent hover:text-accent-foreground2">
-				<Icon />
-				<div className="text-xs text-muted-foreground">{isActive.toString()}</div>
+				<Icon className="w-8 h-8"/>
 				<div className="hidden lg:block text-xl ml-4">{label}</div>
 			</div>		
 		</Link>

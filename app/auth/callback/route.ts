@@ -1,28 +1,28 @@
-'use server'
+"use server";
 
-import { createServerClient } from '@supabase/ssr'
-import { cookies } from 'next/headers'
-import { NextRequest, NextResponse } from 'next/server'
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
+import { type NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
-  const requestUrl = new URL(request.url)
-  const code = requestUrl.searchParams.get('code')
+	const requestUrl = new URL(request.url);
+	const code = requestUrl.searchParams.get("code");
 
-  if (code) {
-    const cookieStore = await cookies()
-    
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: cookieStore
-      }
-    )
+	if (code) {
+		const cookieStore = await cookies();
 
-    // code をセッションに交換
-    await supabase.auth.exchangeCodeForSession(code)
-  }
+		const supabase = createServerClient(
+			process.env.NEXT_PUBLIC_SUPABASE_URL!,
+			process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+			{
+				cookies: cookieStore,
+			},
+		);
 
-  // ダッシュボードにリダイレクト
-  return NextResponse.redirect(new URL('/', request.url))
-} 
+		// code をセッションに交換
+		await supabase.auth.exchangeCodeForSession(code);
+	}
+
+	// ダッシュボードにリダイレクト
+	return NextResponse.redirect(new URL("/", request.url));
+}

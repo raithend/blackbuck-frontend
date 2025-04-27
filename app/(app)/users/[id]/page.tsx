@@ -1,27 +1,18 @@
 "use client";
 
-import { useParams } from "next/navigation";
 import { PostCards } from "@/components/post/post-cards";
 import { ProfileHeader } from "@/components/profile/profile-header";
-import { useProfile } from "@/contexts/profile-context";
-import useSWR from "swr";
 import { getProfile } from "@/lib/api";
+import useSWR from "swr";
 
 const fetcher = async () => {
 	const data = await getProfile();
 	return data;
 };
 
-export default function Page() {
-	const params = useParams();
-	const userId = params.id as string;
-	const { setProfile } = useProfile();
+export default function ProfilePage() {
 
-	const { data: profile, error } = useSWR("profile", fetcher, {
-		onSuccess: (data) => {
-			setProfile(data);
-		},
-	});
+	const { data: profile, error } = useSWR(`/api/v1/users/[id]`, fetcher);
 
 	if (error) {
 		return <div>エラーが発生しました</div>;
@@ -34,7 +25,7 @@ export default function Page() {
 	return (
 		<div>
 			<ProfileHeader profile={profile} />
-			<PostCards apiUrl={`/api/v1/posts/users/${userId}`} />
+			<PostCards posts={profile.posts} />
 		</div>
 	);
 }

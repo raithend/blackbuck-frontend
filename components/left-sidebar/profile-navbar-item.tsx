@@ -3,24 +3,24 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { UserRound } from "lucide-react";
 import { AuthNavbarItem } from "./auth-navbar-item";
-import { useProfile } from "@/contexts/profile-context";
+import { useUser } from "@/contexts/user-context";
 
 export function ProfileNavbarItem() {
-	const { profile } = useProfile();
+	const { user } = useUser();
 
 	const ProfileIcon = () => {
-		if (profile) {
+		if (user) {
 			return (
-				<Avatar>
-					<AvatarImage src={profile.avatar_url} />
-					<AvatarFallback><UserRound /></AvatarFallback>
+				<Avatar className="w-8 h-8">
+					<AvatarImage src={user.avatar_url ?? undefined}/>
+					<AvatarFallback><UserRound className="w-8 h-8"/></AvatarFallback>
 				</Avatar>
 			);
 		}
-		return <UserRound />;
+		return <UserRound className="w-8 h-8"/>;
 	};
 
 	return (
-		<AuthNavbarItem label="プロフィール" icon={ProfileIcon} url={profile?.id ? "/[id]" : "/login"} />
+		<AuthNavbarItem label="プロフィール" icon={ProfileIcon} url={user?.id ? `/users/${user.id}` : "/login"} />
 	);
 }

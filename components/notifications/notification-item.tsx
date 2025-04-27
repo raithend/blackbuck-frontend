@@ -26,13 +26,13 @@ export function NotificationItem({ notification }: NotificationItemProps) {
   return (
     <div className="flex items-start space-x-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg">
       <Avatar>
-        <AvatarImage src={notification.actor.avatarUrl} />
+        <AvatarImage src={notification.actor.avatar_url} />
         <AvatarFallback>{notification.actor.username[0]}</AvatarFallback>
       </Avatar>
       <div className="flex-1 space-y-1">
         <p className="text-sm">{getNotificationText()}</p>
         <p className="text-xs text-gray-500">
-          {formatDistanceToNow(new Date(notification.createdAt), {
+          {formatDistanceToNow(new Date(notification.created_at), {
             addSuffix: true,
             locale: ja,
           })}

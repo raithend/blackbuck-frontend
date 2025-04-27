@@ -1,25 +1,28 @@
 "use client";
 
-import { PostCard } from "@/components/main-content/post-card";
-import { usePosts } from "@/hooks/use-posts";
+import { PostCard } from './post-card';
 
-interface PostCardsProps {
-  apiUrl: string;
+interface Post {
+  id: string;
+  content: string;
+  image_urls: string[];
+  created_at: string;
+  updated_at: string;
+  liked: boolean;
+  user: {
+    id: string;
+    username: string;
+    avatar_url: string | undefined;
+  };
 }
 
-export function PostCards({ apiUrl }: PostCardsProps) {
-  const { posts, loading, error } = usePosts(apiUrl);
+interface PostCardsProps {
+  posts?: Post[];
+}
 
-  if (loading) {
-    return <div></div>;
-  }
-
-  if (error) {
-    return <div className="text-red-500">エラー: {error}</div>;
-  }
-
+export function PostCards({ posts = [] }: PostCardsProps) {
   if (posts.length === 0) {
-    return <div>投稿はありません</div>;
+    return <div>投稿がありません</div>;
   }
 
   return (

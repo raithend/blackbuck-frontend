@@ -4,7 +4,7 @@ export interface Notification {
   actor: {
     id: string;
     username: string;
-    avatarUrl: string;
+    avatar_url: string;
   };
-  createdAt: string;
+  created_at: string;
 } 

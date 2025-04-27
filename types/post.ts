@@ -3,13 +3,13 @@ export interface Post {
   content: string;
   location?: string;
   species?: string;
-  imageUrls: string[];
-  createdAt: string;
-  updatedAt: string;
+  image_urls: string[];
+  created_at: string;
+  updated_at: string;
   liked: boolean;
   user: {
     id: string;
     username: string;
-    avatarUrl?: string;
+    avatar_url?: string;
   };
 } 
