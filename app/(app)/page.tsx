@@ -1,6 +1,5 @@
 "use client";
 
-import { PostCards } from "@/components/post/post-cards";
 import useSWR from "swr";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
@@ -14,7 +13,6 @@ export default function Page() {
 
 	return (
 		<main>
-			<PostCards posts={posts} />
 		</main>
 	);
 }
