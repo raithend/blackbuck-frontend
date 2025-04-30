@@ -1,6 +1,6 @@
 'use client'
 
-import { SignInDialog } from "@/components/auth/sign-in-dialog";
+import { AuthDialog } from "@/components/auth/auth-dialog";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { NavbarItem } from "./navbar-item";
 import { useUser } from "@/contexts/user-context";
@@ -19,7 +19,7 @@ export function AuthNavbarItem({
 				<DialogTrigger>
 					<NavbarItem label={label} icon={Icon} url={url} isActive={false} />
 				</DialogTrigger>
-				<SignInDialog />
+				<AuthDialog />
 			</Dialog>
 		);
 	}
