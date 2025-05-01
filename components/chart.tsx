@@ -12,9 +12,9 @@ export function TreeOfLife() {
     if (!svgRef.current) return;
 
     // SVGの設定
-    const width = 932;
-    const height = 932;
-    const radius = Math.min(width, height) / 2 - 40;
+    const width = 1000;  // 内部の描画範囲を広げる
+    const height = 1000; // 内部の描画範囲を広げる
+    const radius = Math.min(width, height) / 2 - 100; // 余白を増やす
 
     // 既存のSVG要素をクリア
     d3.select(svgRef.current).selectAll("*").remove();
@@ -23,6 +23,7 @@ export function TreeOfLife() {
     const svg = d3.select(svgRef.current)
       .attr("width", width)
       .attr("height", height)
+      .attr("viewBox", `0 0 ${width} ${height}`) // viewBoxを設定して内部の描画範囲を制御
       .append("g")
       .attr("transform", `translate(${width/2},${height/2})`)
       .style("font", "10px sans-serif");
@@ -93,7 +94,7 @@ export function TreeOfLife() {
 
   return (
     <div className="fixed inset-0 bg-gray-900 flex items-center justify-center">
-      <svg ref={svgRef} className="w-[932px] h-[932px]"></svg>
+      <svg ref={svgRef} className="w-[700px] h-[700px]"></svg>
     </div>
   );
 }
