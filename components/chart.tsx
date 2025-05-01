@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 import { TreeNode } from '@/types/tree';
-import { treeData } from '@/data/tree-data';
+import treeData from '@/data/tree-data.json';
 
 export function TreeOfLife() {
   const svgRef = useRef<SVGSVGElement>(null);
