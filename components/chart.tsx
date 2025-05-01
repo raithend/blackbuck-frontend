@@ -66,8 +66,9 @@ export function TreeOfLife() {
       .attr("fill", "#999")
       .attr("r", 2.5);
 
-    // ノードのラベルを描画
-    node.append("text")
+    // 葉ノード（外側のノード）のみラベルを描画
+    node.filter((d: any) => !d.children)
+      .append("text")
       .attr("dy", "0.31em")
       .attr("x", (d: any) => d.x < Math.PI ? 6 : -6)
       .attr("text-anchor", (d: any) => d.x < Math.PI ? "start" : "end")
