@@ -45,9 +45,19 @@ export function TreeOfLife() {
       .attr("stroke", "#555")
       .attr("stroke-opacity", 0.4)
       .attr("stroke-width", 1.5)
-      .attr("d", d3.linkRadial()
-        .angle((d: any) => d.x)
-        .radius((d: any) => d.y) as any);
+      .attr("d", (d: any) => {
+        const source = d.source;
+        const target = d.target;
+        const sourceAngle = source.x;
+        const targetAngle = target.x;
+        const sourceRadius = source.y;
+        const targetRadius = target.y;
+        
+        // 親ノードから子ノードへの直線的なパスを生成
+        return `M${sourceRadius * Math.cos(sourceAngle - Math.PI/2)},${sourceRadius * Math.sin(sourceAngle - Math.PI/2)}
+                L${sourceRadius * Math.cos(targetAngle - Math.PI/2)},${sourceRadius * Math.sin(targetAngle - Math.PI/2)}
+                L${targetRadius * Math.cos(targetAngle - Math.PI/2)},${targetRadius * Math.sin(targetAngle - Math.PI/2)}`;
+      });
 
     // ノードの描画
     const node = svg.append("g")
