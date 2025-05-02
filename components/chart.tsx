@@ -3,13 +3,17 @@
 import { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 import { TreeNode } from '@/types/tree';
-import treeData from '@/data/tree-data.json';
+import { load } from 'js-yaml';
+import treeDataYaml from '@/data/tree-data.yml';
 
 export function TreeOfLife() {
   const svgRef = useRef<SVGSVGElement>(null);
 
   useEffect(() => {
     if (!svgRef.current) return;
+
+    // YAMLデータをパース
+    const treeData = load(treeDataYaml) as TreeNode;
 
     // SVGの設定
     const radius = 500;

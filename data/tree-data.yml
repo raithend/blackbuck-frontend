@@ -1,0 +1,136 @@
+name: 真核生物
+children:
+  - name: 動物
+    children:
+      - name: 脊椎動物亜門
+        children:
+          - name: 四肢動物
+            children:
+              - name: 有羊膜類
+                children:
+                  - name: 哺乳綱
+                    children:
+                      - name: 獣形類
+                        children:
+                          - name: 有胎盤類
+                            children:
+                              - name: アフリカ獣類
+                                children:
+                                  - name: アフリカ食虫類
+                                    children:
+                                      - name: アフリカトガリネズミ目
+                                      - name: ハネジネズミ目
+                                      - name: ツチブタ目
+                                  - name: 近蹄類
+                                    children:
+                                      - name: イワダヌキ目
+                                        children:
+                                          - name: テティス獣類
+                                            children:
+                                              - name: 長鼻目
+                                              - name: カイギュウ目
+                              - name: 異節類
+                                children:
+                                  - name: 被甲目
+                                  - name: 有毛目
+                              - name: 北方真獣類
+                                children:
+                                  - name: 真主齧上目
+                                    children:
+                                    - name: 霊長目
+                                    - name: グリレス大目
+                                      children:
+                                        - name: 齧歯目
+                                        - name: 兎形目
+                                  - name: ローラシア獣上目
+                                    children:
+                                      - name: 新無盲腸目
+                                      - name: 陰嚢類
+                                        children:
+                                          - name: 翼種目
+                                          - name: 猛獣有蹄類
+                                            children:
+                                              - name: 有蹄類
+                                                children:
+                                                  - name: 偶蹄目
+                                                  - name: 奇蹄目
+                                              - name: 広獣類
+                                                children:
+                                                  - name: 鱗甲目
+                                                  - name: 食肉目
+                          - name: 有袋類
+                            children:
+                              - name: アメリカ有袋大目
+                                children:
+                                  - name: オポッサム形目
+                                  - name: 少丘歯目
+                              - name: オーストラリア有袋大目
+                                children:
+                                  - name: ミクロビオテリウム目
+                                  - name: フクロネコ形目
+                                  - name: バンディクート形目
+                                  - name: フクロモグラ目
+                                  - name: 双前歯目
+                      - name: 原獣亜綱
+                        children:
+                          - name: カモノハシ目
+                  - name: 双弓類
+                    children:
+                      - name: 主竜形類
+                        children:
+                          - name: 主竜類
+                            children:
+                              - name: 鳥綱
+                                children:
+                                  - name: 古顎類
+                                    children:
+                                      - name: ダチョウ目
+                                      - name: レア目
+                                      - name: シギダチョウ目
+                                      - name: キーウィ目
+                                      - name: ヒクイドリ目
+                                  - name: 新顎類
+                                    children:
+                                      - name: キジカモ類
+                                        children:
+                                          - name: キジ目
+                                          - name: カモ目
+                                      - name: 新鳥類
+                                        children:
+                                          - name: 水禽類
+                                            children:
+                                              - name: アビ目
+                                                children:
+                                                  - name: コウノトリ目
+                                                  - name: 
+                                                    children:
+                                                      - name: ペンギン目
+                                                      - name: ミズナギドリ目
+                                                  - name: 
+                                                    children:
+                                                      - name: ペリカン目
+                                                      - name: カツオドリ目
+                                          - name: ヨタカ・アマツバメ類
+                                          - name: ゲラ・ブッポウソウ類
+                                          - name: 真ハヤブサ形類
+                                            children:
+                                              - name: スズメ目
+                                          
+                                          - name: フクロウ目
+                                          - name: タカ目
+                              - name: ワニ目
+                          - name: カメ目
+                      - name: 鱗竜形類
+                        children:
+                          - name: 有鱗目
+                          - name: ムカシトカゲ目
+              - name: 両生類
+                children:
+                  - name: 無尾目
+                  - name: 有尾目
+                  - name: 無足目
+          - name: 硬骨魚綱
+            children:
+                  - name: 条鰭類
+                  - name: 軟骨魚類
+                  - name: 無顎類
