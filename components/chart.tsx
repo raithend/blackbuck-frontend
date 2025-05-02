@@ -29,14 +29,11 @@ export function TreeOfLife() {
       .style("font", "20px sans-serif");
 
     // 色の設定
-    const color = d3.scaleOrdinal()
-      .domain(["Bacteria", "Eukaryota", "Archaea"])
-      .range(d3.schemeCategory10);
+    const color = d3.scaleOrdinal(d3.schemeCategory10);
 
     // ノードの色を設定する関数
     function setColor(d: any) {
-      const name = d.data.name;
-      d.color = color.domain().indexOf(name) >= 0 ? color(name) : d.parent ? d.parent.color : null;
+      d.color = d.parent ? d.parent.color : color(d.depth.toString());
       if (d.children) d.children.forEach(setColor);
     }
 
@@ -136,25 +133,6 @@ export function TreeOfLife() {
       .attr("stroke", "white")
       .attr("stroke-width", 3)
       .style("font-size", "12px");
-
-    // 凡例の描画
-    const legend = svg.append("g")
-      .selectAll("g")
-      .data(color.domain())
-      .join("g")
-      .attr("transform", (d, i) => `translate(${-radius + 20},${-radius + 20 + i * 20})`);
-
-    legend.append("rect")
-      .attr("width", 18)
-      .attr("height", 18)
-      .attr("fill", (d: string) => color(d));
-
-    legend.append("text")
-      .attr("x", 24)
-      .attr("y", 9)
-      .attr("dy", "0.35em")
-      .text(d => d)
-      .style("fill", "white");
 
   }, []);
 
