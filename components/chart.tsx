@@ -21,11 +21,11 @@ export function TreeOfLife() {
 
     // SVGの作成
     const svg = d3.select(svgRef.current)
-      .attr("width", radius * 2)
-      .attr("height", radius * 2)
-      .attr("viewBox", `0 0 ${radius * 2} ${radius * 2}`)
+      .attr("width", radius * 2.5)
+      .attr("height", radius * 2.5)
+      .attr("viewBox", `0 0 ${radius * 2.5} ${radius * 2.5}`)
       .append("g")
-      .attr("transform", `translate(${radius},${radius})`)
+      .attr("transform", `translate(${radius * 1.25},${radius * 1.25})`)
       .style("font", "20px sans-serif");
 
     // 色の設定
@@ -129,13 +129,15 @@ export function TreeOfLife() {
       })
       .text((d: any) => d.data.name)
       .style("fill", "white")
-      .style("font-size", "20px");
+      .style("font-size", "24px");
 
   }, []);
 
   return (
     <div className="fixed inset-0 bg-gray-900 flex items-center justify-center">
-      <svg ref={svgRef} className="w-[700px] h-[700px]"></svg>
+      <div className="w-[700px] h-[700px] flex items-center justify-center">
+        <svg ref={svgRef} className="w-full h-full"></svg>
+      </div>
     </div>
   );
 }
