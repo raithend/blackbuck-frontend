@@ -1,150 +1,120 @@
 {
-  "name": "Life",
+  "name": "生命",
   "children": [
     {
-      "name": "Bacteria",
-      "children": [
-        {
-          "name": "Proteobacteria",
-          "children": [
-            { "name": "Alpha Proteobacteria" },
-            { "name": "Beta Proteobacteria" },
-            { "name": "Gamma Proteobacteria" }
-          ]
-        },
-        {
-          "name": "Cyanobacteria",
-          "children": [
-            { "name": "Nostocales" },
-            { "name": "Oscillatoriales" }
-          ]
-        },
-        {
-          "name": "Firmicutes",
-          "children": [
-            { "name": "Bacilli" },
-            { "name": "Clostridia" }
-          ]
-        }
-      ]
+      "name": "真正細菌"
     },
     {
-      "name": "Archaea",
-      "children": [
-        {
-          "name": "Euryarchaeota",
-          "children": [
-            { "name": "Methanogens" },
-            { "name": "Halobacteria" }
-          ]
-        },
-        {
-          "name": "Crenarchaeota",
-          "children": [
-            { "name": "Thermoprotei" },
-            { "name": "Nitrososphaeria" }
-          ]
-        },
-        {
-          "name": "Thaumarchaeota",
-          "children": [
-            { "name": "Nitrososphaeria" },
-            { "name": "Nitrosopumilales" }
-          ]
-        }
-      ]
+      "name": "古細菌"
     },
     {
-      "name": "Eukaryota",
+      "name": "真核生物",
       "children": [
         {
-          "name": "Animals",
+          "name": "動物",
           "children": [
             {
-              "name": "Vertebrates",
+              "name": "脊椎動物",
               "children": [
-                { "name": "Mammals" },
-                { "name": "Birds" },
-                { "name": "Reptiles" },
-                { "name": "Amphibians" },
-                { "name": "Fish" }
+                {
+                  "name": "哺乳綱",
+                  "children": [
+                    { "name": "真主齧上目", 
+                      "children": [
+                        { "name": "霊長目" },
+                        { "name": "グリレス大目",
+                        "children": [
+                            { "name": "齧歯目" },
+                            { "name": "兎形目" }
+                        ]}
+                      ]
+                    },
+                    { "name": "ネコ目" },
+                    
+                    
+                    { "name": "偶蹄目" },
+                    { "name": "奇蹄目" },
+                    
+                    { "name": "有袋目" },
+
+                    { "name": "翼手目" }
+                  ]
+                },
+                {
+                  "name": "鳥類",
+                  "children": [
+                    { "name": "スズメ目" },
+                    { "name": "カモ目" },
+                    { "name": "タカ目" },
+                    { "name": "キジ目" },
+                    { "name": "フクロウ目" }
+                  ]
+                },
+                {
+                  "name": "爬虫類",
+                  "children": [
+                    { "name": "有鱗目" },
+                    { "name": "カメ目" },
+                    { "name": "ワニ目" }
+                  ]
+                },
+                {
+                  "name": "両生類",
+                  "children": [
+                    { "name": "無尾目" },
+                    { "name": "有尾目" },
+                    { "name": "無足目" }
+                  ]
+                },
+                {
+                  "name": "魚類",
+                  "children": [
+                    { "name": "条鰭類" },
+                    { "name": "軟骨魚類" },
+                    { "name": "無顎類" }
+                  ]
+                }
               ]
             },
             {
-              "name": "Invertebrates",
+              "name": "無脊椎動物",
               "children": [
-                { "name": "Arthropods" },
-                { "name": "Mollusks" },
-                { "name": "Annelids" },
-                { "name": "Cnidarians" }
+                { "name": "節足動物" },
+                { "name": "軟体動物" },
+                { "name": "環形動物" },
+                { "name": "刺胞動物" }
               ]
             }
           ]
         },
         {
-          "name": "Plants",
+          "name": "植物",
           "children": [
             {
-              "name": "Angiosperms",
+              "name": "被子植物",
               "children": [
-                { "name": "Monocots" },
-                { "name": "Eudicots" }
+                { "name": "単子葉類" },
+                { "name": "真正双子葉類" }
               ]
             },
             {
-              "name": "Gymnosperms",
+              "name": "裸子植物",
               "children": [
-                { "name": "Conifers" },
-                { "name": "Cycads" },
-                { "name": "Ginkgo" }
+                { "name": "針葉樹" },
+                { "name": "ソテツ" },
+                { "name": "イチョウ" }
               ]
             },
             {
-              "name": "Ferns",
-              "children": [
-                { "name": "Leptosporangiate" },
-                { "name": "Marattiales" }
-              ]
+              "name": "シダ植物"
             }
           ]
         },
         {
-          "name": "Fungi",
-          "children": [
-            {
-              "name": "Ascomycota",
-              "children": [
-                { "name": "Saccharomycetes" },
-                { "name": "Eurotiomycetes" }
-              ]
-            },
-            {
-              "name": "Basidiomycota",
-              "children": [
-                { "name": "Agaricomycetes" },
-                { "name": "Ustilaginomycetes" }
-              ]
-            }
-          ]
+          "name": "菌類"
         },
         {
-          "name": "Protists",
-          "children": [
-            {
-              "name": "Alveolates",
-              "children": [
-                { "name": "Ciliates" },
-                { "name": "Apicomplexa" }
-              ]
-            },
-            {
-              "name": "Stramenopiles",
-              "children": [
-                { "name": "Diatoms" },
-                { "name": "Brown Algae" }
-              ]
-            }
-          ]
+          "name": "原生生物"
         }
       ]
     }
