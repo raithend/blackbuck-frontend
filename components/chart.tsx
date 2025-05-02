@@ -91,7 +91,7 @@ export function TreeOfLife() {
       .selectAll("a")
       .data(root.descendants())
       .join("a")
-      .attr("xlink:href", (d: any) => `https://en.wikipedia.org/wiki/${d.data.name}`)
+      .attr("xlink:href", (d: any) => `https://ja.wikipedia.org/wiki/${d.data.name}`)
       .attr("target", "_blank")
       .attr("transform", (d: any) => `
         rotate(${d.x - 90})
@@ -146,7 +146,7 @@ export function TreeOfLife() {
 
   return (
     <div className="fixed inset-0 bg-gray-900 flex items-center justify-center">
-      <div className="w-[700px] h-[700px] flex items-center justify-center">
+      <div className="w-full h-full flex items-center justify-center">
         <svg ref={svgRef} className="w-full h-full"></svg>
       </div>
     </div>
