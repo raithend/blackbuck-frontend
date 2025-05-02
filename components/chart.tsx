@@ -14,7 +14,7 @@ export function TreeOfLife() {
     // SVGの設定
     const radius = 500;
     const innerRadius = 100;
-    const labelOffset = 15;
+    const labelOffset = 20;
 
     // 既存のSVG要素をクリア
     d3.select(svgRef.current).selectAll("*").remove();
@@ -128,11 +128,8 @@ export function TreeOfLife() {
         return `rotate(${rotation}) translate(${translateX},0)`;
       })
       .text((d: any) => d.data.name)
-      .clone(true)
-      .lower()
-      .attr("stroke", "white")
-      .attr("stroke-width", 3)
-      .style("font-size", "12px");
+      .style("fill", "white")
+      .style("font-size", "20px");
 
   }, []);
 
