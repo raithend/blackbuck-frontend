@@ -12,29 +12,36 @@ export function TreeOfLife() {
     if (!svgRef.current) return;
 
     // SVGの設定
-    const width = 1000;  // 内部の描画範囲を広げる
-    const height = 1000; // 内部の描画範囲を広げる
-    const radius = Math.min(width, height) / 2 - 100; // 余白を増やす
+    const radius = 500;
 
     // 既存のSVG要素をクリア
     d3.select(svgRef.current).selectAll("*").remove();
 
     // SVGの作成
     const svg = d3.select(svgRef.current)
-      .attr("width", width)
-      .attr("height", height)
-      .attr("viewBox", `0 0 ${width} ${height}`) // viewBoxを設定して内部の描画範囲を制御
+      .attr("width", radius * 2)
+      .attr("height", radius * 2)
+      .attr("viewBox", `0 0 ${radius * 2} ${radius * 2}`)
       .append("g")
-      .attr("transform", `translate(${width/2},${height/2})`)
-      .style("font", "10px sans-serif");
+      .attr("transform", `translate(${radius},${radius})`)
+      .style("font", "20px sans-serif");
 
     // ツリーレイアウトの設定
     const treeLayout = d3.tree<TreeNode>()
       .size([2 * Math.PI, radius])
-      .separation((a, b) => (a.parent === b.parent ? 1 : 2) / a.depth);
+      .separation((a, b) => {
+        // ノード間の間隔を調整
+        if (a.parent === b.parent) {
+          // 同じ親を持つノード間の間隔を広げる
+          return 1.5;
+        }
+        // 異なる親を持つノード間の間隔
+        return 2.5;
+      });
 
     // データの階層構造を作成
     const root = d3.hierarchy(treeData);
+    d3.cluster().size([2 * Math.PI, radius])(root);
     const treeNodes = treeLayout(root);
 
     // リンクの描画
@@ -54,7 +61,6 @@ export function TreeOfLife() {
         const sourceRadius = source.y;
         const targetRadius = target.y;
         
-        // 親ノードから子ノードへの直線的なパスを生成
         return `M${sourceRadius * Math.cos(sourceAngle - Math.PI/2)},${sourceRadius * Math.sin(sourceAngle - Math.PI/2)}
                 L${sourceRadius * Math.cos(targetAngle - Math.PI/2)},${sourceRadius * Math.sin(targetAngle - Math.PI/2)}
                 L${targetRadius * Math.cos(targetAngle - Math.PI/2)},${targetRadius * Math.sin(targetAngle - Math.PI/2)}`;
@@ -81,9 +87,18 @@ export function TreeOfLife() {
     node.filter((d: any) => !d.children)
       .append("text")
       .attr("dy", "0.31em")
-      .attr("x", (d: any) => d.x < Math.PI ? 6 : -6)
+      .attr("x", (d: any) => {
+        // ラベルの位置を調整
+        const angle = d.x;
+        const isRightSide = angle < Math.PI;
+        return isRightSide ? 8 : -8; // 左右の余白を増やす
+      })
       .attr("text-anchor", (d: any) => d.x < Math.PI ? "start" : "end")
-      .attr("transform", (d: any) => d.x >= Math.PI ? "rotate(180)" : null)
+      .attr("transform", (d: any) => {
+        const angle = d.x;
+        const isRightSide = angle < Math.PI;
+        return isRightSide ? null : "rotate(180)";
+      })
       .text((d: any) => d.data.name)
       .clone(true)
       .lower()
