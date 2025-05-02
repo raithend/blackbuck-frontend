@@ -13,6 +13,8 @@ export function TreeOfLife() {
 
     // SVGの設定
     const radius = 500;
+    const innerRadius = 100;
+    const labelOffset = 15;
 
     // 既存のSVG要素をクリア
     d3.select(svgRef.current).selectAll("*").remove();
@@ -26,61 +28,86 @@ export function TreeOfLife() {
       .attr("transform", `translate(${radius},${radius})`)
       .style("font", "20px sans-serif");
 
-    // ツリーレイアウトの設定
-    const treeLayout = d3.tree<TreeNode>()
-      .size([2 * Math.PI, radius])
-      .separation((a, b) => {
-        // ノード間の間隔を調整
-        if (a.parent === b.parent) {
-          // 同じ親を持つノード間の間隔を広げる
-          return 1.5;
-        }
-        // 異なる親を持つノード間の間隔
-        return 2.5;
-      });
+    // 色の設定
+    const color = d3.scaleOrdinal()
+      .domain(["Bacteria", "Eukaryota", "Archaea"])
+      .range(d3.schemeCategory10);
+
+    // ノードの色を設定する関数
+    function setColor(d: any) {
+      const name = d.data.name;
+      d.color = color.domain().indexOf(name) >= 0 ? color(name) : d.parent ? d.parent.color : null;
+      if (d.children) d.children.forEach(setColor);
+    }
 
     // データの階層構造を作成
     const root = d3.hierarchy(treeData);
-    d3.cluster().size([2 * Math.PI, radius])(root);
-    const treeNodes = treeLayout(root);
+    
+    // クラスターレイアウトの設定
+    const cluster = d3.cluster()
+      .size([360, radius - innerRadius])
+      .separation((a, b) => {
+        // 兄弟ノード間の距離を計算
+        if (a.parent === b.parent) {
+          // 葉ノードの場合、より大きな間隔を設定
+          if (!a.children && !b.children) {
+            return 2.0;
+          }
+          // 内部ノードの場合、標準的な間隔を設定
+          return 1.5;
+        }
+        // 親子関係の場合は標準的な間隔を設定
+        return 1.0;
+      });
+
+    // レイアウトを適用
+    cluster(root);
+    
+    // 色を設定
+    setColor(root);
 
     // リンクの描画
     svg.append("g")
-      .selectAll("path")
-      .data(treeNodes.links())
-      .join("path")
       .attr("fill", "none")
       .attr("stroke", "#555")
       .attr("stroke-opacity", 0.4)
       .attr("stroke-width", 1.5)
+      .selectAll("path")
+      .data(root.links())
+      .join("path")
       .attr("d", (d: any) => {
-        const source = d.source;
-        const target = d.target;
-        const sourceAngle = source.x;
-        const targetAngle = target.x;
-        const sourceRadius = source.y;
-        const targetRadius = target.y;
+        const startAngle = (d.source.x - 90) / 180 * Math.PI;
+        const endAngle = (d.target.x - 90) / 180 * Math.PI;
+        const startRadius = d.source.y;
+        const endRadius = d.target.y;
         
-        return `M${sourceRadius * Math.cos(sourceAngle - Math.PI/2)},${sourceRadius * Math.sin(sourceAngle - Math.PI/2)}
-                L${sourceRadius * Math.cos(targetAngle - Math.PI/2)},${sourceRadius * Math.sin(targetAngle - Math.PI/2)}
-                L${targetRadius * Math.cos(targetAngle - Math.PI/2)},${targetRadius * Math.sin(targetAngle - Math.PI/2)}`;
-      });
+        const c0 = Math.cos(startAngle);
+        const s0 = Math.sin(startAngle);
+        const c1 = Math.cos(endAngle);
+        const s1 = Math.sin(endAngle);
+        
+        return `M${startRadius * c0},${startRadius * s0}
+                ${endAngle === startAngle ? "" : 
+                  `A${startRadius},${startRadius} 0 0 ${endAngle > startAngle ? 1 : 0} ${startRadius * c1},${startRadius * s1}`}
+                L${endRadius * c1},${endRadius * s1}`;
+      })
+      .attr("stroke", (d: any) => d.target.color);
 
     // ノードの描画
     const node = svg.append("g")
       .selectAll("a")
-      .data(treeNodes.descendants())
+      .data(root.descendants())
       .join("a")
       .attr("xlink:href", (d: any) => `https://en.wikipedia.org/wiki/${d.data.name}`)
       .attr("target", "_blank")
       .attr("transform", (d: any) => `
-        rotate(${d.x * 180 / Math.PI - 90})
+        rotate(${d.x - 90})
         translate(${d.y},0)
       `);
 
     // ノードの円を描画
     node.append("circle")
-      .attr("fill", "#999")
+      .attr("fill", (d: any) => d.color)
       .attr("r", 2.5);
 
     // 葉ノード（外側のノード）のみラベルを描画
@@ -88,22 +115,46 @@ export function TreeOfLife() {
       .append("text")
       .attr("dy", "0.31em")
       .attr("x", (d: any) => {
-        // ラベルの位置を調整
         const angle = d.x;
-        const isRightSide = angle < Math.PI;
-        return isRightSide ? 8 : -8; // 左右の余白を増やす
+        const isRightSide = angle < 180;
+        return isRightSide ? labelOffset : -labelOffset;
       })
-      .attr("text-anchor", (d: any) => d.x < Math.PI ? "start" : "end")
+      .attr("text-anchor", (d: any) => {
+        const angle = d.x;
+        return angle < 180 ? "start" : "end";
+      })
       .attr("transform", (d: any) => {
         const angle = d.x;
-        const isRightSide = angle < Math.PI;
-        return isRightSide ? null : "rotate(180)";
+        const isRightSide = angle < 180;
+        const rotation = isRightSide ? 0 : 180;
+        const translateX = isRightSide ? labelOffset : -labelOffset;
+        return `rotate(${rotation}) translate(${translateX},0)`;
       })
       .text((d: any) => d.data.name)
       .clone(true)
       .lower()
       .attr("stroke", "white")
-      .attr("stroke-width", 3);
+      .attr("stroke-width", 3)
+      .style("font-size", "12px");
+
+    // 凡例の描画
+    const legend = svg.append("g")
+      .selectAll("g")
+      .data(color.domain())
+      .join("g")
+      .attr("transform", (d, i) => `translate(${-radius + 20},${-radius + 20 + i * 20})`);
+
+    legend.append("rect")
+      .attr("width", 18)
+      .attr("height", 18)
+      .attr("fill", (d: string) => color(d));
+
+    legend.append("text")
+      .attr("x", 24)
+      .attr("y", 9)
+      .attr("dy", "0.35em")
+      .text(d => d)
+      .style("fill", "white");
 
   }, []);
 
