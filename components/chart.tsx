@@ -59,7 +59,7 @@ export function TreeOfLife() {
     setColor(root);
 
     // リンクの描画
-    svg.append("g")
+    const links = svg.append("g")
       .attr("fill", "none")
       .attr("stroke", "#555")
       .attr("stroke-width", 2.5)
@@ -82,7 +82,9 @@ export function TreeOfLife() {
                   `A${startRadius},${startRadius} 0 0 ${endAngle > startAngle ? 1 : 0} ${startRadius * c1},${startRadius * s1}`}
                 L${endRadius * c1},${endRadius * s1}`;
       })
-      .attr("stroke", (d: any) => d.target.color);
+      .attr("stroke", (d: any) => d.target.color)
+      .attr("stroke-opacity", 0.4)
+      .attr("id", (d: any, i: number) => `link-${i}`);
 
     // ノードの描画
     const node = svg.append("g")
@@ -123,7 +125,22 @@ export function TreeOfLife() {
       })
       .text((d: any) => d.data.name)
       .style("fill", "white")
-      .style("font-size", "24px");
+      .style("font-size", "24px")
+      .on("mouseover", function(event: any, d: any) {
+        // 現在のノードからルートまでのパスを強調
+        let current = d;
+        while (current.parent) {
+          const link = links.filter((l: any) => l.target === current);
+          link.attr("stroke-opacity", 1)
+              .attr("stroke-width", 4);
+          current = current.parent;
+        }
+      })
+      .on("mouseout", function() {
+        // すべてのパスを元の状態に戻す
+        links.attr("stroke-opacity", 0.4)
+             .attr("stroke-width", 2.5);
+      });
 
   }, []);
 
