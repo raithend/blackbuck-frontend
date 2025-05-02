@@ -48,16 +48,7 @@ export function TreeOfLife() {
     const cluster = d3.cluster()
       .size([360, radius - innerRadius])
       .separation((a, b) => {
-        // 兄弟ノード間の距離を計算
-        if (a.parent === b.parent) {
-          // 葉ノードの場合、より大きな間隔を設定
-          if (!a.children && !b.children) {
-            return 2.0;
-          }
-          // 内部ノードの場合、標準的な間隔を設定
-          return 1.5;
-        }
-        // 親子関係の場合は標準的な間隔を設定
+        // すべてのノード間の距離を一定に設定
         return 1.0;
       });
 
