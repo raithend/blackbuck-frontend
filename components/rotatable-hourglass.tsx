@@ -7,7 +7,12 @@ export function RotatableHourglass() {
   const [rotation, setRotation] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [startAngle, setStartAngle] = useState(0);
+  const [isMounted, setIsMounted] = useState(false);
   const hourglassRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     setIsDragging(true);
@@ -53,7 +58,7 @@ export function RotatableHourglass() {
       onMouseDown={handleMouseDown}
       style={{ transform: `rotate(${rotation}deg)` }}
     >
-      <Hourglass className="h-16 w-16 transition-transform" />
+      <Hourglass className={`h-16 w-16 ${isMounted ? 'transition-transform' : ''}`} />
     </div>
   );
 } 

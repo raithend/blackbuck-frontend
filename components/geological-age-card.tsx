@@ -7,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { RotatableHourglass } from "./rotatableHourglass";
+import { RotatableHourglass } from "./rotatable-hourglass";
 
 export function GeologicalTimeCard() {
   return (

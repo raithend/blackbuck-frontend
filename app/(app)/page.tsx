@@ -1,13 +1,13 @@
 "use client";
 
 import { TreeOfLife } from "@/components/chart";
-import { GeologicalTimeCard } from '@/components/geological-time-card';
+import { GeologicalAgeCard } from '@/components/geological-age-card';
 
 export default function Page() {
 	return (
 		<div>
 			<div className="fixed top-20 right-4 z-50">
-				<GeologicalTimeCard />
+				<GeologicalAgeCard />
 			</div>
 			<TreeOfLife />
 		</div>
