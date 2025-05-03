@@ -7,14 +7,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Hourglass } from "lucide-react";
+import { RotatableHourglass } from "./rotatableHourglass";
 
 export function GeologicalTimeCard() {
   return (
     <Card className="w-[300px] bg-background/80 backdrop-blur-sm">
         <CardHeader>
             <div className="flex items-center gap-2">
-                <Hourglass className="h-16 w-16" />
+                <RotatableHourglass />
                 <CardTitle>地質時代</CardTitle>
             </div>
             <CardDescription>現在の地質年代とその特徴</CardDescription>
