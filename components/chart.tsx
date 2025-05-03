@@ -145,10 +145,8 @@ export function TreeOfLife() {
   }, []);
 
   return (
-    <div className="fixed inset-0 bg-gray-900 flex items-center justify-center">
-      <div className="w-full h-full flex items-center justify-center">
-        <svg ref={svgRef} className="w-full h-full"></svg>
-      </div>
+    <div className="h-[calc(100vh-4rem)]">
+      <svg ref={svgRef} className="w-full h-full"></svg>
     </div>
   );
 }
