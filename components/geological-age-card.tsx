@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/card";
 import { RotatableHourglass } from "./rotatable-hourglass";
 
-export function GeologicalTimeCard() {
+export function GeologicalAgeCard() {
   return (
     <Card className="w-[300px] bg-background/80 backdrop-blur-sm">
         <CardHeader>
