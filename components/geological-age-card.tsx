@@ -54,11 +54,6 @@ export function GeologicalAgeCard() {
   const [selectedEpoch, setSelectedEpoch] = useState<Epoch | undefined>(undefined);
   const [selectedAge, setSelectedAge] = useState<GeologicalAge | null>(null);
 
-  // 初期状態で最新の時代を選択
-  React.useEffect(() => {
-    handleSliderChange([1]);
-  }, []);
-
   const handleEraChange = (eraId: string) => {
     if (eraId === "none") {
       setSelectedEra(undefined);
@@ -120,23 +115,30 @@ export function GeologicalAgeCard() {
   };
 
   const handleSliderChange = (value: number[]) => {
-    const reversedValue = 33 - value[0];
-    const epochId = reversedValue.toString();
+    const reversedValue = 103 - value[0];
+    const ageId = reversedValue.toString();
     
-    // すべての時代から対応するepochを探す
+    // すべての時代から対応するageを探す
     for (const era of geologicalAgesData.eras) {
       for (const period of era.periods) {
-        const epoch = period.epochs.find(e => e.id === epochId);
-        if (epoch) {
-          setSelectedEra(era);
-          setSelectedPeriod(period);
-          setSelectedEpoch(epoch);
-          setSelectedAge(epoch.ages?.[0] || null);
-          return;
+        for (const epoch of period.epochs) {
+          const age = epoch.ages?.find(a => a.id === ageId);
+          if (age) {
+            setSelectedEra(era);
+            setSelectedPeriod(period);
+            setSelectedEpoch(epoch);
+            setSelectedAge(age);
+            return;
+          }
         }
       }
     }
   };
+
+  // 初期状態で最新の時代を選択
+  React.useEffect(() => {
+    handleSliderChange([1]);
+  }, []);
 
   return (
     <Card className="w-72">
@@ -235,7 +237,7 @@ export function GeologicalAgeCard() {
         <div className="w-full">
           <Slider
             defaultValue={[1]}
-            max={32}
+            max={102}
             min={1}
             step={1}
             onValueChange={handleSliderChange}
