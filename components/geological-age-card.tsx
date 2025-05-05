@@ -6,9 +6,12 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
+  CardFooter,
+  CardDescription,
 } from "@/components/ui/card";
 import { RotatableHourglass } from "./rotatable-hourglass";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Slider } from "@/components/ui/slider";
 import geologicalAgesData from '@/data/geological-ages.json';
 
 interface GeologicalAge {
@@ -51,6 +54,11 @@ export function GeologicalAgeCard() {
   const [selectedPeriod, setSelectedPeriod] = useState<Period | undefined>(undefined);
   const [selectedEpoch, setSelectedEpoch] = useState<Epoch | undefined>(undefined);
   const [selectedAge, setSelectedAge] = useState<GeologicalAge | null>(null);
+
+  // 初期状態で最新の時代を選択
+  React.useEffect(() => {
+    handleSliderChange([1]);
+  }, []);
 
   const handleEraChange = (eraId: string) => {
     if (eraId === "none") {
@@ -108,6 +116,25 @@ export function GeologicalAgeCard() {
       const age = selectedEpoch.ages.find(a => a.id === ageId);
       if (age) {
         setSelectedAge(age);
+      }
+    }
+  };
+
+  const handleSliderChange = (value: number[]) => {
+    const reversedValue = 33 - value[0];
+    const epochId = reversedValue.toString();
+    
+    // すべての時代から対応するepochを探す
+    for (const era of geologicalAgesData.eras) {
+      for (const period of era.periods) {
+        const epoch = period.epochs.find(e => e.id === epochId);
+        if (epoch) {
+          setSelectedEra(era);
+          setSelectedPeriod(period);
+          setSelectedEpoch(epoch);
+          setSelectedAge(epoch.ages?.[0] || null);
+          return;
+        }
       }
     }
   };
@@ -206,6 +233,18 @@ export function GeologicalAgeCard() {
           </div>
         </div>
       </CardContent>
+      <CardFooter className="flex flex-col space-y-4">
+        <div className="w-full">
+          <Slider
+            defaultValue={[1]}
+            max={32}
+            min={1}
+            step={1}
+            onValueChange={handleSliderChange}
+            className="w-full"
+          />
+        </div>
+      </CardFooter>
     </Card>
   );
 }
