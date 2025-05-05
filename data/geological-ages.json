@@ -1,33 +1,33 @@
 {
   "eras": [
     {
-      "id": "cenozoic",
+      "id": "1",
       "name": "新生代",
       "nameEn": "Cenozoic",
-      "baseAge": 66,
+      "baseAge": 66.0,
       "periods": [
         {
-          "id": "quaternary",
+          "id": "1",
           "name": "第四紀",
           "nameEn": "Quaternary",
           "baseAge": 2.58,
           "epochs": [
             {
-              "id": "holocene",
+              "id": "1",
               "name": "完新世",
               "nameEn": "Holocene",
               "baseAge": 0.0117,
               "ages": [
                 {
-                  "id": "megalaian",
+                  "id": "1",
                   "name": "メガラヤン",
-                  "nameEn": "Megalaian",
+                  "nameEn": "Meghalayan",
                   "baseAge": 0.0042,
                   "description": "人類の文明が発展した時代",
                   "descriptionEn": "Age of human civilization"
                 },
                 {
-                  "id": "northgrippian",
+                  "id": "2",
                   "name": "ノースグリッピアン",
                   "nameEn": "Northgrippian",
                   "baseAge": 0.0082,
@@ -35,7 +35,7 @@
                   "descriptionEn": "Beginning of climate change"
                 },
                 {
-                  "id": "greenlandian",
+                  "id": "3",
                   "name": "グリーンランディアン",
                   "nameEn": "Greenlandian",
                   "baseAge": 0.0117,
@@ -45,13 +45,13 @@
               ]
             },
             {
-              "id": "pleistocene",
+              "id": "2",
               "name": "更新世",
               "nameEn": "Pleistocene",
               "baseAge": 2.58,
               "ages": [
                 {
-                  "id": "late-pleistocene",
+                  "id": "4",
                   "name": "後期更新世",
                   "nameEn": "Late Pleistocene",
                   "baseAge": 0.129,
@@ -59,7 +59,7 @@
                   "descriptionEn": "Last glacial period"
                 },
                 {
-                  "id": "chibanian",
+                  "id": "5",
                   "name": "チバニアン",
                   "nameEn": "Chibanian",
                   "baseAge": 0.774,
@@ -67,7 +67,7 @@
                   "descriptionEn": "Alternation of glacial and interglacial periods"
                 },
                 {
-                  "id": "calabrian",
+                  "id": "6",
                   "name": "カラブリアン",
                   "nameEn": "Calabrian",
                   "baseAge": 1.8,
@@ -75,7 +75,7 @@
                   "descriptionEn": "Beginning of ice age"
                 },
                 {
-                  "id": "gelasian",
+                  "id": "7",
                   "name": "ジェラシアン",
                   "nameEn": "Gelasian",
                   "baseAge": 2.58,
@@ -87,27 +87,27 @@
           ]
         },
         {
-          "id": "neogene",
+          "id": "2",
           "name": "新第三紀",
           "nameEn": "Neogene",
           "baseAge": 23.03,
           "epochs": [
             {
-              "id": "pliocene",
+              "id": "3",
               "name": "鮮新世",
               "nameEn": "Pliocene",
               "baseAge": 5.333,
               "ages": [
                 {
-                  "id": "piacenzian",
-                  "name": "ピアセンザン",
+                  "id": "8",
+                  "name": "ピアセンジアン",
                   "nameEn": "Piacenzian",
                   "baseAge": 3.6,
                   "description": "北半球の氷河の形成",
                   "descriptionEn": "Formation of northern hemisphere glaciers"
                 },
                 {
-                  "id": "zanclean",
+                  "id": "9",
                   "name": "ザンクリアン",
                   "nameEn": "Zanclean",
                   "baseAge": 5.333,
@@ -117,13 +117,13 @@
               ]
             },
             {
-              "id": "miocene",
+              "id": "4",
               "name": "中新世",
               "nameEn": "Miocene",
               "baseAge": 23.03,
               "ages": [
                 {
-                  "id": "messinian",
+                  "id": "10",
                   "name": "メッシニアン",
                   "nameEn": "Messinian",
                   "baseAge": 7.246,
@@ -131,7 +131,7 @@
                   "descriptionEn": "Drying of Mediterranean Sea"
                 },
                 {
-                  "id": "tortonian",
+                  "id": "11",
                   "name": "トートニアン",
                   "nameEn": "Tortonian",
                   "baseAge": 11.63,
@@ -139,7 +139,7 @@
                   "descriptionEn": "Expansion of grasslands"
                 },
                 {
-                  "id": "serravallian",
+                  "id": "12",
                   "name": "サーラバリアン",
                   "nameEn": "Serravallian",
                   "baseAge": 13.82,
@@ -147,7 +147,7 @@
                   "descriptionEn": "Climate cooling"
                 },
                 {
-                  "id": "langhian",
+                  "id": "13",
                   "name": "ランギアン",
                   "nameEn": "Langhian",
                   "baseAge": 15.97,
@@ -155,7 +155,7 @@
                   "descriptionEn": "Warm climate"
                 },
                 {
-                  "id": "burdigalian",
+                  "id": "14",
                   "name": "バーディガリアン",
                   "nameEn": "Burdigalian",
                   "baseAge": 20.44,
@@ -163,7 +163,7 @@
                   "descriptionEn": "Marine transgression"
                 },
                 {
-                  "id": "aquitanian",
+                  "id": "15",
                   "name": "アキタニアン",
                   "nameEn": "Aquitanian",
                   "baseAge": 23.03,
@@ -175,19 +175,19 @@
           ]
         },
         {
-          "id": "paleogene",
+          "id": "3",
           "name": "古第三紀",
           "nameEn": "Paleogene",
-          "baseAge": 66,
+          "baseAge": 66.0,
           "epochs": [
             {
-              "id": "oligocene",
+              "id": "5",
               "name": "漸新世",
               "nameEn": "Oligocene",
               "baseAge": 33.9,
               "ages": [
                 {
-                  "id": "chattian",
+                  "id": "16",
                   "name": "チャッティアン",
                   "nameEn": "Chattian",
                   "baseAge": 27.82,
@@ -195,7 +195,7 @@
                   "descriptionEn": "Expansion of grasslands"
                 },
                 {
-                  "id": "rupelian",
+                  "id": "17",
                   "name": "ルペリアン",
                   "nameEn": "Rupelian",
                   "baseAge": 33.9,
@@ -205,13 +205,13 @@
               ]
             },
             {
-              "id": "eocene",
+              "id": "6",
               "name": "始新世",
               "nameEn": "Eocene",
-              "baseAge": 56,
+              "baseAge": 56.0,
               "ages": [
                 {
-                  "id": "priabonian",
+                  "id": "18",
                   "name": "プリアボニアン",
                   "nameEn": "Priabonian",
                   "baseAge": 37.8,
@@ -219,7 +219,7 @@
                   "descriptionEn": "End of warm climate"
                 },
                 {
-                  "id": "bartonian",
+                  "id": "19",
                   "name": "バートニアン",
                   "nameEn": "Bartonian",
                   "baseAge": 41.2,
@@ -227,7 +227,7 @@
                   "descriptionEn": "Continuation of warm climate"
                 },
                 {
-                  "id": "lutetian",
+                  "id": "20",
                   "name": "ルテシアン",
                   "nameEn": "Lutetian",
                   "baseAge": 47.8,
@@ -235,23 +235,23 @@
                   "descriptionEn": "Peak of warm climate"
                 },
                 {
-                  "id": "ypresian",
+                  "id": "21",
                   "name": "ヤプレシアン",
                   "nameEn": "Ypresian",
-                  "baseAge": 56,
+                  "baseAge": 56.0,
                   "description": "始新世の始まり",
                   "descriptionEn": "Beginning of Eocene"
                 }
               ]
             },
             {
-              "id": "paleocene",
+              "id": "7",
               "name": "暁新世",
               "nameEn": "Paleocene",
-              "baseAge": 66,
+              "baseAge": 66.0,
               "ages": [
                 {
-                  "id": "thanetian",
+                  "id": "22",
                   "name": "サネティアン",
                   "nameEn": "Thanetian",
                   "baseAge": 59.2,
@@ -259,7 +259,7 @@
                   "descriptionEn": "Evolution of mammals"
                 },
                 {
-                  "id": "selandian",
+                  "id": "23",
                   "name": "セランディアン",
                   "nameEn": "Selandian",
                   "baseAge": 61.6,
@@ -267,10 +267,10 @@
                   "descriptionEn": "Beginning of warm climate"
                 },
                 {
-                  "id": "danian",
+                  "id": "24",
                   "name": "ダニアン",
                   "nameEn": "Danian",
-                  "baseAge": 66,
+                  "baseAge": 66.0,
                   "description": "暁新世の始まり",
                   "descriptionEn": "Beginning of Paleocene"
                 }
@@ -281,25 +281,25 @@
       ]
     },
     {
-      "id": "mesozoic",
+      "id": "2",
       "name": "中生代",
       "nameEn": "Mesozoic",
-      "baseAge": 251.9,
+      "baseAge": 252.17,
       "periods": [
         {
-          "id": "cretaceous",
+          "id": "4",
           "name": "白亜紀",
           "nameEn": "Cretaceous",
-          "baseAge": 145,
+          "baseAge": 145.0,
           "epochs": [
             {
-              "id": "late-cretaceous",
-              "name": "後期",
-              "nameEn": "Late",
+              "id": "8",
+              "name": "後期白亜紀",
+              "nameEn": "Late Cretaceous",
               "baseAge": 100.5,
               "ages": [
                 {
-                  "id": "maastrichtian",
+                  "id": "25",
                   "name": "マーストリヒチアン",
                   "nameEn": "Maastrichtian",
                   "baseAge": 72.1,
@@ -307,7 +307,7 @@
                   "descriptionEn": "Extinction of dinosaurs"
                 },
                 {
-                  "id": "campanian",
+                  "id": "26",
                   "name": "カンパニアン",
                   "nameEn": "Campanian",
                   "baseAge": 83.6,
@@ -315,7 +315,7 @@
                   "descriptionEn": "Peak of dinosaurs"
                 },
                 {
-                  "id": "santonian",
+                  "id": "27",
                   "name": "サントニアン",
                   "nameEn": "Santonian",
                   "baseAge": 86.3,
@@ -323,7 +323,7 @@
                   "descriptionEn": "Warm climate"
                 },
                 {
-                  "id": "coniacian",
+                  "id": "28",
                   "name": "コニアシアン",
                   "nameEn": "Coniacian",
                   "baseAge": 89.8,
@@ -331,7 +331,7 @@
                   "descriptionEn": "Marine transgression"
                 },
                 {
-                  "id": "turonain",
+                  "id": "29",
                   "name": "チューロニアン",
                   "nameEn": "Turonain",
                   "baseAge": 93.9,
@@ -339,7 +339,7 @@
                   "descriptionEn": "Warm climate"
                 },
                 {
-                  "id": "cenomanian",
+                  "id": "30",
                   "name": "セノマニアン",
                   "nameEn": "Cenomanian",
                   "baseAge": 100.5,
@@ -349,13 +349,13 @@
               ]
             },
             {
-              "id": "early-cretaceous",
-              "name": "前期",
-              "nameEn": "Early",
-              "baseAge": 145,
+              "id": "9",
+              "name": "前期白亜紀",
+              "nameEn": "Early Cretaceous",
+              "baseAge": 145.0,
               "ages": [
                 {
-                  "id": "albian",
+                  "id": "31",
                   "name": "アルビアン",
                   "nameEn": "Albian",
                   "baseAge": 113,
@@ -363,7 +363,7 @@
                   "descriptionEn": "Warm climate"
                 },
                 {
-                  "id": "aptian",
+                  "id": "32",
                   "name": "アプチアン",
                   "nameEn": "Aptian",
                   "baseAge": 125,
@@ -371,7 +371,7 @@
                   "descriptionEn": "Marine transgression"
                 },
                 {
-                  "id": "barremian",
+                  "id": "33",
                   "name": "バレミアン",
                   "nameEn": "Barremian",
                   "baseAge": 129.4,
@@ -379,7 +379,7 @@
                   "descriptionEn": "Warm climate"
                 },
                 {
-                  "id": "hauterivian",
+                  "id": "34",
                   "name": "オーテリビアン",
                   "nameEn": "Hauterivian",
                   "baseAge": 132.9,
@@ -387,7 +387,7 @@
                   "descriptionEn": "Marine transgression"
                 },
                 {
-                  "id": "valanginian",
+                  "id": "35",
                   "name": "バランギニアン",
                   "nameEn": "Valanginian",
                   "baseAge": 139.8,
@@ -395,10 +395,10 @@
                   "descriptionEn": "Warm climate"
                 },
                 {
-                  "id": "berriasian",
+                  "id": "36",
                   "name": "ベリアシアン",
                   "nameEn": "Berriasian",
-                  "baseAge": 145,
+                  "baseAge": 145.0,
                   "description": "前期白亜紀の始まり",
                   "descriptionEn": "Beginning of Early Cretaceous"
                 }
@@ -407,19 +407,19 @@
           ]
         },
         {
-          "id": "jurassic",
+          "id": "5",
           "name": "ジュラ紀",
           "nameEn": "Jurassic",
           "baseAge": 201.3,
           "epochs": [
             {
-              "id": "late-jurassic",
-              "name": "後期",
-              "nameEn": "Late",
+              "id": "10",
+              "name": "後期ジュラ紀",
+              "nameEn": "Late Jurassic",
               "baseAge": 163.5,
               "ages": [
                 {
-                  "id": "tithonian",
+                  "id": "37",
                   "name": "チトニアン",
                   "nameEn": "Tithonian",
                   "baseAge": 152.1,
@@ -427,7 +427,7 @@
                   "descriptionEn": "Prosperity of dinosaurs"
                 },
                 {
-                  "id": "kimmeridgian",
+                  "id": "38",
                   "name": "キンメリッジアン",
                   "nameEn": "Kimmeridgian",
                   "baseAge": 157.3,
@@ -435,7 +435,7 @@
                   "descriptionEn": "Warm climate"
                 },
                 {
-                  "id": "oxfordian",
+                  "id": "39",
                   "name": "オックスフォーディアン",
                   "nameEn": "Oxfordian",
                   "baseAge": 163.5,
@@ -445,13 +445,13 @@
               ]
             },
             {
-              "id": "middle-jurassic",
-              "name": "中期",
-              "nameEn": "Middle",
+              "id": "11",
+              "name": "中期ジュラ紀",
+              "nameEn": "Middle Jurassic",
               "baseAge": 174.1,
               "ages": [
                 {
-                  "id": "callovian",
+                  "id": "40",
                   "name": "カロビアン",
                   "nameEn": "Callovian",
                   "baseAge": 166.1,
@@ -459,7 +459,7 @@
                   "descriptionEn": "Warm climate"
                 },
                 {
-                  "id": "bathonian",
+                  "id": "41",
                   "name": "バトニアン",
                   "nameEn": "Bathonian",
                   "baseAge": 168.3,
@@ -467,7 +467,7 @@
                   "descriptionEn": "Marine transgression"
                 },
                 {
-                  "id": "bajocian",
+                  "id": "42",
                   "name": "バッジョシアン",
                   "nameEn": "Bajocian",
                   "baseAge": 170.3,
@@ -475,7 +475,7 @@
                   "descriptionEn": "Warm climate"
                 },
                 {
-                  "id": "aalnian",
+                  "id": "43",
                   "name": "アーレニアン",
                   "nameEn": "Aalnian",
                   "baseAge": 174.1,
@@ -485,13 +485,13 @@
               ]
             },
             {
-              "id": "early-jurassic",
-              "name": "前期",
-              "nameEn": "Early",
+              "id": "12",
+              "name": "前期ジュラ紀",
+              "nameEn": "Early Jurassic",
               "baseAge": 201.3,
               "ages": [
                 {
-                  "id": "toarcian",
+                  "id": "44",
                   "name": "トアルシアン",
                   "nameEn": "Toarcian",
                   "baseAge": 182.7,
@@ -499,7 +499,7 @@
                   "descriptionEn": "Warm climate"
                 },
                 {
-                  "id": "pleinsbachian",
+                  "id": "45",
                   "name": "プリンスバッキアン",
                   "nameEn": "Pleinsbachian",
                   "baseAge": 190.8,
@@ -507,7 +507,7 @@
                   "descriptionEn": "Marine transgression"
                 },
                 {
-                  "id": "sinemurian",
+                  "id": "46",
                   "name": "シネムーリアン",
                   "nameEn": "Sinemurian",
                   "baseAge": 199.3,
@@ -515,7 +515,7 @@
                   "descriptionEn": "Warm climate"
                 },
                 {
-                  "id": "hettangian",
+                  "id": "47",
                   "name": "ヘッタンギアン",
                   "nameEn": "Hettangian",
                   "baseAge": 201.3,
@@ -527,19 +527,19 @@
           ]
         },
         {
-          "id": "triassic",
+          "id": "6",
           "name": "三畳紀",
           "nameEn": "Triassic",
           "baseAge": 251.9,
           "epochs": [
             {
-              "id": "late-triassic",
-              "name": "後期",
-              "nameEn": "Late",
-              "baseAge": 237,
+              "id": "13",
+              "name": "後期三畳紀",
+              "nameEn": "Late Triassic",
+              "baseAge": 237.0,
               "ages": [
                 {
-                  "id": "rhaetian",
+                  "id": "48",
                   "name": "レーティアン",
                   "nameEn": "Rhaetian",
                   "baseAge": 208.5,
@@ -547,7 +547,7 @@
                   "descriptionEn": "End of Triassic"
                 },
                 {
-                  "id": "norian",
+                  "id": "49",
                   "name": "ノリアン",
                   "nameEn": "Norian",
                   "baseAge": 227,
@@ -555,23 +555,23 @@
                   "descriptionEn": "Warm climate"
                 },
                 {
-                  "id": "carnian",
+                  "id": "50",
                   "name": "カーニアン",
                   "nameEn": "Carnian",
-                  "baseAge": 237,
+                  "baseAge": 237.0,
                   "description": "後期三畳紀の始まり",
                   "descriptionEn": "Beginning of Late Triassic"
                 }
               ]
             },
             {
-              "id": "middle-triassic",
-              "name": "中期",
-              "nameEn": "Middle",
+              "id": "14",
+              "name": "中期三畳紀",
+              "nameEn": "Middle Triassic",
               "baseAge": 247.2,
               "ages": [
                 {
-                  "id": "ladinian",
+                  "id": "51",
                   "name": "ラディニアン",
                   "nameEn": "Ladinian",
                   "baseAge": 242,
@@ -579,7 +579,7 @@
                   "descriptionEn": "Warm climate"
                 },
                 {
-                  "id": "anisan",
+                  "id": "52",
                   "name": "アニシアン",
                   "nameEn": "Anisian",
                   "baseAge": 247.2,
@@ -589,13 +589,13 @@
               ]
             },
             {
-              "id": "early-triassic",
-              "name": "前期",
-              "nameEn": "Early",
+              "id": "15",
+              "name": "前期三畳紀",
+              "nameEn": "Early Triassic",
               "baseAge": 251.9,
               "ages": [
                 {
-                  "id": "olenekian",
+                  "id": "53",
                   "name": "オレネキアン",
                   "nameEn": "Olenekian",
                   "baseAge": 251.2,
@@ -603,7 +603,7 @@
                   "descriptionEn": "Warm climate"
                 },
                 {
-                  "id": "induan",
+                  "id": "54",
                   "name": "インデュアン",
                   "nameEn": "Induan",
                   "baseAge": 251.9,
@@ -617,25 +617,25 @@
       ]
     },
     {
-      "id": "paleozoic",
+      "id": "3",
       "name": "古生代",
       "nameEn": "Paleozoic",
-      "baseAge": 541,
+      "baseAge": 541.0,
       "periods": [
         {
-          "id": "permian",
+          "id": "7",
           "name": "ペルム紀",
           "nameEn": "Permian",
           "baseAge": 298.9,
           "epochs": [
             {
-              "id": "late-permian",
-              "name": "後期",
-              "nameEn": "Late",
-              "baseAge": 259.9,
+              "id": "16",
+              "name": "後期ペルム紀",
+              "nameEn": "Late Permian",
+              "baseAge": 259.8,
               "ages": [
                 {
-                  "id": "changhsingian",
+                  "id": "55",
                   "name": "チャンシンギアン",
                   "nameEn": "Changhsingian",
                   "baseAge": 254.14,
@@ -643,23 +643,23 @@
                   "descriptionEn": "Greatest mass extinction"
                 },
                 {
-                  "id": "wuchiapingian",
+                  "id": "56",
                   "name": "ウチアピンギアン",
                   "nameEn": "Wuchiapingian",
-                  "baseAge": 259.9,
+                  "baseAge": 259.8,
                   "description": "後期ペルム紀の始まり",
                   "descriptionEn": "Beginning of Late Permian"
                 }
               ]
             },
             {
-              "id": "middle-permian",
-              "name": "中期",
-              "nameEn": "Middle",
+              "id": "17",
+              "name": "中期ペルム紀",
+              "nameEn": "Middle Permian",
               "baseAge": 272.3,
               "ages": [
                 {
-                  "id": "capitanian",
+                  "id": "57",
                   "name": "カピタニアン",
                   "nameEn": "Capitanian",
                   "baseAge": 265.1,
@@ -667,7 +667,7 @@
                   "descriptionEn": "Warm climate"
                 },
                 {
-                  "id": "wordian",
+                  "id": "58",
                   "name": "ウォーディアン",
                   "nameEn": "Wordian",
                   "baseAge": 268.8,
@@ -675,7 +675,7 @@
                   "descriptionEn": "Marine transgression"
                 },
                 {
-                  "id": "roadian",
+                  "id": "59",
                   "name": "ローディアン",
                   "nameEn": "Roadian",
                   "baseAge": 272.3,
@@ -685,13 +685,13 @@
               ]
             },
             {
-              "id": "early-permian",
-              "name": "前期",
-              "nameEn": "Early",
+              "id": "18",
+              "name": "前期ペルム紀",
+              "nameEn": "Early Permian",
               "baseAge": 298.9,
               "ages": [
                 {
-                  "id": "kungurian",
+                  "id": "60",
                   "name": "クングリアン",
                   "nameEn": "Kungurian",
                   "baseAge": 283.5,
@@ -699,7 +699,7 @@
                   "descriptionEn": "Warm climate"
                 },
                 {
-                  "id": "artinskian",
+                  "id": "61",
                   "name": "アルチンスキアン",
                   "nameEn": "Artinskian",
                   "baseAge": 290.1,
@@ -707,7 +707,7 @@
                   "descriptionEn": "Marine transgression"
                 },
                 {
-                  "id": "sakmarian",
+                  "id": "62",
                   "name": "サクマリアン",
                   "nameEn": "Sakmarian",
                   "baseAge": 295.5,
@@ -715,7 +715,7 @@
                   "descriptionEn": "Warm climate"
                 },
                 {
-                  "id": "asselian",
+                  "id": "63",
                   "name": "アッセリアン",
                   "nameEn": "Asselian",
                   "baseAge": 298.9,
@@ -727,19 +727,19 @@
           ]
         },
         {
-          "id": "carboniferous",
+          "id": "8",
           "name": "石炭紀",
           "nameEn": "Carboniferous",
           "baseAge": 358.9,
           "epochs": [
             {
-              "id": "pennsylvanian",
-              "name": "ペンシルバニアン",
+              "id": "19",
+              "name": "ペンシルバニア亜紀",
               "nameEn": "Pennsylvanian",
               "baseAge": 323.2,
               "ages": [
                 {
-                  "id": "gzelian",
+                  "id": "64",
                   "name": "グゼリアン",
                   "nameEn": "Gzelian",
                   "baseAge": 303.7,
@@ -747,7 +747,7 @@
                   "descriptionEn": "Formation of giant forests"
                 },
                 {
-                  "id": "kasimovian",
+                  "id": "65",
                   "name": "カシモビアン",
                   "nameEn": "Kasimovian",
                   "baseAge": 307,
@@ -755,7 +755,7 @@
                   "descriptionEn": "Warm climate"
                 },
                 {
-                  "id": "moscovian",
+                  "id": "66",
                   "name": "モスコビアン",
                   "nameEn": "Moscovian",
                   "baseAge": 315.2,
@@ -763,7 +763,7 @@
                   "descriptionEn": "Marine transgression"
                 },
                 {
-                  "id": "bashkirian",
+                  "id": "67",
                   "name": "バシキリアン",
                   "nameEn": "Bashkirian",
                   "baseAge": 323.2,
@@ -773,13 +773,13 @@
               ]
             },
             {
-              "id": "mississippian",
-              "name": "ミシシッピアン",
+              "id": "20",
+              "name": "ミシシッピ亜紀",
               "nameEn": "Mississippian",
               "baseAge": 358.9,
               "ages": [
                 {
-                  "id": "serpukhovian",
+                  "id": "68",
                   "name": "セルプコビアン",
                   "nameEn": "Serpukhovian",
                   "baseAge": 330.9,
@@ -787,7 +787,7 @@
                   "descriptionEn": "Warm climate"
                 },
                 {
-                  "id": "visean",
+                  "id": "69",
                   "name": "ビゼアン",
                   "nameEn": "Visean",
                   "baseAge": 346.7,
@@ -795,11 +795,11 @@
                   "descriptionEn": "Marine transgression"
                 },
                 {
-                  "id": "tournaisian",
+                  "id": "70",
                   "name": "トゥルネシアン",
                   "nameEn": "Tournaisian",
                   "baseAge": 358.9,
-                  "description": "ミシシッピアンの始まり",
+                  "description": "ミシシッピ亜紀の始まり",
                   "descriptionEn": "Beginning of Mississippian"
                 }
               ]
@@ -807,19 +807,19 @@
           ]
         },
         {
-          "id": "devonian",
+          "id": "9",
           "name": "デボン紀",
           "nameEn": "Devonian",
           "baseAge": 419.2,
           "epochs": [
             {
-              "id": "late-devonian",
-              "name": "後期",
-              "nameEn": "Late",
+              "id": "21",
+              "name": "後期デボン紀",
+              "nameEn": "Late Devonian",
               "baseAge": 382.7,
               "ages": [
                 {
-                  "id": "fammenian",
+                  "id": "71",
                   "name": "ファメニアン",
                   "nameEn": "Fammenian",
                   "baseAge": 372.2,
@@ -827,7 +827,7 @@
                   "descriptionEn": "Prosperity of fish"
                 },
                 {
-                  "id": "frasnian",
+                  "id": "72",
                   "name": "フラスニアン",
                   "nameEn": "Frasnian",
                   "baseAge": 382.7,
@@ -837,13 +837,13 @@
               ]
             },
             {
-              "id": "middle-devonian",
-              "name": "中期",
-              "nameEn": "Middle",
+              "id": "22",
+              "name": "中期デボン紀",
+              "nameEn": "Middle Devonian",
               "baseAge": 393.3,
               "ages": [
                 {
-                  "id": "givetian",
+                  "id": "73",
                   "name": "ジベティアン",
                   "nameEn": "Givetian",
                   "baseAge": 387.7,
@@ -851,7 +851,7 @@
                   "descriptionEn": "Warm climate"
                 },
                 {
-                  "id": "eifelian",
+                  "id": "74",
                   "name": "アイフェリアン",
                   "nameEn": "Eifelian",
                   "baseAge": 393.3,
@@ -861,13 +861,13 @@
               ]
             },
             {
-              "id": "early-devonian",
-              "name": "前期",
-              "nameEn": "Early",
+              "id": "23",
+              "name": "前期デボン紀",
+              "nameEn": "Early Devonian",
               "baseAge": 419.2,
               "ages": [
                 {
-                  "id": "emsian",
+                  "id": "75",
                   "name": "エムシアン",
                   "nameEn": "Emsian",
                   "baseAge": 407.6,
@@ -875,7 +875,7 @@
                   "descriptionEn": "Warm climate"
                 },
                 {
-                  "id": "pragian",
+                  "id": "76",
                   "name": "プラギアン",
                   "nameEn": "Pragian",
                   "baseAge": 410.8,
@@ -883,7 +883,7 @@
                   "descriptionEn": "Marine transgression"
                 },
                 {
-                  "id": "lochkovian",
+                  "id": "77",
                   "name": "ロホコビアン",
                   "nameEn": "Lochkovian",
                   "baseAge": 419.2,
@@ -895,19 +895,19 @@
           ]
         },
         {
-          "id": "silurian",
+          "id": "10",
           "name": "シルル紀",
           "nameEn": "Silurian",
           "baseAge": 443.8,
           "epochs": [
             {
-              "id": "late-silurian",
-              "name": "後期",
-              "nameEn": "Late",
+              "id": "24",
+              "name": "後期シルル紀",
+              "nameEn": "Late Silurian",
               "baseAge": 427.4,
               "ages": [
                 {
-                  "id": "pridoli",
+                  "id": "78",
                   "name": "プリドリ",
                   "nameEn": "Pridoli",
                   "baseAge": 423,
@@ -915,7 +915,7 @@
                   "descriptionEn": "Emergence of land plants"
                 },
                 {
-                  "id": "ludfordian",
+                  "id": "79",
                   "name": "ラドフォーディアン",
                   "nameEn": "Ludfordian",
                   "baseAge": 425.6,
@@ -923,7 +923,7 @@
                   "descriptionEn": "Warm climate"
                 },
                 {
-                  "id": "gorstian",
+                  "id": "80",
                   "name": "ゴースティアン",
                   "nameEn": "Gorstian",
                   "baseAge": 427.4,
@@ -933,13 +933,13 @@
               ]
             },
             {
-              "id": "early-silurian",
-              "name": "前期",
-              "nameEn": "Early",
+              "id": "25",
+              "name": "前期シルル紀",
+              "nameEn": "Early Silurian",
               "baseAge": 443.8,
               "ages": [
                 {
-                  "id": "homerian",
+                  "id": "81",
                   "name": "ホメリアン",
                   "nameEn": "Homerian",
                   "baseAge": 430.5,
@@ -947,7 +947,7 @@
                   "descriptionEn": "Warm climate"
                 },
                 {
-                  "id": "sheinwoodian",
+                  "id": "82",
                   "name": "シェインウディアン",
                   "nameEn": "Sheinwoodian",
                   "baseAge": 433.4,
@@ -955,7 +955,7 @@
                   "descriptionEn": "Marine transgression"
                 },
                 {
-                  "id": "telychian",
+                  "id": "83",
                   "name": "テリキアン",
                   "nameEn": "Telychian",
                   "baseAge": 438.5,
@@ -963,7 +963,7 @@
                   "descriptionEn": "Warm climate"
                 },
                 {
-                  "id": "aeronian",
+                  "id": "84",
                   "name": "エアロニアン",
                   "nameEn": "Aeronian",
                   "baseAge": 440.8,
@@ -971,7 +971,7 @@
                   "descriptionEn": "Marine transgression"
                 },
                 {
-                  "id": "rhuddanian",
+                  "id": "85",
                   "name": "ルダニアン",
                   "nameEn": "Rhuddanian",
                   "baseAge": 443.8,
@@ -983,19 +983,19 @@
           ]
         },
         {
-          "id": "ordovician",
+          "id": "11",
           "name": "オルドビス紀",
           "nameEn": "Ordovician",
           "baseAge": 485.4,
           "epochs": [
             {
-              "id": "late-ordovician",
-              "name": "後期",
-              "nameEn": "Late",
+              "id": "26",
+              "name": "後期オルドビス紀",
+              "nameEn": "Late Ordovician",
               "baseAge": 458.4,
               "ages": [
                 {
-                  "id": "hirnantian",
+                  "id": "86",
                   "name": "ヒルナンティアン",
                   "nameEn": "Hirnantian",
                   "baseAge": 445.2,
@@ -1003,7 +1003,7 @@
                   "descriptionEn": "Emergence of first fish"
                 },
                 {
-                  "id": "katian",
+                  "id": "87",
                   "name": "カティアン",
                   "nameEn": "Katian",
                   "baseAge": 453,
@@ -1011,7 +1011,7 @@
                   "descriptionEn": "Warm climate"
                 },
                 {
-                  "id": "sandbian",
+                  "id": "88",
                   "name": "サンディビアン",
                   "nameEn": "Sandbian",
                   "baseAge": 458.4,
@@ -1021,13 +1021,13 @@
               ]
             },
             {
-              "id": "middle-ordovician",
-              "name": "中期",
-              "nameEn": "Middle",
+              "id": "27",
+              "name": "中期オルドビス紀",
+              "nameEn": "Middle Ordovician",
               "baseAge": 470,
               "ages": [
                 {
-                  "id": "darriwilian",
+                  "id": "89",
                   "name": "ダリウィリアン",
                   "nameEn": "Darriwilian",
                   "baseAge": 467.3,
@@ -1035,7 +1035,7 @@
                   "descriptionEn": "Warm climate"
                 },
                 {
-                  "id": "dapingian",
+                  "id": "90",
                   "name": "ダピンギアン",
                   "nameEn": "Dapingian",
                   "baseAge": 470,
@@ -1045,13 +1045,13 @@
               ]
             },
             {
-              "id": "early-ordovician",
-              "name": "前期",
-              "nameEn": "Early",
+              "id": "28",
+              "name": "前期オルドビス紀",
+              "nameEn": "Early Ordovician",
               "baseAge": 485.4,
               "ages": [
                 {
-                  "id": "floian",
+                  "id": "91",
                   "name": "フロイアン",
                   "nameEn": "Floian",
                   "baseAge": 477.7,
@@ -1059,7 +1059,7 @@
                   "descriptionEn": "Warm climate"
                 },
                 {
-                  "id": "tremadocian",
+                  "id": "92",
                   "name": "トレマドキアン",
                   "nameEn": "Tremadocian",
                   "baseAge": 485.4,
@@ -1071,19 +1071,19 @@
           ]
         },
         {
-          "id": "cambrian",
+          "id": "12",
           "name": "カンブリア紀",
           "nameEn": "Cambrian",
-          "baseAge": 541,
+          "baseAge": 541.0,
           "epochs": [
             {
-              "id": "furongian",
-              "name": "芙蓉世",
+              "id": "29",
+              "name": "フロンギアン",
               "nameEn": "Furongian",
               "baseAge": 497,
               "ages": [
                 {
-                  "id": "stage10",
+                  "id": "93",
                   "name": "ステージ10",
                   "nameEn": "Stage 10",
                   "baseAge": 489.5,
@@ -1091,63 +1091,63 @@
                   "descriptionEn": "Prosperity of trilobites"
                 },
                 {
-                  "id": "jiangshanian",
-                  "name": "江山上期",
+                  "id": "94",
+                  "name": "ジャンシャニアン",
                   "nameEn": "Jiangshanian",
                   "baseAge": 494,
                   "description": "温暖な気候",
                   "descriptionEn": "Warm climate"
                 },
                 {
-                  "id": "paibian",
-                  "name": "排碧期",
+                  "id": "95",
+                  "name": "ペイビアン",
                   "nameEn": "Paibian",
                   "baseAge": 497,
-                  "description": "芙蓉世の始まり",
+                  "description": "フロンギアンの始まり",
                   "descriptionEn": "Beginning of Furongian"
                 }
               ]
             },
             {
-              "id": "miaolingian",
-              "name": "廟嶺世",
+              "id": "30",
+              "name": "ミャオリンギアン",
               "nameEn": "Miaolingian",
               "baseAge": 509,
               "ages": [
                 {
-                  "id": "guzhangian",
-                  "name": "古丈期",
+                  "id": "96",
+                  "name": "ガズハンジアン",
                   "nameEn": "Guzhangian",
                   "baseAge": 500.5,
                   "description": "節足動物の進化",
                   "descriptionEn": "Evolution of arthropods"
                 },
                 {
-                  "id": "drumian",
-                  "name": "ドルミアン",
+                  "id": "97",
+                  "name": "ドラミアン",
                   "nameEn": "Drumian",
                   "baseAge": 504.5,
                   "description": "温暖な気候",
                   "descriptionEn": "Warm climate"
                 },
                 {
-                  "id": "wuliuan",
-                  "name": "五里期",
+                  "id": "98",
+                  "name": "ウリューアン",
                   "nameEn": "Wuliuan",
                   "baseAge": 509,
-                  "description": "廟嶺世の始まり",
+                  "description": "ミャオリンギアンの始まり",
                   "descriptionEn": "Beginning of Miaolingian"
                 }
               ]
             },
             {
-              "id": "terreneuvian",
-              "name": "テレヌービアン",
-              "nameEn": "Terreneuvian",
+              "id": "31",
+              "name": "シリーズ2",
+              "nameEn": "Series 2",
               "baseAge": 541,
               "ages": [
                 {
-                  "id": "stage4",
+                  "id": "99",
                   "name": "ステージ4",
                   "nameEn": "Stage 4",
                   "baseAge": 514,
@@ -1155,15 +1155,23 @@
                   "descriptionEn": "Explosive evolution of multicellular organisms"
                 },
                 {
-                  "id": "stage3",
+                  "id": "100",
                   "name": "ステージ3",
                   "nameEn": "Stage 3",
                   "baseAge": 521,
                   "description": "温暖な気候",
                   "descriptionEn": "Warm climate"
-                },
+                }
+              ]
+            },
+            {
+              "id": "32",
+              "name": "テレヌービアン",
+              "nameEn": "Terreneuvian",
+              "baseAge": 541,
+              "ages": [
                 {
-                  "id": "stage2",
+                  "id": "101",
                   "name": "ステージ2",
                   "nameEn": "Stage 2",
                   "baseAge": 529,
@@ -1171,7 +1179,7 @@
                   "descriptionEn": "Marine transgression"
                 },
                 {
-                  "id": "fortunian",
+                  "id": "102",
                   "name": "フォーチュニアン",
                   "nameEn": "Fortunian",
                   "baseAge": 541,
