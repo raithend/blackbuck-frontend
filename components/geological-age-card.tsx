@@ -9,7 +9,6 @@ import {
   CardFooter,
   CardDescription,
 } from "@/components/ui/card";
-import { RotatableHourglass } from "./rotatable-hourglass";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from "@/components/ui/slider";
 import geologicalAgesData from '@/data/geological-ages.json';
@@ -144,7 +143,6 @@ export function GeologicalAgeCard() {
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle>地質時代</CardTitle>
-          <RotatableHourglass />
         </div>
       </CardHeader>
       <CardContent>
