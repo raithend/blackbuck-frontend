@@ -2,6 +2,7 @@
 
 import { TreeOfLife } from "@/components/chart";
 import { GeologicalAgeCard } from '@/components/geological-age-card';
+import Earth from '@/components/earth';
 
 export default function Page() {
 	return (
@@ -10,6 +11,7 @@ export default function Page() {
 				<GeologicalAgeCard />
 			</div>
 			<TreeOfLife />
+			<Earth timeperiod="100ma" />
 		</div>
 	);
 }
