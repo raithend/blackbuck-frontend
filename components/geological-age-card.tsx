@@ -89,7 +89,7 @@ export function GeologicalAgeCard() {
   };
 
   return (
-    <Card className="w-full">
+    <Card className="w-72">
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle>地質時代</CardTitle>
@@ -100,7 +100,7 @@ export function GeologicalAgeCard() {
         <div className="space-y-4">
           <div className="flex flex-col space-y-4">
             <Select
-              value={selectedEra.id}
+              value={selectedEra?.id}
               onValueChange={handleEraChange}
             >
               <SelectTrigger>
@@ -109,61 +109,62 @@ export function GeologicalAgeCard() {
               <SelectContent>
                 {geologicalAgesData.eras.map((era) => (
                   <SelectItem key={era.id} value={era.id}>
-                    {era.name} ({era.nameEn})
+                    {era.name}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
 
             <Select
-              value={selectedPeriod.id}
+              value={selectedPeriod?.id}
               onValueChange={handlePeriodChange}
+              disabled={!selectedEra}
             >
               <SelectTrigger>
                 <SelectValue placeholder="紀を選択" />
               </SelectTrigger>
               <SelectContent>
-                {selectedEra.periods.map((period) => (
+                {selectedEra?.periods.map((period) => (
                   <SelectItem key={period.id} value={period.id}>
-                    {period.name} ({period.nameEn})
+                    {period.name}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
 
             <Select
-              value={selectedEpoch.id}
+              value={selectedEpoch?.id}
               onValueChange={handleEpochChange}
+              disabled={!selectedPeriod}
             >
               <SelectTrigger>
                 <SelectValue placeholder="世を選択" />
               </SelectTrigger>
               <SelectContent>
-                {selectedPeriod.epochs.map((epoch) => (
+                {selectedPeriod?.epochs.map((epoch) => (
                   <SelectItem key={epoch.id} value={epoch.id}>
-                    {epoch.name} ({epoch.nameEn})
+                    {epoch.name}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
 
-            {selectedEpoch.ages && (
-              <Select
-                value={selectedAge?.id || ''}
-                onValueChange={handleAgeChange}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="期を選択" />
-                </SelectTrigger>
-                <SelectContent>
-                  {selectedEpoch.ages.map((age) => (
-                    <SelectItem key={age.id} value={age.id}>
-                      {age.name} ({age.nameEn})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
+            <Select
+              value={selectedAge?.id}
+              onValueChange={handleAgeChange}
+              disabled={!selectedEpoch || !selectedEpoch.ages}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="期を選択" />
+              </SelectTrigger>
+              <SelectContent>
+                {selectedEpoch?.ages?.map((age) => (
+                  <SelectItem key={age.id} value={age.id}>
+                    {age.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="flex justify-between">
