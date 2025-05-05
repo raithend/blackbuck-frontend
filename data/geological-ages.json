@@ -51,18 +51,18 @@
               "baseAge": 2.58,
               "ages": [
                 {
-                  "id": "tarantian",
-                  "name": "タランティアン",
-                  "nameEn": "Tarantian",
-                  "baseAge": 0.126,
+                  "id": "late-pleistocene",
+                  "name": "後期更新世",
+                  "nameEn": "Late Pleistocene",
+                  "baseAge": 0.129,
                   "description": "最終氷期の時代",
                   "descriptionEn": "Last glacial period"
                 },
                 {
-                  "id": "ionian",
-                  "name": "イオニアン",
-                  "nameEn": "Ionian",
-                  "baseAge": 0.781,
+                  "id": "chibanian",
+                  "name": "チバニアン",
+                  "nameEn": "Chibanian",
+                  "baseAge": 0.774,
                   "description": "氷河期と間氷期の繰り返し",
                   "descriptionEn": "Alternation of glacial and interglacial periods"
                 },
@@ -140,7 +140,7 @@
                 },
                 {
                   "id": "serravallian",
-                  "name": "セラバリアン",
+                  "name": "サーラバリアン",
                   "nameEn": "Serravallian",
                   "baseAge": 13.82,
                   "description": "気候の寒冷化",
@@ -156,7 +156,7 @@
                 },
                 {
                   "id": "burdigalian",
-                  "name": "ブルディガリアン",
+                  "name": "バーディガリアン",
                   "nameEn": "Burdigalian",
                   "baseAge": 20.44,
                   "description": "海進期",
@@ -214,7 +214,7 @@
                   "id": "priabonian",
                   "name": "プリアボニアン",
                   "nameEn": "Priabonian",
-                  "baseAge": 37.71,
+                  "baseAge": 37.8,
                   "description": "温暖な気候の終わり",
                   "descriptionEn": "End of warm climate"
                 },
@@ -236,7 +236,7 @@
                 },
                 {
                   "id": "ypresian",
-                  "name": "イプレシアン",
+                  "name": "ヤプレシアン",
                   "nameEn": "Ypresian",
                   "baseAge": 56,
                   "description": "始新世の始まり",
@@ -388,7 +388,7 @@
                 },
                 {
                   "id": "valanginian",
-                  "name": "バランジニアン",
+                  "name": "バランギニアン",
                   "nameEn": "Valanginian",
                   "baseAge": 139.8,
                   "description": "温暖な気候",
@@ -468,7 +468,7 @@
                 },
                 {
                   "id": "bajocian",
-                  "name": "バジョシアン",
+                  "name": "バッジョシアン",
                   "nameEn": "Bajocian",
                   "baseAge": 170.3,
                   "description": "温暖な気候",
@@ -500,7 +500,7 @@
                 },
                 {
                   "id": "pleinsbachian",
-                  "name": "プレンスバキアン",
+                  "name": "プリンスバッキアン",
                   "nameEn": "Pleinsbachian",
                   "baseAge": 190.8,
                   "description": "海進期",
@@ -508,7 +508,7 @@
                 },
                 {
                   "id": "sinemurian",
-                  "name": "シネムリアン",
+                  "name": "シネムーリアン",
                   "nameEn": "Sinemurian",
                   "baseAge": 199.3,
                   "description": "温暖な気候",
