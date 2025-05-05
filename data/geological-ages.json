@@ -633,16 +633,96 @@
               "name": "後期",
               "nameEn": "Late",
               "baseAge": 259.9,
-              "description": "最大の大量絶滅",
-              "descriptionEn": "Greatest mass extinction"
+              "ages": [
+                {
+                  "id": "changhsingian",
+                  "name": "チャンシンギアン",
+                  "nameEn": "Changhsingian",
+                  "baseAge": 254.14,
+                  "description": "最大の大量絶滅",
+                  "descriptionEn": "Greatest mass extinction"
+                },
+                {
+                  "id": "wuchiapingian",
+                  "name": "ウチアピンギアン",
+                  "nameEn": "Wuchiapingian",
+                  "baseAge": 259.9,
+                  "description": "後期ペルム紀の始まり",
+                  "descriptionEn": "Beginning of Late Permian"
+                }
+              ]
+            },
+            {
+              "id": "middle-permian",
+              "name": "中期",
+              "nameEn": "Middle",
+              "baseAge": 272.3,
+              "ages": [
+                {
+                  "id": "capitanian",
+                  "name": "カピタニアン",
+                  "nameEn": "Capitanian",
+                  "baseAge": 265.1,
+                  "description": "温暖な気候",
+                  "descriptionEn": "Warm climate"
+                },
+                {
+                  "id": "wordian",
+                  "name": "ウォーディアン",
+                  "nameEn": "Wordian",
+                  "baseAge": 268.8,
+                  "description": "海進期",
+                  "descriptionEn": "Marine transgression"
+                },
+                {
+                  "id": "roadian",
+                  "name": "ローディアン",
+                  "nameEn": "Roadian",
+                  "baseAge": 272.3,
+                  "description": "中期ペルム紀の始まり",
+                  "descriptionEn": "Beginning of Middle Permian"
+                }
+              ]
             },
             {
               "id": "early-permian",
               "name": "前期",
               "nameEn": "Early",
               "baseAge": 298.9,
-              "description": "爬虫類の進化",
-              "descriptionEn": "Evolution of reptiles"
+              "ages": [
+                {
+                  "id": "kungurian",
+                  "name": "クングリアン",
+                  "nameEn": "Kungurian",
+                  "baseAge": 283.5,
+                  "description": "温暖な気候",
+                  "descriptionEn": "Warm climate"
+                },
+                {
+                  "id": "artinskian",
+                  "name": "アルチンスキアン",
+                  "nameEn": "Artinskian",
+                  "baseAge": 290.1,
+                  "description": "海進期",
+                  "descriptionEn": "Marine transgression"
+                },
+                {
+                  "id": "sakmarian",
+                  "name": "サクマリアン",
+                  "nameEn": "Sakmarian",
+                  "baseAge": 295.5,
+                  "description": "温暖な気候",
+                  "descriptionEn": "Warm climate"
+                },
+                {
+                  "id": "asselian",
+                  "name": "アッセリアン",
+                  "nameEn": "Asselian",
+                  "baseAge": 298.9,
+                  "description": "前期ペルム紀の始まり",
+                  "descriptionEn": "Beginning of Early Permian"
+                }
+              ]
             }
           ]
         },
@@ -657,16 +737,72 @@
               "name": "ペンシルバニアン",
               "nameEn": "Pennsylvanian",
               "baseAge": 323.2,
-              "description": "巨大な森林の形成",
-              "descriptionEn": "Formation of giant forests"
+              "ages": [
+                {
+                  "id": "gzelian",
+                  "name": "グゼリアン",
+                  "nameEn": "Gzelian",
+                  "baseAge": 303.7,
+                  "description": "巨大な森林の形成",
+                  "descriptionEn": "Formation of giant forests"
+                },
+                {
+                  "id": "kasimovian",
+                  "name": "カシモビアン",
+                  "nameEn": "Kasimovian",
+                  "baseAge": 307,
+                  "description": "温暖な気候",
+                  "descriptionEn": "Warm climate"
+                },
+                {
+                  "id": "moscovian",
+                  "name": "モスコビアン",
+                  "nameEn": "Moscovian",
+                  "baseAge": 315.2,
+                  "description": "海進期",
+                  "descriptionEn": "Marine transgression"
+                },
+                {
+                  "id": "bashkirian",
+                  "name": "バシキリアン",
+                  "nameEn": "Bashkirian",
+                  "baseAge": 323.2,
+                  "description": "ペンシルバニアンの始まり",
+                  "descriptionEn": "Beginning of Pennsylvanian"
+                }
+              ]
             },
             {
               "id": "mississippian",
               "name": "ミシシッピアン",
               "nameEn": "Mississippian",
               "baseAge": 358.9,
-              "description": "石炭の生成",
-              "descriptionEn": "Coal formation"
+              "ages": [
+                {
+                  "id": "serpukhovian",
+                  "name": "セルプコビアン",
+                  "nameEn": "Serpukhovian",
+                  "baseAge": 330.9,
+                  "description": "温暖な気候",
+                  "descriptionEn": "Warm climate"
+                },
+                {
+                  "id": "visean",
+                  "name": "ビゼアン",
+                  "nameEn": "Visean",
+                  "baseAge": 346.7,
+                  "description": "海進期",
+                  "descriptionEn": "Marine transgression"
+                },
+                {
+                  "id": "tournaisian",
+                  "name": "トゥルネシアン",
+                  "nameEn": "Tournaisian",
+                  "baseAge": 358.9,
+                  "description": "ミシシッピアンの始まり",
+                  "descriptionEn": "Beginning of Mississippian"
+                }
+              ]
             }
           ]
         },
@@ -681,24 +817,80 @@
               "name": "後期",
               "nameEn": "Late",
               "baseAge": 382.7,
-              "description": "魚類の繁栄",
-              "descriptionEn": "Prosperity of fish"
+              "ages": [
+                {
+                  "id": "fammenian",
+                  "name": "ファメニアン",
+                  "nameEn": "Fammenian",
+                  "baseAge": 372.2,
+                  "description": "魚類の繁栄",
+                  "descriptionEn": "Prosperity of fish"
+                },
+                {
+                  "id": "frasnian",
+                  "name": "フラスニアン",
+                  "nameEn": "Frasnian",
+                  "baseAge": 382.7,
+                  "description": "後期デボン紀の始まり",
+                  "descriptionEn": "Beginning of Late Devonian"
+                }
+              ]
             },
             {
               "id": "middle-devonian",
               "name": "中期",
               "nameEn": "Middle",
               "baseAge": 393.3,
-              "description": "陸上植物の進化",
-              "descriptionEn": "Evolution of land plants"
+              "ages": [
+                {
+                  "id": "givetian",
+                  "name": "ジベティアン",
+                  "nameEn": "Givetian",
+                  "baseAge": 387.7,
+                  "description": "温暖な気候",
+                  "descriptionEn": "Warm climate"
+                },
+                {
+                  "id": "eifelian",
+                  "name": "アイフェリアン",
+                  "nameEn": "Eifelian",
+                  "baseAge": 393.3,
+                  "description": "中期デボン紀の始まり",
+                  "descriptionEn": "Beginning of Middle Devonian"
+                }
+              ]
             },
             {
               "id": "early-devonian",
               "name": "前期",
               "nameEn": "Early",
               "baseAge": 419.2,
-              "description": "節足動物の進化",
-              "descriptionEn": "Evolution of arthropods"
+              "ages": [
+                {
+                  "id": "emsian",
+                  "name": "エムシアン",
+                  "nameEn": "Emsian",
+                  "baseAge": 407.6,
+                  "description": "温暖な気候",
+                  "descriptionEn": "Warm climate"
+                },
+                {
+                  "id": "pragian",
+                  "name": "プラギアン",
+                  "nameEn": "Pragian",
+                  "baseAge": 410.8,
+                  "description": "海進期",
+                  "descriptionEn": "Marine transgression"
+                },
+                {
+                  "id": "lochkovian",
+                  "name": "ロホコビアン",
+                  "nameEn": "Lochkovian",
+                  "baseAge": 419.2,
+                  "description": "前期デボン紀の始まり",
+                  "descriptionEn": "Beginning of Early Devonian"
+                }
+              ]
             }
           ]
         },
@@ -713,16 +905,80 @@
               "name": "後期",
               "nameEn": "Late",
               "baseAge": 427.4,
-              "description": "陸上植物の出現",
-              "descriptionEn": "Emergence of land plants"
+              "ages": [
+                {
+                  "id": "pridoli",
+                  "name": "プリドリ",
+                  "nameEn": "Pridoli",
+                  "baseAge": 423,
+                  "description": "陸上植物の出現",
+                  "descriptionEn": "Emergence of land plants"
+                },
+                {
+                  "id": "ludfordian",
+                  "name": "ラドフォーディアン",
+                  "nameEn": "Ludfordian",
+                  "baseAge": 425.6,
+                  "description": "温暖な気候",
+                  "descriptionEn": "Warm climate"
+                },
+                {
+                  "id": "gorstian",
+                  "name": "ゴースティアン",
+                  "nameEn": "Gorstian",
+                  "baseAge": 427.4,
+                  "description": "後期シルル紀の始まり",
+                  "descriptionEn": "Beginning of Late Silurian"
+                }
+              ]
             },
             {
               "id": "early-silurian",
               "name": "前期",
               "nameEn": "Early",
               "baseAge": 443.8,
-              "description": "無脊椎動物の進化",
-              "descriptionEn": "Evolution of invertebrates"
+              "ages": [
+                {
+                  "id": "homerian",
+                  "name": "ホメリアン",
+                  "nameEn": "Homerian",
+                  "baseAge": 430.5,
+                  "description": "温暖な気候",
+                  "descriptionEn": "Warm climate"
+                },
+                {
+                  "id": "sheinwoodian",
+                  "name": "シェインウディアン",
+                  "nameEn": "Sheinwoodian",
+                  "baseAge": 433.4,
+                  "description": "海進期",
+                  "descriptionEn": "Marine transgression"
+                },
+                {
+                  "id": "telychian",
+                  "name": "テリキアン",
+                  "nameEn": "Telychian",
+                  "baseAge": 438.5,
+                  "description": "温暖な気候",
+                  "descriptionEn": "Warm climate"
+                },
+                {
+                  "id": "aeronian",
+                  "name": "エアロニアン",
+                  "nameEn": "Aeronian",
+                  "baseAge": 440.8,
+                  "description": "海進期",
+                  "descriptionEn": "Marine transgression"
+                },
+                {
+                  "id": "rhuddanian",
+                  "name": "ルダニアン",
+                  "nameEn": "Rhuddanian",
+                  "baseAge": 443.8,
+                  "description": "前期シルル紀の始まり",
+                  "descriptionEn": "Beginning of Early Silurian"
+                }
+              ]
             }
           ]
         },
@@ -737,16 +993,80 @@
               "name": "後期",
               "nameEn": "Late",
               "baseAge": 458.4,
-              "description": "最初の魚類の出現",
-              "descriptionEn": "Emergence of first fish"
+              "ages": [
+                {
+                  "id": "hirnantian",
+                  "name": "ヒルナンティアン",
+                  "nameEn": "Hirnantian",
+                  "baseAge": 445.2,
+                  "description": "最初の魚類の出現",
+                  "descriptionEn": "Emergence of first fish"
+                },
+                {
+                  "id": "katian",
+                  "name": "カティアン",
+                  "nameEn": "Katian",
+                  "baseAge": 453,
+                  "description": "温暖な気候",
+                  "descriptionEn": "Warm climate"
+                },
+                {
+                  "id": "sandbian",
+                  "name": "サンディビアン",
+                  "nameEn": "Sandbian",
+                  "baseAge": 458.4,
+                  "description": "後期オルドビス紀の始まり",
+                  "descriptionEn": "Beginning of Late Ordovician"
+                }
+              ]
+            },
+            {
+              "id": "middle-ordovician",
+              "name": "中期",
+              "nameEn": "Middle",
+              "baseAge": 470,
+              "ages": [
+                {
+                  "id": "darriwilian",
+                  "name": "ダリウィリアン",
+                  "nameEn": "Darriwilian",
+                  "baseAge": 467.3,
+                  "description": "温暖な気候",
+                  "descriptionEn": "Warm climate"
+                },
+                {
+                  "id": "dapingian",
+                  "name": "ダピンギアン",
+                  "nameEn": "Dapingian",
+                  "baseAge": 470,
+                  "description": "中期オルドビス紀の始まり",
+                  "descriptionEn": "Beginning of Middle Ordovician"
+                }
+              ]
             },
             {
               "id": "early-ordovician",
               "name": "前期",
               "nameEn": "Early",
               "baseAge": 485.4,
-              "description": "無脊椎動物の繁栄",
-              "descriptionEn": "Prosperity of invertebrates"
+              "ages": [
+                {
+                  "id": "floian",
+                  "name": "フロイアン",
+                  "nameEn": "Floian",
+                  "baseAge": 477.7,
+                  "description": "温暖な気候",
+                  "descriptionEn": "Warm climate"
+                },
+                {
+                  "id": "tremadocian",
+                  "name": "トレマドキアン",
+                  "nameEn": "Tremadocian",
+                  "baseAge": 485.4,
+                  "description": "前期オルドビス紀の始まり",
+                  "descriptionEn": "Beginning of Early Ordovician"
+                }
+              ]
             }
           ]
         },
@@ -761,24 +1081,104 @@
               "name": "芙蓉世",
               "nameEn": "Furongian",
               "baseAge": 497,
-              "description": "三葉虫の繁栄",
-              "descriptionEn": "Prosperity of trilobites"
+              "ages": [
+                {
+                  "id": "stage10",
+                  "name": "ステージ10",
+                  "nameEn": "Stage 10",
+                  "baseAge": 489.5,
+                  "description": "三葉虫の繁栄",
+                  "descriptionEn": "Prosperity of trilobites"
+                },
+                {
+                  "id": "jiangshanian",
+                  "name": "江山上期",
+                  "nameEn": "Jiangshanian",
+                  "baseAge": 494,
+                  "description": "温暖な気候",
+                  "descriptionEn": "Warm climate"
+                },
+                {
+                  "id": "paibian",
+                  "name": "排碧期",
+                  "nameEn": "Paibian",
+                  "baseAge": 497,
+                  "description": "芙蓉世の始まり",
+                  "descriptionEn": "Beginning of Furongian"
+                }
+              ]
             },
             {
               "id": "miaolingian",
               "name": "廟嶺世",
               "nameEn": "Miaolingian",
               "baseAge": 509,
-              "description": "節足動物の進化",
-              "descriptionEn": "Evolution of arthropods"
+              "ages": [
+                {
+                  "id": "guzhangian",
+                  "name": "古丈期",
+                  "nameEn": "Guzhangian",
+                  "baseAge": 500.5,
+                  "description": "節足動物の進化",
+                  "descriptionEn": "Evolution of arthropods"
+                },
+                {
+                  "id": "drumian",
+                  "name": "ドルミアン",
+                  "nameEn": "Drumian",
+                  "baseAge": 504.5,
+                  "description": "温暖な気候",
+                  "descriptionEn": "Warm climate"
+                },
+                {
+                  "id": "wuliuan",
+                  "name": "五里期",
+                  "nameEn": "Wuliuan",
+                  "baseAge": 509,
+                  "description": "廟嶺世の始まり",
+                  "descriptionEn": "Beginning of Miaolingian"
+                }
+              ]
             },
             {
               "id": "terreneuvian",
               "name": "テレヌービアン",
               "nameEn": "Terreneuvian",
               "baseAge": 541,
-              "description": "多細胞生物の爆発的進化",
-              "descriptionEn": "Explosive evolution of multicellular organisms"
+              "ages": [
+                {
+                  "id": "stage4",
+                  "name": "ステージ4",
+                  "nameEn": "Stage 4",
+                  "baseAge": 514,
+                  "description": "多細胞生物の爆発的進化",
+                  "descriptionEn": "Explosive evolution of multicellular organisms"
+                },
+                {
+                  "id": "stage3",
+                  "name": "ステージ3",
+                  "nameEn": "Stage 3",
+                  "baseAge": 521,
+                  "description": "温暖な気候",
+                  "descriptionEn": "Warm climate"
+                },
+                {
+                  "id": "stage2",
+                  "name": "ステージ2",
+                  "nameEn": "Stage 2",
+                  "baseAge": 529,
+                  "description": "海進期",
+                  "descriptionEn": "Marine transgression"
+                },
+                {
+                  "id": "fortunian",
+                  "name": "フォーチュニアン",
+                  "nameEn": "Fortunian",
+                  "baseAge": 541,
+                  "description": "テレヌービアンの始まり",
+                  "descriptionEn": "Beginning of Terreneuvian"
+                }
+              ]
             }
           ]
         }
