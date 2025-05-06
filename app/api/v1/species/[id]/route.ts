@@ -4,16 +4,16 @@ const speciesData = {
 	lion: {
 		name: "ライオン",
 		scientificName: "Panthera leo",
-		description: "アフリカの草原に生息する大型のネコ科動物です。",
-		habitat: "アフリカのサバンナ",
-		diet: "主に草食動物（シマウマ、ヌーなど）",
+		description: "アフリカのサバンナに生息する大型のネコ科動物です。",
+		habitat: "アフリカのサバンナや草原地帯に生息しています。",
+		diet: "主にシマウマやヌーなどの草食動物を捕食します。"
 	},
 	elephant: {
-		name: "ゾウ",
+		name: "アフリカゾウ",
 		scientificName: "Loxodonta africana",
-		description: "地球上で最も大きな陸上動物です。",
-		habitat: "アフリカのサバンナや森林",
-		diet: "草、葉、樹皮、果実",
+		description: "地球上で最も大きな陸上哺乳類です。",
+		habitat: "アフリカのサバンナや森林地帯に生息しています。",
+		diet: "草、葉、樹皮、果実などを食べます。"
 	},
 	penguin: {
 		name: "ペンギン",
@@ -26,9 +26,9 @@ const speciesData = {
 
 export async function GET(
 	request: Request,
-	context: { params: { id: string } },
+	{ params }: { params: { id: string } }
 ) {
-	const { id } = await context.params;
+	const id = params.id;
 	const species = speciesData[id as keyof typeof speciesData];
 
 	if (!species) {

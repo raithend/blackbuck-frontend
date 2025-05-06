@@ -8,12 +8,12 @@ import { LoginForm } from '@/components/auth/login-form'
 import { SignupForm } from '@/components/auth/signup-form'
 import { useSupabaseSession } from '@/hooks/use-supabase-session'
 
-interface SignInDialogProps {
+interface AuthDialogProps {
 	trigger?: React.ReactNode
 	defaultTab?: 'login' | 'signup'
 }
 
-export function SignInDialog({ trigger, defaultTab = 'login' }: SignInDialogProps) {
+export function AuthDialog({ trigger, defaultTab = 'login' }: AuthDialogProps) {
 	const [activeTab, setActiveTab] = useState<'login' | 'signup'>(defaultTab)
 	const { session, user, loading, error, signOut } = useSupabaseSession()
 

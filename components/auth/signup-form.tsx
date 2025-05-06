@@ -1,40 +1,59 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { createBrowserClient } from '@supabase/ssr'
 import { useRouter } from 'next/navigation'
-import { createBrowserClient } from '@/lib/supabase-browser'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 
 export function SignupForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [accountId, setAccountId] = useState('')
+  const [username, setUsername] = useState('')
   const [error, setError] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [message, setMessage] = useState<string | null>(null)
+  const [accountIdStatus, setAccountIdStatus] = useState<'checking' | 'available' | 'unavailable' | null>(null)
   const router = useRouter()
-  const [supabase, setSupabase] = useState<any>(null)
 
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
+
+  // account_idのバリデーション
   useEffect(() => {
-    setSupabase(createBrowserClient())
-  }, [])
+    if (!accountId) {
+      setAccountIdStatus(null)
+      return
+    }
+
+    const timer = setTimeout(async () => {
+      try {
+        const response = await fetch(`/api/v1/users/${accountId}`)
+        if (response.ok) {
+          setAccountIdStatus('unavailable')
+        } else if (response.status >= 400 && response.status < 500) {
+          setAccountIdStatus('available')
+        }
+      } catch (err) {
+        setAccountIdStatus(null)
+      }
+    }, 1000)
+
+    return () => clearTimeout(timer)
+  }, [accountId])
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!supabase) return
-    
-    setLoading(true)
     setError(null)
-    setMessage(null)
 
     try {
-      const { error } = await supabase.auth.signUp({
+      // Supabaseでのサインアップ
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
-        },
       })
 
       if (error) {
@@ -42,71 +61,99 @@ export function SignupForm() {
         return
       }
 
-      // サインアップ成功メッセージを表示
-      setMessage('確認メールを送信しました。メールを確認してアカウントを有効化してください。')
+      if (data.session) {
+        // バックエンドへのユーザー情報送信
+        const response = await fetch('/api/v1/signup', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${data.session.access_token}`
+          },
+          body: JSON.stringify({
+            account_id: accountId,
+            username: username
+          })
+        })
+
+        if (!response.ok) {
+          setError('ユーザー情報の登録に失敗しました')
+          return
+        }
+
+        router.push('/login')
+      }
     } catch (err) {
-      setError('サインアップ中にエラーが発生しました。もう一度お試しください。')
-      console.error(err)
-    } finally {
-      setLoading(false)
+      setError('サインアップ中にエラーが発生しました')
     }
   }
 
+  const isFormValid = email && password && accountId && username && accountIdStatus === 'available'
+
   return (
-    <div className="space-y-6">
-      <div className="space-y-2 text-center">
-        <h1 className="text-3xl font-bold">アカウント作成</h1>
-        <p className="text-gray-500 dark:text-gray-400">
-          新しいアカウントを作成してください
-        </p>
-      </div>
-      {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-          {error}
-        </div>
-      )}
-      {message && (
-        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
-          {message}
-        </div>
-      )}
-      <form onSubmit={handleSignup} className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="email">メールアドレス</Label>
-          <Input
-            id="email"
-            type="email"
-            placeholder="your@email.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="password">パスワード</Label>
-          <Input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-          <p className="text-xs text-gray-500">
-            パスワードは8文字以上で、少なくとも1つの数字を含める必要があります
-          </p>
-        </div>
-        <Button type="submit" className="w-full" disabled={loading || !supabase}>
-          {loading ? '処理中...' : 'サインアップ'}
-        </Button>
-      </form>
-      <div className="text-center">
-        <p className="text-sm text-gray-500 dark:text-gray-400">
-          すでにアカウントをお持ちですか？{' '}
-          <Button variant="link" className="p-0 h-auto" asChild>
-            <a href="/login">ログイン</a>
+    <Card className="w-[350px]">
+      <CardHeader>
+        <CardTitle>サインアップ</CardTitle>
+        <CardDescription>新しいアカウントを作成してください</CardDescription>
+      </CardHeader>
+      <form onSubmit={handleSignup}>
+        <CardContent>
+          <div className="grid w-full items-center gap-4">
+            <div className="flex flex-col space-y-1.5">
+              <Label htmlFor="email">メールアドレス</Label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+            <div className="flex flex-col space-y-1.5">
+              <Label htmlFor="password">パスワード</Label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+            <div className="flex flex-col space-y-1.5">
+              <Label htmlFor="accountId">アカウントID</Label>
+              <Input
+                id="accountId"
+                value={accountId}
+                onChange={(e) => setAccountId(e.target.value)}
+                required
+              />
+              {accountIdStatus === 'checking' && (
+                <p className="text-sm text-gray-500">チェック中...</p>
+              )}
+              {accountIdStatus === 'unavailable' && (
+                <p className="text-sm text-red-500">そのアカウント名は使用できません</p>
+              )}
+              {accountIdStatus === 'available' && (
+                <p className="text-sm text-green-500">そのアカウント名は使用可能です</p>
+              )}
+            </div>
+            <div className="flex flex-col space-y-1.5">
+              <Label htmlFor="username">ユーザー名</Label>
+              <Input
+                id="username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+              />
+            </div>
+            {error && <p className="text-sm text-red-500">{error}</p>}
+          </div>
+        </CardContent>
+        <CardFooter>
+          <Button type="submit" className="w-full" disabled={!isFormValid}>
+            サインアップ
           </Button>
-        </p>
-      </div>
-    </div>
+        </CardFooter>
+      </form>
+    </Card>
   )
 } 

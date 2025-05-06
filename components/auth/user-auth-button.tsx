@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogTrigger } from "@/components/ui/dialog"
-import { SignInDialog } from "@/components/auth/sign-in-dialog"
+import { SignInDialog } from "@/components/auth/auth-dialog"
 import { useSupabaseAuth } from "@/contexts/supabase-auth-context"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
