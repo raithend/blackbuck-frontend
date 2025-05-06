@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -13,31 +12,12 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useUser } from '@/contexts/user-context';
+import { useSupabaseSession } from '@/hooks/use-supabase-session';
+import { LogoutButton } from '@/components/auth/logout-button';
 
 export function Header() {
-  const router = useRouter();
   const { user } = useUser();
 
-  const handleSignOut = async () => {
-    try {
-      const response = await fetch('/api/v1/sessions', {
-        method: 'DELETE',
-        credentials: 'include',
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to sign out');
-      }
-      
-      router.refresh();
-    } catch (error) {
-      console.error('Error signing out:', error);
-    }
-  };
-
-  const handleSignIn = () => {
-    router.push('/auth/login');
-  };
 
   return (
     <header className="fixed top-0 left-0 right-0 h-16 border-b bg-background z-50">
@@ -65,14 +45,14 @@ export function Header() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={handleSignOut}>
-                    ログアウト
+                  <DropdownMenuItem>
+                    <LogoutButton />
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </>
           ) : (
-            <Button onClick={handleSignIn}>
+            <Button >
               ログイン
             </Button>
           )}
