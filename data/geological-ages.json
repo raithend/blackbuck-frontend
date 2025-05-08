@@ -4,25 +4,33 @@
       "id": "1",
       "name": "新生代",
       "nameEn": "Cenozoic",
-      "baseAge": 66.0,
+      "startAge": 66.0,
+      "endAge": 0,
+      "map": "Map10a",
       "periods": [
         {
           "id": "1",
           "name": "第四紀",
           "nameEn": "Quaternary",
-          "baseAge": 2.58,
+          "startAge": 2.58,
+          "endAge": 0,
+          "map": "Map2a",
           "epochs": [
             {
               "id": "1",
               "name": "完新世",
               "nameEn": "Holocene",
-              "baseAge": 0.0117,
+              "startAge": 0.0117,
+              "endAge": 0,
+              "map": "Map1a",
               "ages": [
                 {
                   "id": "1",
                   "name": "メガラヤン",
                   "nameEn": "Meghalayan",
-                  "baseAge": 0.0042,
+                  "startAge": 0.0042,
+                  "endAge": 0,
+                  "map": "Map1a",
                   "description": "人類の文明が発展した時代",
                   "descriptionEn": "Age of human civilization"
                 },
@@ -30,7 +38,9 @@
                   "id": "2",
                   "name": "ノースグリッピアン",
                   "nameEn": "Northgrippian",
-                  "baseAge": 0.0082,
+                  "startAge": 0.0082,
+                  "endAge": 0.0042,
+                  "map": "Map1a",
                   "description": "気候変動が始まった時代",
                   "descriptionEn": "Beginning of climate change"
                 },
@@ -38,7 +48,9 @@
                   "id": "3",
                   "name": "グリーンランディアン",
                   "nameEn": "Greenlandian",
-                  "baseAge": 0.0117,
+                  "startAge": 0.0117,
+                  "endAge": 0.0082,
+                  "map": "Map1a",
                   "description": "氷河期が終わり温暖化が始まった時代",
                   "descriptionEn": "End of ice age and beginning of warming"
                 }
@@ -48,13 +60,17 @@
               "id": "2",
               "name": "更新世",
               "nameEn": "Pleistocene",
-              "baseAge": 2.58,
+              "startAge": 2.58,
+              "endAge": 0.0117,
+              "map": "Map2a",
               "ages": [
                 {
                   "id": "4",
                   "name": "後期更新世",
                   "nameEn": "Late Pleistocene",
-                  "baseAge": 0.129,
+                  "startAge": 0.129,
+                  "endAge": 0.0117,
+                  "map": "Map2a",
                   "description": "最終氷期の時代",
                   "descriptionEn": "Last glacial period"
                 },
@@ -62,7 +78,9 @@
                   "id": "5",
                   "name": "チバニアン",
                   "nameEn": "Chibanian",
-                  "baseAge": 0.774,
+                  "startAge": 0.774,
+                  "endAge": 0.129,
+                  "map": "Map2a",
                   "description": "氷河期と間氷期の繰り返し",
                   "descriptionEn": "Alternation of glacial and interglacial periods"
                 },
@@ -70,7 +88,9 @@
                   "id": "6",
                   "name": "カラブリアン",
                   "nameEn": "Calabrian",
-                  "baseAge": 1.8,
+                  "startAge": 1.8,
+                  "endAge": 0.774,
+                  "map": "Map2a",
                   "description": "氷河期の始まり",
                   "descriptionEn": "Beginning of ice age"
                 },
@@ -78,7 +98,9 @@
                   "id": "7",
                   "name": "ジェラシアン",
                   "nameEn": "Gelasian",
-                  "baseAge": 2.58,
+                  "startAge": 2.58,
+                  "endAge": 1.8,
+                  "map": "Map2a",
                   "description": "第四紀の最初の期",
                   "descriptionEn": "First age of Quaternary"
                 }
@@ -90,19 +112,25 @@
           "id": "2",
           "name": "新第三紀",
           "nameEn": "Neogene",
-          "baseAge": 23.03,
+          "startAge": 23.03,
+          "endAge": 2.58,
+          "map": "Map5a",
           "epochs": [
             {
               "id": "3",
               "name": "鮮新世",
               "nameEn": "Pliocene",
-              "baseAge": 5.333,
+              "startAge": 5.333,
+              "endAge": 2.58,
+              "map": "Map3a",
               "ages": [
                 {
                   "id": "8",
                   "name": "ピアセンジアン",
                   "nameEn": "Piacenzian",
-                  "baseAge": 3.6,
+                  "startAge": 3.6,
+                  "endAge": 2.58,
+                  "map": "Map3a",
                   "description": "北半球の氷河の形成",
                   "descriptionEn": "Formation of northern hemisphere glaciers"
                 },
@@ -110,7 +138,9 @@
                   "id": "9",
                   "name": "ザンクリアン",
                   "nameEn": "Zanclean",
-                  "baseAge": 5.333,
+                  "startAge": 5.333,
+                  "endAge": 3.6,
+                  "map": "Map3a",
                   "description": "地中海の再形成",
                   "descriptionEn": "Reformation of Mediterranean Sea"
                 }
@@ -120,13 +150,17 @@
               "id": "4",
               "name": "中新世",
               "nameEn": "Miocene",
-              "baseAge": 23.03,
+              "startAge": 23.03,
+              "endAge": 5.333,
+              "map": "Map6a",
               "ages": [
                 {
                   "id": "10",
                   "name": "メッシニアン",
                   "nameEn": "Messinian",
-                  "baseAge": 7.246,
+                  "startAge": 7.246,
+                  "endAge": 5.333,
+                  "map": "Map4a",
                   "description": "地中海の干上がり",
                   "descriptionEn": "Drying of Mediterranean Sea"
                 },
@@ -134,7 +168,9 @@
                   "id": "11",
                   "name": "トートニアン",
                   "nameEn": "Tortonian",
-                  "baseAge": 11.63,
+                  "startAge": 11.63,
+                  "endAge": 7.246,
+                  "map": "Map5a",
                   "description": "草原の拡大",
                   "descriptionEn": "Expansion of grasslands"
                 },
@@ -142,7 +178,9 @@
                   "id": "12",
                   "name": "サーラバリアン",
                   "nameEn": "Serravallian",
-                  "baseAge": 13.82,
+                  "startAge": 13.82,
+                  "endAge": 11.63,
+                  "map": "Map5a",
                   "description": "気候の寒冷化",
                   "descriptionEn": "Climate cooling"
                 },
@@ -150,7 +188,9 @@
                   "id": "13",
                   "name": "ランギアン",
                   "nameEn": "Langhian",
-                  "baseAge": 15.97,
+                  "startAge": 15.97,
+                  "endAge": 13.82,
+                  "map": "Map6a",
                   "description": "温暖な気候",
                   "descriptionEn": "Warm climate"
                 },
@@ -158,7 +198,9 @@
                   "id": "14",
                   "name": "バーディガリアン",
                   "nameEn": "Burdigalian",
-                  "baseAge": 20.44,
+                  "startAge": 20.44,
+                  "endAge": 15.97,
+                  "map": "Map7a",
                   "description": "海進期",
                   "descriptionEn": "Marine transgression"
                 },
@@ -166,7 +208,9 @@
                   "id": "15",
                   "name": "アキタニアン",
                   "nameEn": "Aquitanian",
-                  "baseAge": 23.03,
+                  "startAge": 23.03,
+                  "endAge": 20.44,
+                  "map": "Map7a",
                   "description": "中新世の始まり",
                   "descriptionEn": "Beginning of Miocene"
                 }
@@ -178,19 +222,25 @@
           "id": "3",
           "name": "古第三紀",
           "nameEn": "Paleogene",
-          "baseAge": 66.0,
+          "startAge": 66.0,
+          "endAge": 23.03,
+          "map": "Map12a",
           "epochs": [
             {
               "id": "5",
               "name": "漸新世",
               "nameEn": "Oligocene",
-              "baseAge": 33.9,
+              "startAge": 33.9,
+              "endAge": 23.03,
+              "map": "Map9a",
               "ages": [
                 {
                   "id": "16",
                   "name": "チャッティアン",
                   "nameEn": "Chattian",
-                  "baseAge": 27.82,
+                  "startAge": 27.82,
+                  "endAge": 23.03,
+                  "map": "Map8a",
                   "description": "草原の拡大",
                   "descriptionEn": "Expansion of grasslands"
                 },
@@ -198,7 +248,9 @@
                   "id": "17",
                   "name": "ルペリアン",
                   "nameEn": "Rupelian",
-                  "baseAge": 33.9,
+                  "startAge": 33.9,
+                  "endAge": 27.82,
+                  "map": "Map9a",
                   "description": "漸新世の始まり",
                   "descriptionEn": "Beginning of Oligocene"
                 }
@@ -208,13 +260,17 @@
               "id": "6",
               "name": "始新世",
               "nameEn": "Eocene",
-              "baseAge": 56.0,
+              "startAge": 56.0,
+              "endAge": 33.9,
+              "map": "Map12a",
               "ages": [
                 {
                   "id": "18",
                   "name": "プリアボニアン",
                   "nameEn": "Priabonian",
-                  "baseAge": 37.8,
+                  "startAge": 37.8,
+                  "endAge": 33.9,
+                  "map": "Map10a",
                   "description": "温暖な気候の終わり",
                   "descriptionEn": "End of warm climate"
                 },
@@ -222,7 +278,9 @@
                   "id": "19",
                   "name": "バートニアン",
                   "nameEn": "Bartonian",
-                  "baseAge": 41.2,
+                  "startAge": 41.2,
+                  "endAge": 37.8,
+                  "map": "Map11a",
                   "description": "温暖な気候の続き",
                   "descriptionEn": "Continuation of warm climate"
                 },
@@ -230,7 +288,9 @@
                   "id": "20",
                   "name": "ルテシアン",
                   "nameEn": "Lutetian",
-                  "baseAge": 47.8,
+                  "startAge": 47.8,
+                  "endAge": 41.2,
+                  "map": "Map12a",
                   "description": "温暖な気候の最盛期",
                   "descriptionEn": "Peak of warm climate"
                 },
@@ -238,7 +298,9 @@
                   "id": "21",
                   "name": "ヤプレシアン",
                   "nameEn": "Ypresian",
-                  "baseAge": 56.0,
+                  "startAge": 56.0,
+                  "endAge": 47.8,
+                  "map": "Map13a",
                   "description": "始新世の始まり",
                   "descriptionEn": "Beginning of Eocene"
                 }
@@ -248,13 +310,17 @@
               "id": "7",
               "name": "暁新世",
               "nameEn": "Paleocene",
-              "baseAge": 66.0,
+              "startAge": 66.0,
+              "endAge": 56.0,
+              "map": "Map15a",
               "ages": [
                 {
                   "id": "22",
                   "name": "サネティアン",
                   "nameEn": "Thanetian",
-                  "baseAge": 59.2,
+                  "startAge": 59.2,
+                  "endAge": 56.0,
+                  "map": "Map14a",
                   "description": "哺乳類の進化",
                   "descriptionEn": "Evolution of mammals"
                 },
@@ -262,7 +328,9 @@
                   "id": "23",
                   "name": "セランディアン",
                   "nameEn": "Selandian",
-                  "baseAge": 61.6,
+                  "startAge": 61.6,
+                  "endAge": 59.2,
+                  "map": "Map15a",
                   "description": "温暖な気候の始まり",
                   "descriptionEn": "Beginning of warm climate"
                 },
@@ -270,7 +338,9 @@
                   "id": "24",
                   "name": "ダニアン",
                   "nameEn": "Danian",
-                  "baseAge": 66.0,
+                  "startAge": 66.0,
+                  "endAge": 61.6,
+                  "map": "Map16a",
                   "description": "暁新世の始まり",
                   "descriptionEn": "Beginning of Paleocene"
                 }
@@ -284,25 +354,33 @@
       "id": "2",
       "name": "中生代",
       "nameEn": "Mesozoic",
-      "baseAge": 252.17,
+      "startAge": 252.17,
+      "endAge": 66.0,
+      "map": "Map35a",
       "periods": [
         {
           "id": "4",
           "name": "白亜紀",
           "nameEn": "Cretaceous",
-          "baseAge": 145.0,
+          "startAge": 145.0,
+          "endAge": 66.0,
+          "map": "Map24a",
           "epochs": [
             {
               "id": "8",
               "name": "後期白亜紀",
               "nameEn": "Late Cretaceous",
-              "baseAge": 100.5,
+              "startAge": 100.5,
+              "endAge": 66.0,
+              "map": "Map19a",
               "ages": [
                 {
                   "id": "25",
                   "name": "マーストリヒチアン",
                   "nameEn": "Maastrichtian",
-                  "baseAge": 72.1,
+                  "startAge": 72.1,
+                  "endAge": 66.0,
+                  "map": "Map17a",
                   "description": "恐竜の絶滅",
                   "descriptionEn": "Extinction of dinosaurs"
                 },
@@ -310,7 +388,9 @@
                   "id": "26",
                   "name": "カンパニアン",
                   "nameEn": "Campanian",
-                  "baseAge": 83.6,
+                  "startAge": 83.6,
+                  "endAge": 72.1,
+                  "map": "Map18a",
                   "description": "恐竜の最盛期",
                   "descriptionEn": "Peak of dinosaurs"
                 },
@@ -318,7 +398,9 @@
                   "id": "27",
                   "name": "サントニアン",
                   "nameEn": "Santonian",
-                  "baseAge": 86.3,
+                  "startAge": 86.3,
+                  "endAge": 83.6,
+                  "map": "Map19a",
                   "description": "温暖な気候",
                   "descriptionEn": "Warm climate"
                 },
@@ -326,7 +408,9 @@
                   "id": "28",
                   "name": "コニアシアン",
                   "nameEn": "Coniacian",
-                  "baseAge": 89.8,
+                  "startAge": 89.8,
+                  "endAge": 86.3,
+                  "map": "Map21a",
                   "description": "海進期",
                   "descriptionEn": "Marine transgression"
                 },
@@ -334,7 +418,9 @@
                   "id": "29",
                   "name": "チューロニアン",
                   "nameEn": "Turonain",
-                  "baseAge": 93.9,
+                  "startAge": 93.9,
+                  "endAge": 89.8,
+                  "map": "Map21a",
                   "description": "温暖な気候",
                   "descriptionEn": "Warm climate"
                 },
@@ -342,7 +428,9 @@
                   "id": "30",
                   "name": "セノマニアン",
                   "nameEn": "Cenomanian",
-                  "baseAge": 100.5,
+                  "startAge": 100.5,
+                  "endAge": 93.9,
+                  "map": "Map22a",
                   "description": "後期白亜紀の始まり",
                   "descriptionEn": "Beginning of Late Cretaceous"
                 }
@@ -352,13 +440,17 @@
               "id": "9",
               "name": "前期白亜紀",
               "nameEn": "Early Cretaceous",
-              "baseAge": 145.0,
+              "startAge": 145.0,
+              "endAge": 100.5,
+              "map": "Map28a",
               "ages": [
                 {
                   "id": "31",
                   "name": "アルビアン",
                   "nameEn": "Albian",
-                  "baseAge": 113,
+                  "startAge": 113,
+                  "endAge": 100.5,
+                  "map": "Map24a",
                   "description": "温暖な気候",
                   "descriptionEn": "Warm climate"
                 },
@@ -366,7 +458,9 @@
                   "id": "32",
                   "name": "アプチアン",
                   "nameEn": "Aptian",
-                  "baseAge": 125,
+                  "startAge": 125,
+                  "endAge": 113,
+                  "map": "Map27a",
                   "description": "海進期",
                   "descriptionEn": "Marine transgression"
                 },
@@ -374,7 +468,9 @@
                   "id": "33",
                   "name": "バレミアン",
                   "nameEn": "Barremian",
-                  "baseAge": 129.4,
+                  "startAge": 129.4,
+                  "endAge": 125,
+                  "map": "Map28a",
                   "description": "温暖な気候",
                   "descriptionEn": "Warm climate"
                 },
@@ -382,7 +478,9 @@
                   "id": "34",
                   "name": "オーテリビアン",
                   "nameEn": "Hauterivian",
-                  "baseAge": 132.9,
+                  "startAge": 132.9,
+                  "endAge": 129.4,
+                  "map": "Map29a",
                   "description": "海進期",
                   "descriptionEn": "Marine transgression"
                 },
@@ -390,7 +488,9 @@
                   "id": "35",
                   "name": "バランギニアン",
                   "nameEn": "Valanginian",
-                  "baseAge": 139.8,
+                  "startAge": 139.8,
+                  "endAge": 132.9,
+                  "map": "Map30a",
                   "description": "温暖な気候",
                   "descriptionEn": "Warm climate"
                 },
@@ -398,7 +498,9 @@
                   "id": "36",
                   "name": "ベリアシアン",
                   "nameEn": "Berriasian",
-                  "baseAge": 145.0,
+                  "startAge": 145.0,
+                  "endAge": 139.8,
+                  "map": "Map31a",
                   "description": "前期白亜紀の始まり",
                   "descriptionEn": "Beginning of Early Cretaceous"
                 }
@@ -410,19 +512,25 @@
           "id": "5",
           "name": "ジュラ紀",
           "nameEn": "Jurassic",
-          "baseAge": 201.3,
+          "startAge": 201.3,
+          "endAge": 145.0,
+          "map": "Map38a",
           "epochs": [
             {
               "id": "10",
               "name": "後期ジュラ紀",
               "nameEn": "Late Jurassic",
-              "baseAge": 163.5,
+              "startAge": 163.5,
+              "endAge": 145.0,
+              "map": "Map34a",
               "ages": [
                 {
                   "id": "37",
                   "name": "チトニアン",
                   "nameEn": "Tithonian",
-                  "baseAge": 152.1,
+                  "startAge": 152.1,
+                  "endAge": 145.0,
+                  "map": "Map33a",
                   "description": "恐竜の繁栄",
                   "descriptionEn": "Prosperity of dinosaurs"
                 },
@@ -430,7 +538,9 @@
                   "id": "38",
                   "name": "キンメリッジアン",
                   "nameEn": "Kimmeridgian",
-                  "baseAge": 157.3,
+                  "startAge": 157.3,
+                  "endAge": 152.1,
+                  "map": "Map34a",
                   "description": "温暖な気候",
                   "descriptionEn": "Warm climate"
                 },
@@ -438,7 +548,9 @@
                   "id": "39",
                   "name": "オックスフォーディアン",
                   "nameEn": "Oxfordian",
-                  "baseAge": 163.5,
+                  "startAge": 163.5,
+                  "endAge": 157.3,
+                  "map": "Map35a",
                   "description": "後期ジュラ紀の始まり",
                   "descriptionEn": "Beginning of Late Jurassic"
                 }
@@ -448,13 +560,17 @@
               "id": "11",
               "name": "中期ジュラ紀",
               "nameEn": "Middle Jurassic",
-              "baseAge": 174.1,
+              "startAge": 174.1,
+              "endAge": 163.5,
+              "map": "Map37a",
               "ages": [
                 {
                   "id": "40",
                   "name": "カロビアン",
                   "nameEn": "Callovian",
-                  "baseAge": 166.1,
+                  "startAge": 166.1,
+                  "endAge": 163.5,
+                  "map": "Map36a",
                   "description": "温暖な気候",
                   "descriptionEn": "Warm climate"
                 },
@@ -462,7 +578,9 @@
                   "id": "41",
                   "name": "バトニアン",
                   "nameEn": "Bathonian",
-                  "baseAge": 168.3,
+                  "startAge": 168.3,
+                  "endAge": 166.1,
+                  "map": "Map36a",
                   "description": "海進期",
                   "descriptionEn": "Marine transgression"
                 },
@@ -470,7 +588,9 @@
                   "id": "42",
                   "name": "バッジョシアン",
                   "nameEn": "Bajocian",
-                  "baseAge": 170.3,
+                  "startAge": 170.3,
+                  "endAge": 168.3,
+                  "map": "Map37a",
                   "description": "温暖な気候",
                   "descriptionEn": "Warm climate"
                 },
@@ -478,7 +598,9 @@
                   "id": "43",
                   "name": "アーレニアン",
                   "nameEn": "Aalnian",
-                  "baseAge": 174.1,
+                  "startAge": 174.1,
+                  "endAge": 170.3,
+                  "map": "Map37a",
                   "description": "中期ジュラ紀の始まり",
                   "descriptionEn": "Beginning of Middle Jurassic"
                 }
@@ -488,13 +610,17 @@
               "id": "12",
               "name": "前期ジュラ紀",
               "nameEn": "Early Jurassic",
-              "baseAge": 201.3,
+              "startAge": 201.3,
+              "endAge": 174.1,
+              "map": "Map41a",
               "ages": [
                 {
                   "id": "44",
                   "name": "トアルシアン",
                   "nameEn": "Toarcian",
-                  "baseAge": 182.7,
+                  "startAge": 182.7,
+                  "endAge": 174.1,
+                  "map": "Map39a",
                   "description": "温暖な気候",
                   "descriptionEn": "Warm climate"
                 },
@@ -502,7 +628,9 @@
                   "id": "45",
                   "name": "プリンスバッキアン",
                   "nameEn": "Pleinsbachian",
-                  "baseAge": 190.8,
+                  "startAge": 190.8,
+                  "endAge": 182.7,
+                  "map": "Map40a",
                   "description": "海進期",
                   "descriptionEn": "Marine transgression"
                 },
@@ -510,7 +638,9 @@
                   "id": "46",
                   "name": "シネムーリアン",
                   "nameEn": "Sinemurian",
-                  "baseAge": 199.3,
+                  "startAge": 199.3,
+                  "endAge": 190.8,
+                  "map": "Map42a",
                   "description": "温暖な気候",
                   "descriptionEn": "Warm climate"
                 },
@@ -518,7 +648,9 @@
                   "id": "47",
                   "name": "ヘッタンギアン",
                   "nameEn": "Hettangian",
-                  "baseAge": 201.3,
+                  "startAge": 201.3,
+                  "endAge": 199.3,
+                  "map": "Map43a",
                   "description": "前期ジュラ紀の始まり",
                   "descriptionEn": "Beginning of Early Jurassic"
                 }
@@ -530,19 +662,24 @@
           "id": "6",
           "name": "三畳紀",
           "nameEn": "Triassic",
-          "baseAge": 251.9,
+          "startAge": 251.9,
+          "endAge": 201.3,
+          "map": "Map46a",
           "epochs": [
             {
               "id": "13",
               "name": "後期三畳紀",
               "nameEn": "Late Triassic",
-              "baseAge": 237.0,
+              "startAge": 237.0,
+              "endAge": 201.3,
+              "map": "Map45a",
               "ages": [
                 {
                   "id": "48",
                   "name": "レーティアン",
                   "nameEn": "Rhaetian",
-                  "baseAge": 208.5,
+                  "startAge": 208.5,
+                  "endAge": 201.3,
                   "description": "三畳紀の終わり",
                   "descriptionEn": "End of Triassic"
                 },
@@ -550,7 +687,8 @@
                   "id": "49",
                   "name": "ノリアン",
                   "nameEn": "Norian",
-                  "baseAge": 227,
+                  "startAge": 227,
+                  "endAge": 208.5,
                   "description": "温暖な気候",
                   "descriptionEn": "Warm climate"
                 },
@@ -558,7 +696,8 @@
                   "id": "50",
                   "name": "カーニアン",
                   "nameEn": "Carnian",
-                  "baseAge": 237.0,
+                  "startAge": 237.0,
+                  "endAge": 227,
                   "description": "後期三畳紀の始まり",
                   "descriptionEn": "Beginning of Late Triassic"
                 }
@@ -568,13 +707,16 @@
               "id": "14",
               "name": "中期三畳紀",
               "nameEn": "Middle Triassic",
-              "baseAge": 247.2,
+              "startAge": 247.2,
+              "endAge": 237.0,
+              "map": "Map47a",
               "ages": [
                 {
                   "id": "51",
                   "name": "ラディニアン",
                   "nameEn": "Ladinian",
-                  "baseAge": 242,
+                  "startAge": 242,
+                  "endAge": 237.0,
                   "description": "温暖な気候",
                   "descriptionEn": "Warm climate"
                 },
@@ -582,7 +724,8 @@
                   "id": "52",
                   "name": "アニシアン",
                   "nameEn": "Anisian",
-                  "baseAge": 247.2,
+                  "startAge": 247.2,
+                  "endAge": 242,
                   "description": "中期三畳紀の始まり",
                   "descriptionEn": "Beginning of Middle Triassic"
                 }
@@ -592,13 +735,17 @@
               "id": "15",
               "name": "前期三畳紀",
               "nameEn": "Early Triassic",
-              "baseAge": 251.9,
+              "startAge": 251.9,
+              "endAge": 247.2,
+              "map": "Map49a",
               "ages": [
                 {
                   "id": "53",
                   "name": "オレネキアン",
                   "nameEn": "Olenekian",
-                  "baseAge": 251.2,
+                  "startAge": 251.2,
+                  "endAge": 247.2,
+                  "map": "Map49a",
                   "description": "温暖な気候",
                   "descriptionEn": "Warm climate"
                 },
@@ -606,7 +753,9 @@
                   "id": "54",
                   "name": "インデュアン",
                   "nameEn": "Induan",
-                  "baseAge": 251.9,
+                  "startAge": 251.9,
+                  "endAge": 251.2,
+                  "map": "Map49a",
                   "description": "前期三畳紀の始まり",
                   "descriptionEn": "Beginning of Early Triassic"
                 }
@@ -620,25 +769,33 @@
       "id": "3",
       "name": "古生代",
       "nameEn": "Paleozoic",
-      "baseAge": 541.0,
+      "startAge": 541.0,
+      "endAge": 252.17,
+      "map": "Map70a",
       "periods": [
         {
           "id": "7",
           "name": "ペルム紀",
           "nameEn": "Permian",
-          "baseAge": 298.9,
+          "startAge": 298.9,
+          "endAge": 252.17,
+          "map": "Map53a",
           "epochs": [
             {
               "id": "16",
               "name": "後期ペルム紀",
               "nameEn": "Late Permian",
-              "baseAge": 259.8,
+              "startAge": 259.8,
+              "endAge": 252.17,
+              "map": "Map50a",
               "ages": [
                 {
                   "id": "55",
                   "name": "チャンシンギアン",
                   "nameEn": "Changhsingian",
-                  "baseAge": 254.14,
+                  "startAge": 254.14,
+                  "endAge": 252.17,
+                  "map": "Map50a",
                   "description": "最大の大量絶滅",
                   "descriptionEn": "Greatest mass extinction"
                 },
@@ -646,7 +803,9 @@
                   "id": "56",
                   "name": "ウチアピンギアン",
                   "nameEn": "Wuchiapingian",
-                  "baseAge": 259.8,
+                  "startAge": 259.8,
+                  "endAge": 254.14,
+                  "map": "Map50a",
                   "description": "後期ペルム紀の始まり",
                   "descriptionEn": "Beginning of Late Permian"
                 }
@@ -656,13 +815,17 @@
               "id": "17",
               "name": "中期ペルム紀",
               "nameEn": "Middle Permian",
-              "baseAge": 272.3,
+              "startAge": 272.3,
+              "endAge": 259.8,
+              "map": "Map52a",
               "ages": [
                 {
                   "id": "57",
                   "name": "カピタニアン",
                   "nameEn": "Capitanian",
-                  "baseAge": 265.1,
+                  "startAge": 265.1,
+                  "endAge": 259.8,
+                  "map": "Map51a",
                   "description": "温暖な気候",
                   "descriptionEn": "Warm climate"
                 },
@@ -670,7 +833,9 @@
                   "id": "58",
                   "name": "ウォーディアン",
                   "nameEn": "Wordian",
-                  "baseAge": 268.8,
+                  "startAge": 268.8,
+                  "endAge": 265.1,
+                  "map": "Map52a",
                   "description": "海進期",
                   "descriptionEn": "Marine transgression"
                 },
@@ -678,7 +843,9 @@
                   "id": "59",
                   "name": "ローディアン",
                   "nameEn": "Roadian",
-                  "baseAge": 272.3,
+                  "startAge": 272.3,
+                  "endAge": 268.8,
+                  "map": "Map52a",
                   "description": "中期ペルム紀の始まり",
                   "descriptionEn": "Beginning of Middle Permian"
                 }
@@ -688,13 +855,17 @@
               "id": "18",
               "name": "前期ペルム紀",
               "nameEn": "Early Permian",
-              "baseAge": 298.9,
+              "startAge": 298.9,
+              "endAge": 272.3,
+              "map": "Map54a",
               "ages": [
                 {
                   "id": "60",
                   "name": "クングリアン",
                   "nameEn": "Kungurian",
-                  "baseAge": 283.5,
+                  "startAge": 283.5,
+                  "endAge": 272.3,
+                  "map": "Map53a",
                   "description": "温暖な気候",
                   "descriptionEn": "Warm climate"
                 },
@@ -702,7 +873,9 @@
                   "id": "61",
                   "name": "アルチンスキアン",
                   "nameEn": "Artinskian",
-                  "baseAge": 290.1,
+                  "startAge": 290.1,
+                  "endAge": 283.5,
+                  "map": "Map55a",
                   "description": "海進期",
                   "descriptionEn": "Marine transgression"
                 },
@@ -710,7 +883,9 @@
                   "id": "62",
                   "name": "サクマリアン",
                   "nameEn": "Sakmarian",
-                  "baseAge": 295.5,
+                  "startAge": 295.5,
+                  "endAge": 290.1,
+                  "map": "Map56a",
                   "description": "温暖な気候",
                   "descriptionEn": "Warm climate"
                 },
@@ -718,7 +893,9 @@
                   "id": "63",
                   "name": "アッセリアン",
                   "nameEn": "Asselian",
-                  "baseAge": 298.9,
+                  "startAge": 298.9,
+                  "endAge": 295.5,
+                  "map": "Map56a",
                   "description": "前期ペルム紀の始まり",
                   "descriptionEn": "Beginning of Early Permian"
                 }
@@ -730,19 +907,25 @@
           "id": "8",
           "name": "石炭紀",
           "nameEn": "Carboniferous",
-          "baseAge": 358.9,
+          "startAge": 358.9,
+          "endAge": 298.9,
+          "map": "Map62a",
           "epochs": [
             {
               "id": "19",
               "name": "ペンシルバニア亜紀",
               "nameEn": "Pennsylvanian",
-              "baseAge": 323.2,
+              "startAge": 323.2,
+              "endAge": 298.9,
+              "map": "Map59a",
               "ages": [
                 {
                   "id": "64",
                   "name": "グゼリアン",
                   "nameEn": "Gzelian",
-                  "baseAge": 303.7,
+                  "startAge": 303.7,
+                  "endAge": 298.9,
+                  "map": "Map57a",
                   "description": "巨大な森林の形成",
                   "descriptionEn": "Formation of giant forests"
                 },
@@ -750,7 +933,9 @@
                   "id": "65",
                   "name": "カシモビアン",
                   "nameEn": "Kasimovian",
-                  "baseAge": 307,
+                  "startAge": 307,
+                  "endAge": 303.7,
+                  "map": "Map58a",
                   "description": "温暖な気候",
                   "descriptionEn": "Warm climate"
                 },
@@ -758,7 +943,9 @@
                   "id": "66",
                   "name": "モスコビアン",
                   "nameEn": "Moscovian",
-                  "baseAge": 315.2,
+                  "startAge": 315.2,
+                  "endAge": 307,
+                  "map": "Map59a",
                   "description": "海進期",
                   "descriptionEn": "Marine transgression"
                 },
@@ -766,7 +953,9 @@
                   "id": "67",
                   "name": "バシキリアン",
                   "nameEn": "Bashkirian",
-                  "baseAge": 323.2,
+                  "startAge": 323.2,
+                  "endAge": 315.2,
+                  "map": "Map61a",
                   "description": "ペンシルバニアンの始まり",
                   "descriptionEn": "Beginning of Pennsylvanian"
                 }
@@ -776,13 +965,17 @@
               "id": "20",
               "name": "ミシシッピ亜紀",
               "nameEn": "Mississippian",
-              "baseAge": 358.9,
+              "startAge": 358.9,
+              "endAge": 323.2,
+              "map": "Map63a",
               "ages": [
                 {
                   "id": "68",
                   "name": "セルプコビアン",
                   "nameEn": "Serpukhovian",
-                  "baseAge": 330.9,
+                  "startAge": 330.9,
+                  "endAge": 323.2,
+                  "map": "Map62a",
                   "description": "温暖な気候",
                   "descriptionEn": "Warm climate"
                 },
@@ -790,7 +983,9 @@
                   "id": "69",
                   "name": "ビゼアン",
                   "nameEn": "Visean",
-                  "baseAge": 346.7,
+                  "startAge": 346.7,
+                  "endAge": 330.9,
+                  "map": "Map63a",
                   "description": "海進期",
                   "descriptionEn": "Marine transgression"
                 },
@@ -798,7 +993,9 @@
                   "id": "70",
                   "name": "トゥルネシアン",
                   "nameEn": "Tournaisian",
-                  "baseAge": 358.9,
+                  "startAge": 358.9,
+                  "endAge": 346.7,
+                  "map": "Map64a",
                   "description": "ミシシッピ亜紀の始まり",
                   "descriptionEn": "Beginning of Mississippian"
                 }
@@ -810,19 +1007,25 @@
           "id": "9",
           "name": "デボン紀",
           "nameEn": "Devonian",
-          "baseAge": 419.2,
+          "startAge": 419.2,
+          "endAge": 358.9,
+          "map": "Map68a",
           "epochs": [
             {
               "id": "21",
               "name": "後期デボン紀",
               "nameEn": "Late Devonian",
-              "baseAge": 382.7,
+              "startAge": 382.7,
+              "endAge": 358.9,
+              "map": "Map66a",
               "ages": [
                 {
                   "id": "71",
                   "name": "ファメニアン",
                   "nameEn": "Fammenian",
-                  "baseAge": 372.2,
+                  "startAge": 372.2,
+                  "endAge": 358.9,
+                  "map": "Map66a",
                   "description": "魚類の繁栄",
                   "descriptionEn": "Prosperity of fish"
                 },
@@ -830,7 +1033,9 @@
                   "id": "72",
                   "name": "フラスニアン",
                   "nameEn": "Frasnian",
-                  "baseAge": 382.7,
+                  "startAge": 382.7,
+                  "endAge": 372.2,
+                  "map": "Map67a",
                   "description": "後期デボン紀の始まり",
                   "descriptionEn": "Beginning of Late Devonian"
                 }
@@ -840,13 +1045,17 @@
               "id": "22",
               "name": "中期デボン紀",
               "nameEn": "Middle Devonian",
-              "baseAge": 393.3,
+              "startAge": 393.3,
+              "endAge": 382.7,
+              "map": "Map68a",
               "ages": [
                 {
                   "id": "73",
                   "name": "ジベティアン",
                   "nameEn": "Givetian",
-                  "baseAge": 387.7,
+                  "startAge": 387.7,
+                  "endAge": 382.7,  
+                  "map": "Map68a",
                   "description": "温暖な気候",
                   "descriptionEn": "Warm climate"
                 },
@@ -854,7 +1063,9 @@
                   "id": "74",
                   "name": "アイフェリアン",
                   "nameEn": "Eifelian",
-                  "baseAge": 393.3,
+                  "startAge": 393.3,
+                  "endAge": 387.7,
+                  "map": "Map68a",
                   "description": "中期デボン紀の始まり",
                   "descriptionEn": "Beginning of Middle Devonian"
                 }
@@ -864,13 +1075,17 @@
               "id": "23",
               "name": "前期デボン紀",
               "nameEn": "Early Devonian",
-              "baseAge": 419.2,
+              "startAge": 419.2,
+              "endAge": 393.3,
+              "map": "Map71a",
               "ages": [
                 {
                   "id": "75",
                   "name": "エムシアン",
                   "nameEn": "Emsian",
-                  "baseAge": 407.6,
+                  "startAge": 407.6,
+                  "endAge": 393.3,
+                  "map": "Map70a",
                   "description": "温暖な気候",
                   "descriptionEn": "Warm climate"
                 },
@@ -878,7 +1093,9 @@
                   "id": "76",
                   "name": "プラギアン",
                   "nameEn": "Pragian",
-                  "baseAge": 410.8,
+                  "startAge": 410.8,
+                  "endAge": 407.6,
+                  "map": "Map71a",
                   "description": "海進期",
                   "descriptionEn": "Marine transgression"
                 },
@@ -886,7 +1103,9 @@
                   "id": "77",
                   "name": "ロホコビアン",
                   "nameEn": "Lochkovian",
-                  "baseAge": 419.2,
+                  "startAge": 419.2,
+                  "endAge": 410.8,
+                  "map": "Map72a",
                   "description": "前期デボン紀の始まり",
                   "descriptionEn": "Beginning of Early Devonian"
                 }
@@ -898,19 +1117,25 @@
           "id": "10",
           "name": "シルル紀",
           "nameEn": "Silurian",
-          "baseAge": 443.8,
+          "startAge": 443.8,
+          "endAge": 419.2,
+          "map": "Map75a",
           "epochs": [
             {
               "id": "24",
               "name": "後期シルル紀",
               "nameEn": "Late Silurian",
-              "baseAge": 427.4,
+              "startAge": 427.4,
+              "endAge": 419.2,
+              "map": "Map74a",
               "ages": [
                 {
                   "id": "78",
                   "name": "プリドリ",
                   "nameEn": "Pridoli",
-                  "baseAge": 423,
+                  "startAge": 423,
+                  "endAge": 419.2,
+                  "map": "Map73a",
                   "description": "陸上植物の出現",
                   "descriptionEn": "Emergence of land plants"
                 },
@@ -918,7 +1143,9 @@
                   "id": "79",
                   "name": "ラドフォーディアン",
                   "nameEn": "Ludfordian",
-                  "baseAge": 425.6,
+                  "startAge": 425.6,
+                  "endAge": 423,
+                  "map": "Map74a",
                   "description": "温暖な気候",
                   "descriptionEn": "Warm climate"
                 },
@@ -926,7 +1153,9 @@
                   "id": "80",
                   "name": "ゴースティアン",
                   "nameEn": "Gorstian",
-                  "baseAge": 427.4,
+                  "startAge": 427.4,
+                  "endAge": 425.6,
+                  "map": "Map74a",
                   "description": "後期シルル紀の始まり",
                   "descriptionEn": "Beginning of Late Silurian"
                 }
@@ -936,13 +1165,17 @@
               "id": "25",
               "name": "前期シルル紀",
               "nameEn": "Early Silurian",
-              "baseAge": 443.8,
+              "startAge": 443.8,
+              "endAge": 427.4,
+              "map": "Map76a",
               "ages": [
                 {
                   "id": "81",
                   "name": "ホメリアン",
                   "nameEn": "Homerian",
-                  "baseAge": 430.5,
+                  "startAge": 430.5,
+                  "endAge": 427.4,
+                  "map": "Map75a",
                   "description": "温暖な気候",
                   "descriptionEn": "Warm climate"
                 },
@@ -950,7 +1183,9 @@
                   "id": "82",
                   "name": "シェインウディアン",
                   "nameEn": "Sheinwoodian",
-                  "baseAge": 433.4,
+                  "startAge": 433.4,
+                  "endAge": 430.5,
+                  "map": "Map75a",
                   "description": "海進期",
                   "descriptionEn": "Marine transgression"
                 },
@@ -958,7 +1193,9 @@
                   "id": "83",
                   "name": "テリキアン",
                   "nameEn": "Telychian",
-                  "baseAge": 438.5,
+                  "startAge": 438.5,
+                  "endAge": 433.4,
+                  "map": "Map76a",
                   "description": "温暖な気候",
                   "descriptionEn": "Warm climate"
                 },
@@ -966,7 +1203,9 @@
                   "id": "84",
                   "name": "エアロニアン",
                   "nameEn": "Aeronian",
-                  "baseAge": 440.8,
+                  "startAge": 440.8,
+                  "endAge": 438.5,
+                  "map": "Map76a",
                   "description": "海進期",
                   "descriptionEn": "Marine transgression"
                 },
@@ -974,7 +1213,9 @@
                   "id": "85",
                   "name": "ルダニアン",
                   "nameEn": "Rhuddanian",
-                  "baseAge": 443.8,
+                  "startAge": 443.8,
+                  "endAge": 440.8,
+                  "map": "Map76a",
                   "description": "前期シルル紀の始まり",
                   "descriptionEn": "Beginning of Early Silurian"
                 }
@@ -986,19 +1227,25 @@
           "id": "11",
           "name": "オルドビス紀",
           "nameEn": "Ordovician",
-          "baseAge": 485.4,
+          "startAge": 485.4,
+          "endAge": 443.8,
+          "map": "Map80a",
           "epochs": [
             {
               "id": "26",
               "name": "後期オルドビス紀",
               "nameEn": "Late Ordovician",
-              "baseAge": 458.4,
+              "startAge": 458.4,
+              "endAge": 443.8,
+              "map": "Map78a",
               "ages": [
                 {
                   "id": "86",
                   "name": "ヒルナンティアン",
                   "nameEn": "Hirnantian",
-                  "baseAge": 445.2,
+                  "startAge": 445.2,
+                  "endAge": 443.8,
+                  "map": "Map77a",
                   "description": "最初の魚類の出現",
                   "descriptionEn": "Emergence of first fish"
                 },
@@ -1006,7 +1253,9 @@
                   "id": "87",
                   "name": "カティアン",
                   "nameEn": "Katian",
-                  "baseAge": 453,
+                  "startAge": 453,
+                  "endAge": 445.2,
+                  "map": "Map78a",
                   "description": "温暖な気候",
                   "descriptionEn": "Warm climate"
                 },
@@ -1014,7 +1263,9 @@
                   "id": "88",
                   "name": "サンディビアン",
                   "nameEn": "Sandbian",
-                  "baseAge": 458.4,
+                  "startAge": 458.4,
+                  "endAge": 453,
+                  "map": "Map79a",
                   "description": "後期オルドビス紀の始まり",
                   "descriptionEn": "Beginning of Late Ordovician"
                 }
@@ -1024,13 +1275,17 @@
               "id": "27",
               "name": "中期オルドビス紀",
               "nameEn": "Middle Ordovician",
-              "baseAge": 470,
+              "startAge": 470,
+              "endAge": 458.4,
+              "map": "Map81a",
               "ages": [
                 {
                   "id": "89",
                   "name": "ダリウィリアン",
                   "nameEn": "Darriwilian",
-                  "baseAge": 467.3,
+                  "startAge": 467.3,
+                  "endAge": 458.4,
+                  "map": "Map80a",
                   "description": "温暖な気候",
                   "descriptionEn": "Warm climate"
                 },
@@ -1038,7 +1293,9 @@
                   "id": "90",
                   "name": "ダピンギアン",
                   "nameEn": "Dapingian",
-                  "baseAge": 470,
+                  "startAge": 470,
+                  "endAge": 467.3,
+                  "map": "Map81a",
                   "description": "中期オルドビス紀の始まり",
                   "descriptionEn": "Beginning of Middle Ordovician"
                 }
@@ -1048,13 +1305,17 @@
               "id": "28",
               "name": "前期オルドビス紀",
               "nameEn": "Early Ordovician",
-              "baseAge": 485.4,
+              "startAge": 485.4,
+              "endAge": 470,
+              "map": "Map82a",
               "ages": [
                 {
                   "id": "91",
                   "name": "フロイアン",
                   "nameEn": "Floian",
-                  "baseAge": 477.7,
+                  "startAge": 477.7,
+                  "endAge": 470,
+                  "map": "Map81a",
                   "description": "温暖な気候",
                   "descriptionEn": "Warm climate"
                 },
@@ -1062,7 +1323,9 @@
                   "id": "92",
                   "name": "トレマドキアン",
                   "nameEn": "Tremadocian",
-                  "baseAge": 485.4,
+                  "startAge": 485.4,
+                  "endAge": 477.7,
+                  "map": "Map82a",
                   "description": "前期オルドビス紀の始まり",
                   "descriptionEn": "Beginning of Early Ordovician"
                 }
@@ -1074,19 +1337,25 @@
           "id": "12",
           "name": "カンブリア紀",
           "nameEn": "Cambrian",
-          "baseAge": 541.0,
+          "startAge": 541.0,
+          "endAge": 485.4,
+          "map": "Map85a",
           "epochs": [
             {
               "id": "29",
               "name": "フロンギアン",
               "nameEn": "Furongian",
-              "baseAge": 497,
+              "startAge": 497,
+              "endAge": 485.4,
+              "map": "Map83a",
               "ages": [
                 {
                   "id": "93",
                   "name": "ステージ10",
                   "nameEn": "Stage 10",
-                  "baseAge": 489.5,
+                  "startAge": 489.5,
+                  "endAge": 485.4,
+                  "map": "Map83a",
                   "description": "三葉虫の繁栄",
                   "descriptionEn": "Prosperity of trilobites"
                 },
@@ -1094,7 +1363,9 @@
                   "id": "94",
                   "name": "ジャンシャニアン",
                   "nameEn": "Jiangshanian",
-                  "baseAge": 494,
+                  "startAge": 494,
+                  "endAge": 489.5,
+                  "map": "Map83a",
                   "description": "温暖な気候",
                   "descriptionEn": "Warm climate"
                 },
@@ -1102,7 +1373,9 @@
                   "id": "95",
                   "name": "ペイビアン",
                   "nameEn": "Paibian",
-                  "baseAge": 497,
+                  "startAge": 497,
+                  "endAge": 494,
+                  "map": "Map84a",
                   "description": "フロンギアンの始まり",
                   "descriptionEn": "Beginning of Furongian"
                 }
@@ -1112,13 +1385,17 @@
               "id": "30",
               "name": "ミャオリンギアン",
               "nameEn": "Miaolingian",
-              "baseAge": 509,
+              "startAge": 509,
+              "endAge": 497,
+              "map": "Map84a",
               "ages": [
                 {
                   "id": "96",
                   "name": "ガズハンジアン",
                   "nameEn": "Guzhangian",
-                  "baseAge": 500.5,
+                  "startAge": 500.5,
+                  "endAge": 497,
+                  "map": "Map85a",
                   "description": "節足動物の進化",
                   "descriptionEn": "Evolution of arthropods"
                 },
@@ -1126,7 +1403,9 @@
                   "id": "97",
                   "name": "ドラミアン",
                   "nameEn": "Drumian",
-                  "baseAge": 504.5,
+                  "startAge": 504.5,
+                  "endAge": 500.5,
+                  "map": "Map84a",
                   "description": "温暖な気候",
                   "descriptionEn": "Warm climate"
                 },
@@ -1134,7 +1413,9 @@
                   "id": "98",
                   "name": "ウリューアン",
                   "nameEn": "Wuliuan",
-                  "baseAge": 509,
+                  "startAge": 509,
+                  "endAge": 504.5,
+                  "map": "Map85a",
                   "description": "ミャオリンギアンの始まり",
                   "descriptionEn": "Beginning of Miaolingian"
                 }
@@ -1144,13 +1425,17 @@
               "id": "31",
               "name": "シリーズ2",
               "nameEn": "Series 2",
-              "baseAge": 541,
+              "startAge": 521,
+              "endAge": 509,
+              "map": "Map85a",
               "ages": [
                 {
                   "id": "99",
                   "name": "ステージ4",
                   "nameEn": "Stage 4",
-                  "baseAge": 514,
+                  "startAge": 514,
+                  "endAge": 509,
+                  "map": "Map85a",
                   "description": "多細胞生物の爆発的進化",
                   "descriptionEn": "Explosive evolution of multicellular organisms"
                 },
@@ -1158,7 +1443,9 @@
                   "id": "100",
                   "name": "ステージ3",
                   "nameEn": "Stage 3",
-                  "baseAge": 521,
+                  "startAge": 521,
+                  "endAge": 514,
+                  "map": "Map86a",
                   "description": "温暖な気候",
                   "descriptionEn": "Warm climate"
                 }
@@ -1168,13 +1455,17 @@
               "id": "32",
               "name": "テレヌービアン",
               "nameEn": "Terreneuvian",
-              "baseAge": 541,
+              "startAge": 541,
+              "endAge": 521,
+              "map": "Map87a",
               "ages": [
                 {
                   "id": "101",
                   "name": "ステージ2",
                   "nameEn": "Stage 2",
-                  "baseAge": 529,
+                  "startAge": 529,
+                  "endAge": 521,
+                  "map": "Map87a",
                   "description": "海進期",
                   "descriptionEn": "Marine transgression"
                 },
@@ -1182,7 +1473,9 @@
                   "id": "102",
                   "name": "フォーチュニアン",
                   "nameEn": "Fortunian",
-                  "baseAge": 541,
+                  "startAge": 541,
+                  "endAge": 529,
+                  "map": "Map87a",
                   "description": "テレヌービアンの始まり",
                   "descriptionEn": "Beginning of Terreneuvian"
                 }
