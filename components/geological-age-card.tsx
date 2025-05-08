@@ -229,10 +229,10 @@ export function GeologicalAgeCard() {
           <div className="flex justify-between">
             <span className="text-sm text-muted-foreground">基底年代:</span>
             <span className="text-sm font-medium">
-              {selectedAge ? selectedAge.baseAge : 
-               selectedEpoch ? selectedEpoch.baseAge :
-               selectedPeriod ? selectedPeriod.baseAge :
-               selectedEra ? selectedEra.baseAge : '-'} Ma
+              {selectedAge ? selectedAge.startAge : 
+               selectedEpoch ? selectedEpoch.startAge :
+               selectedPeriod ? selectedPeriod.startAge :
+               selectedEra ? selectedEra.startAge : '-'} Ma
             </span>
           </div>
         </div>
