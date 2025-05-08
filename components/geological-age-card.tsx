@@ -17,7 +17,8 @@ interface GeologicalAge {
   id: string;
   name: string;
   nameEn: string;
-  baseAge: number;
+  startAge: number;
+  endAge: number;
   description?: string;
   descriptionEn?: string;
 }
@@ -26,7 +27,8 @@ interface Epoch {
   id: string;
   name: string;
   nameEn: string;
-  baseAge: number;
+  startAge: number;
+  endAge: number;
   description?: string;
   descriptionEn?: string;
   ages?: GeologicalAge[];
@@ -36,7 +38,8 @@ interface Period {
   id: string;
   name: string;
   nameEn: string;
-  baseAge: number;
+  startAge: number;
+  endAge: number;
   epochs: Epoch[];
 }
 
@@ -44,7 +47,8 @@ interface Era {
   id: string;
   name: string;
   nameEn: string;
-  baseAge: number;
+  startAge: number;
+  endAge: number;
   periods: Period[];
 }
 
