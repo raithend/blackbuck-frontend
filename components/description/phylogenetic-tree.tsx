@@ -2,9 +2,15 @@
 
 import { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
-import { TreeNode } from '@/types/tree';
 import { load } from 'js-yaml';
 import treeDataYaml from '@/data/tree-data.yml';
+
+interface TreeNode {
+  name: string;
+  from?: string;
+  to?: string;
+  children?: TreeNode[];
+}
 
 export function PhylogeneticTree() {
   const svgRef = useRef<SVGSVGElement>(null);
