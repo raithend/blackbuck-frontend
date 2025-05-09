@@ -146,7 +146,7 @@ export function GeologicalAgeCard() {
 
   // 初期状態で最新の時代を選択
   React.useEffect(() => {
-    handleSliderChange([1]);
+    handleSliderChange([102]);
   }, []);
 
   return (
