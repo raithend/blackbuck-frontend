@@ -224,7 +224,7 @@
           "nameEn": "Paleogene",
           "startAge": 66.0,
           "endAge": 23.03,
-          "map": "Map12a_Early_Middle_Eocene_045",
+          "map": "Map12a_early_Middle_Eocene_045",
           "epochs": [
             {
               "id": "5",
@@ -262,7 +262,7 @@
               "nameEn": "Eocene",
               "startAge": 56.0,
               "endAge": 33.9,
-              "map": "Map12a_Early_Middle_Eocene_045",
+              "map": "Map12a_early_Middle_Eocene_045",
               "ages": [
                 {
                   "id": "18",
@@ -290,7 +290,7 @@
                   "nameEn": "Lutetian",
                   "startAge": 47.8,
                   "endAge": 41.2,
-                  "map": "Map12a_Early_Middle_Eocene_045",
+                  "map": "Map12a_early_Middle_Eocene_045",
                   "description": "温暖な気候の最盛期",
                   "descriptionEn": "Peak of warm climate"
                 },
