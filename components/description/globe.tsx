@@ -12,12 +12,31 @@ const Globe: React.FC = () => {
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const globeRef = useRef<THREE.Mesh | null>(null);
   const controlsRef = useRef<OrbitControls | null>(null);
+  const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
+  const stateRef = useRef<{
+    cameraPosition: THREE.Vector3;
+    cameraRotation: THREE.Euler;
+    target: THREE.Vector3;
+  }>({
+    cameraPosition: new THREE.Vector3(0, 0, 15),
+    cameraRotation: new THREE.Euler(0, 0, 0),
+    target: new THREE.Vector3(0, 0, 0)
+  });
 
   useEffect(() => {
     if (!containerRef.current) return;
 
     // 古いシーンのクリーンアップ
     if (sceneRef.current) {
+      if (controlsRef.current) {
+        // 現在のカメラとコントロールの状態を保存
+        stateRef.current = {
+          cameraPosition: cameraRef.current?.position.clone() || new THREE.Vector3(0, 0, 15),
+          cameraRotation: cameraRef.current?.rotation.clone() || new THREE.Euler(0, 0, 0),
+          target: controlsRef.current.target.clone()
+        };
+        controlsRef.current.dispose();
+      }
       if (globeRef.current) {
         sceneRef.current.remove(globeRef.current);
         if (globeRef.current.geometry) globeRef.current.geometry.dispose();
@@ -33,9 +52,6 @@ const Globe: React.FC = () => {
         containerRef.current.removeChild(rendererRef.current.domElement);
         rendererRef.current.dispose();
       }
-      if (controlsRef.current) {
-        controlsRef.current.dispose();
-      }
     }
 
     // 新しいシーンの設定
@@ -43,6 +59,11 @@ const Globe: React.FC = () => {
     sceneRef.current = scene;
 
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    cameraRef.current = camera;
+    // 保存されたカメラの状態を適用
+    camera.position.copy(stateRef.current.cameraPosition);
+    camera.rotation.copy(stateRef.current.cameraRotation);
+
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     rendererRef.current = renderer;
     renderer.setSize(window.innerWidth, window.innerHeight);
@@ -72,9 +93,6 @@ const Globe: React.FC = () => {
         pointLight.position.set(10, 10, 10);
         scene.add(pointLight);
 
-        // カメラの位置設定
-        camera.position.z = 15;
-
         // コントロールの設定
         const controls = new OrbitControls(camera, renderer.domElement);
         controlsRef.current = controls;
@@ -83,6 +101,9 @@ const Globe: React.FC = () => {
         controls.rotateSpeed = 0.5;
         controls.minDistance = 8;
         controls.maxDistance = 20;
+        // 保存されたターゲットを適用
+        controls.target.copy(stateRef.current.target);
+        controls.update();
 
         // アニメーション
         const animate = () => {
