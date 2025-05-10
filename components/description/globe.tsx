@@ -1,13 +1,13 @@
 'use client';
 
-import React, { useEffect, useRef, useContext } from 'react';
-import { MapContext } from './geological-context';
+import React, { useEffect, useRef } from 'react';
+import { useGeologicalAge } from './geological-context';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 const Globe: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [selectedMap] = useContext(MapContext);
+  const { selectedMap } = useGeologicalAge();
   const sceneRef = useRef<THREE.Scene | null>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const globeRef = useRef<THREE.Mesh | null>(null);
@@ -72,7 +72,7 @@ const Globe: React.FC = () => {
     // 地球の作成
     const geometry = new THREE.SphereGeometry(5, 32, 32);
     const textureLoader = new THREE.TextureLoader();
-    const texturePath = `/PALEOMAP_PaleoAtlas_Rasters_v3/${selectedMap}.jpg`;
+    const texturePath = selectedMap ? `/PALEOMAP_PaleoAtlas_Rasters_v3/${selectedMap}.jpg` : '/PALEOMAP_PaleoAtlas_Rasters_v3/Map1a_PALEOMAP_PaleoAtlas_000.jpg';
     
     // テクスチャの読み込み
     textureLoader.load(

@@ -12,7 +12,7 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from "@/components/ui/slider";
 import geologicalAgesData from '@/data/geological-ages.json';
-import { MapContext } from './geological-context';
+import { useGeologicalAge } from './geological-context';
 
 interface GeologicalAge {
   id: string;
@@ -54,11 +54,11 @@ interface Era {
 }
 
 export function GeologicalAgeCard() {
+  const { selectedMap, selectedAgeIds, setSelectedMap, setSelectedAgeIds } = useGeologicalAge();
   const [selectedEra, setSelectedEra] = useState<Era | undefined>(undefined);
   const [selectedPeriod, setSelectedPeriod] = useState<Period | undefined>(undefined);
   const [selectedEpoch, setSelectedEpoch] = useState<Epoch | undefined>(undefined);
   const [selectedAge, setSelectedAge] = useState<GeologicalAge | null>(null);
-  const [selectedMap, setSelectedMap] = useContext(MapContext);
 
   const handleEraChange = (eraId: string) => {
     if (eraId === "none") {
@@ -120,8 +120,9 @@ export function GeologicalAgeCard() {
     }
   };
 
-  const handleSliderChange = useCallback((value: number[]) => {
-    const reversedValue = 103 - value[0];
+  // スライダーの値から時代を探す関数
+  const findAgeBySliderValue = (value: number) => {
+    const reversedValue = 103 - value;
     const ageId = reversedValue.toString();
     
     // すべての時代から対応するageを探す
@@ -134,15 +135,48 @@ export function GeologicalAgeCard() {
             setSelectedPeriod(period);
             setSelectedEpoch(epoch);
             setSelectedAge(age);
-            if (age.map !== undefined) {
+            if (age.map) {
               setSelectedMap(age.map);
             }
-            return;
+            return age;
           }
         }
       }
     }
-  }, [setSelectedEra, setSelectedPeriod, setSelectedEpoch, setSelectedAge, setSelectedMap]);
+    return null;
+  };
+
+  const handleSliderChange = useCallback((value: number[]) => {
+    const age = findAgeBySliderValue(value[0]);
+    if (age) {
+      // 選択された時代のID配列を更新
+      const ageIds = getAgeIds(age);
+      setSelectedAgeIds(ageIds);
+    }
+  }, [setSelectedAgeIds]);
+
+  // 時代のID配列を取得する関数
+  const getAgeIds = (age: any): number[] => {
+    if (!age) return [];
+    
+    // 最下位の時代（age）の場合
+    if (age.id) {
+      return [parseInt(age.id)];
+    }
+    
+    // 上位の時代（era, period, epoch）の場合
+    const ids: number[] = [];
+    const traverse = (node: any) => {
+      if (node.id) {
+        ids.push(parseInt(node.id));
+      }
+      if (node.ages) {
+        node.ages.forEach(traverse);
+      }
+    };
+    traverse(age);
+    return ids;
+  };
 
   // 初期状態で最新の時代を選択
   React.useEffect(() => {
@@ -248,9 +282,7 @@ export function GeologicalAgeCard() {
             defaultValue={[102]}
             max={102}
             min={1}
-            step={1}
             onValueChange={handleSliderChange}
-            className="w-full"
           />
         </div>
       </CardFooter>

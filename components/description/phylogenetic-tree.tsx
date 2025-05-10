@@ -1,25 +1,22 @@
 "use client";
 
-import { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
-import { load } from 'js-yaml';
-import treeDataYaml from '@/data/tree-data.yml';
-
-interface TreeNode {
-  name: string;
-  from?: string;
-  to?: string;
-  children?: TreeNode[];
-}
+import { useGeologicalAge } from './geological-context';
+import { processTreeData } from './tree-data-processor';
 
 export function PhylogeneticTree() {
   const svgRef = useRef<SVGSVGElement>(null);
+  const { selectedAgeIds } = useGeologicalAge();
 
   useEffect(() => {
     if (!svgRef.current) return;
 
-    // YAMLデータをパース
-    const treeData = load(treeDataYaml) as TreeNode;
+    // データの処理
+    const processedData = processTreeData(selectedAgeIds);
+    if (!processedData) {
+      return;
+    }
 
     // SVGの設定
     const radius = 500;
@@ -48,7 +45,7 @@ export function PhylogeneticTree() {
     }
 
     // データの階層構造を作成
-    const root = d3.hierarchy(treeData);
+    const root = d3.hierarchy(processedData);
     
     // クラスターレイアウトの設定
     const cluster = d3.cluster()
@@ -109,7 +106,7 @@ export function PhylogeneticTree() {
       .attr("fill", (d: any) => d.color)
       .attr("r", 2.5);
 
-    // 葉ノード（外側のノード）のみラベルを描画
+    // 葉ノードのみラベルを描画
     node.filter((d: any) => !d.children)
       .append("text")
       .attr("dy", "0.31em")
@@ -148,7 +145,7 @@ export function PhylogeneticTree() {
              .attr("stroke-width", 2.5);
       });
 
-  }, []);
+  }, [selectedAgeIds]);
 
   return (
     <svg ref={svgRef} className="w-full h-full"></svg>

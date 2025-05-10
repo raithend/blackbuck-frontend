@@ -2,14 +2,35 @@
 
 import React, { useState, createContext, useContext } from 'react';
 
-type MapContextType = [string, React.Dispatch<React.SetStateAction<string>>];
-export const MapContext = createContext<MapContextType>(["Map1a_PALEOMAP_PaleoAtlas_000", () => {}]);
+interface GeologicalAgeContextType {
+  selectedMap: string;
+  selectedAgeIds: number[];
+  setSelectedMap: (map: string) => void;
+  setSelectedAgeIds: (ids: number[]) => void;
+}
 
-export const MapProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [selectedMap, setSelectedMap] = useState<string>("Map1a_PALEOMAP_PaleoAtlas_000");
+const GeologicalAgeContext = createContext<GeologicalAgeContextType>({
+  selectedMap: '',
+  selectedAgeIds: [],
+  setSelectedMap: () => {},
+  setSelectedAgeIds: () => {},
+});
+
+export function GeologicalAgeProvider({ children }: { children: React.ReactNode }) {
+  const [selectedMap, setSelectedMap] = useState<string>('');
+  const [selectedAgeIds, setSelectedAgeIds] = useState<number[]>([]);
+
   return (
-    <MapContext.Provider value={[selectedMap, setSelectedMap]}>
+    <GeologicalAgeContext.Provider value={{ selectedMap, selectedAgeIds, setSelectedMap, setSelectedAgeIds }}>
       {children}
-    </MapContext.Provider>
+    </GeologicalAgeContext.Provider>
   );
-};
+}
+
+export function useGeologicalAge() {
+  const context = useContext(GeologicalAgeContext);
+  if (!context) {
+    throw new Error('useGeologicalAge must be used within a GeologicalAgeProvider');
+  }
+  return context;
+}
