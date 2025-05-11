@@ -788,7 +788,7 @@
           "epochs": [
             {
               "id": "16",
-              "name": "後期ペルム紀",
+              "name": "ローピンジアン",
               "nameEn": "Late_Permian",
               "startAge": 259.8,
               "endAge": 252.17,
@@ -818,7 +818,7 @@
             },
             {
               "id": "17",
-              "name": "中期ペルム紀",
+              "name": "グアダルピアン",
               "nameEn": "Middle Permian",
               "startAge": 272.3,
               "endAge": 259.8,
@@ -858,7 +858,7 @@
             },
             {
               "id": "18",
-              "name": "前期ペルム紀",
+              "name": "シスウラリアン",
               "nameEn": "Early Permian",
               "startAge": 298.9,
               "endAge": 272.3,
@@ -986,7 +986,7 @@
                 },
                 {
                   "id": "69",
-                  "name": "ビゼアン",
+                  "name": "ビゼーアン",
                   "nameEn": "Visean",
                   "startAge": 346.7,
                   "endAge": 330.9,
@@ -1146,7 +1146,7 @@
                 },
                 {
                   "id": "79",
-                  "name": "ラドフォーディアン",
+                  "name": "ルドフォーディアン",
                   "nameEn": "Ludfordian",
                   "startAge": 425.6,
                   "endAge": 423,
