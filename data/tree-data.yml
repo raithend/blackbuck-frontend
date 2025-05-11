@@ -1,264 +1,558 @@
 name: 脊椎動物亜門
 from: シリーズ2
-to: 完新世
 children:
   - name: 無顎上綱
     children:
-      - name: ヤツメウナギ目
-      - name: ヌタウナギ目
+      - name: 円口類
+        from: ロホコビアン
+        children:
+          - name: ヤツメウナギ目
+          - name: ヌタウナギ目
+  - name: 翼甲上綱
   - name: 顎口上綱
     from: オルドビス紀
-    to: 完新世
     children:
-      - name: 軟骨魚綱
-      - name: 硬骨魚綱
+      - name: 板皮類
+        from: 前期シルル紀
+        to: 後期デボン紀
         children:
-          - name: 条鰭綱
+          - name: 全顎板皮類
+          - name: Stensioelliformes 目
+          - name: Pseudopetalichthyiformes 目
+          - name: Acanthothoraciformes 目
+          - name: Rhenaniformes 目
+          - name: 胴甲目
+          - name: Petalichthyiformes 目
+          - name: Ptyctodontiformes 目
+          - name: 節頸目
+      - name: (棘魚類・軟骨魚類・硬骨魚類グループ)
+        children:
+          - name: (棘魚類・軟骨魚類グループ)
             children:
-              - name: 腕鰭類
+              - name: 棘魚類
+                from: シルル紀
+                to: ペルム紀
                 children:
-                  - name: ポリプテルス目
-              - name: Actinopteri
+                  - name: クリマティウス目
+                    from: プリドリ
+                    to: ペルム紀
+                  - name: アカントーデス目
+                    from: 前期デボン紀
+                    to: 前期ぺルム紀
+                  - name: イスクナカントゥス目
+                    from: ロホコビアン
+                    to: ロホコビアン
+              - name: 軟骨魚綱
                 children:
-                  - name: チョウザメ目
-                  - name: 新鰭類
+                  - name: 全頭亜綱
+                    from: デボン紀
                     children:
-                      - name: 全骨類
+                      - name: Paraselachimorpha
                         children:
-                          - name: ガー目
-                          - name: アミア目
-                      - name: 真骨類
-                        from: 前期三畳紀
-                        to: 完新世
+                          - name: エウゲネオドゥス目
+                            from: セルプコビアン
+                            to: オレネキアン
+                      - name: Holocephalimorpha
                         children:
-                        - name: Eloposteoglossocephala
-                          children:
-                            - name: アロワナ上目
+                          - name: Squalorajiformes
+                            from: ヘッタンギアン
+                            to: シネムーリアン
+                          - name: ギンザメ目
+                            from: ミシシッピ亜紀 # 前期石炭紀
+                  - name: 板鰓亜綱
+                    from: ジベティアン
+                    children:
+                      - name: サメ亜区
+                        children:
+                          - name: ネズミザメ上目
+                            children:
+                              - name: ネコザメ目
+                              - name: テンジクザメ目
+                                from: トアルシアン
+                                to: 完新世
+                              - name: ネズミザメ目
+                              - name: メジロザメ目
+                          - name: ツノザメ上目
+                            children:
+                              - name: カグラザメ目
+                              - name: キクザメ目
+                              - name: ツノザメ目
+                              - name: カスザメ目
+                              - name: ノコギリザメ目
+                      - name: エイ亜区
+                        children:
+                          - name: シビレエイ目
+                          - name: ノコギリエイ目
+                          - name: ガンギエイ目
+                          - name: トビエイ目
+
+          - name: 硬骨魚綱
+            children:
+              - name: 条鰭亜綱
+                from: 後期シルル紀
+                children:
+                  - name: 腕鰭類
+                    children:
+                      - name: ポリプテルス目
+                  - name: Actinopteri
+                    children:
+                      - name: チョウザメ目
+                      - name: 新鰭類
+                        children:
+                          - name: 全骨類
+                            children:
+                              - name: ガー目
+                              - name: アミア目
+                          - name: 真骨類
+                            from: 前期三畳紀
+                            children:
+                            - name: Eloposteoglossocephala
                               children:
-                                - name: ヒオドン目
-                                - name: アロワナ目                                            
-                        - name: Clupeocephala
-                          children:
-                            - name: ニシン・骨鰾下区
-                              children:
-                                - name: ニシン目
-                                - name: セキトリイワシ目
-                                - name: 骨鰾上目
+                                - name: アロワナ上目
                                   children:
-                                    - name: ネズミギス目
-                                    - name: 骨鰾系
-                                      from: ジュラ紀
-                                      to: 完新世
+                                    - name: ヒオドン目
+                                    - name: アロワナ目                                            
+                            - name: Clupeocephala
+                              children:
+                                - name: ニシン・骨鰾下区
+                                  children:
+                                    - name: ニシン目
+                                    - name: セキトリイワシ目
+                                    - name: 骨鰾上目
                                       children:
-                                        - name: コイ目
-                                        - name: 
+                                        - name: ネズミギス目
+                                        - name: 骨鰾系
+                                          from: ジュラ紀
                                           children:
-                                            - name: カラシン目
+                                            - name: コイ目
                                             - name: 
                                               children:
-                                                - name: ナマズ目
-                                                - name: デンキウナギ目
-                            - name: 正真骨下区
-                              children:
-                                - name: レピドガラクシアス目
-                                - name: 
+                                                - name: カラシン目
+                                                - name: 
+                                                  children:
+                                                    - name: ナマズ目
+                                                    - name: デンキウナギ目
+                                - name: 正真骨下区
                                   children:
-                                    - name: 原棘鰭上目
-                                      from: 後期ジュラ紀
-                                      to: 完新世
+                                    - name: レピドガラクシアス目
                                     - name: 
                                       children:
-                                        - name: Stomiati
-                                        - name: 新真骨類 
-                                        - name: 棘鰭上目
+                                        - name: 原棘鰭上目
+                                          from: 後期ジュラ紀
+                                        - name: 
                                           children:
-                                            - name: ボラ目
-                                            - name: トウゴロウイワシ系
-                                            - name: スズキ系
+                                            - name: Stomiati
                                               children:
-                                                - name: カレイ目
-                                                - name: スズキ目
-                                                - name: キンメダイ目
-                                                - name: カサゴ目
-                                                - name: フグ目
-          - name: 肉鰭亜綱
-            children:
-              - name: シーラカンス目                    
-              - name:
+                                                - name: キュウリウオ目
+                                                - name: ワニトカゲギス目
+                                            - name: 新真骨類
+                                              children:
+                                                - name: シャチブリ目
+                                                - name: Eurypterygia
+                                                  children:
+                                                    - name: ヒメ目
+                                                    - name: Ctenosquamata
+                                                      children:
+                                                        - name: ハダカイワシ目
+                                                        - name: Acanthomorpha
+                                                          children:
+                                                            - name: 
+                                                              children:
+                                                                - name: アカマンボウ目
+                                                                - name: 側棘鰭上目
+                                                                  from: セノマニアン
+                                                                  children:
+                                                                    - name: サケスズキ目
+                                                                    - name: 
+                                                                      children:
+                                                                        - name: マトウダイ目
+                                                                          from: サントニアン
+                                                                        - name: 
+                                                                          children:
+                                                                            - name: ステューレポルス目
+                                                                            - name: タラ目
+                                                            - name: 
+                                                              children:
+                                                                - name: ギンメダイ目
+                                                                  from: セノマニアン
+                                                                - name: 棘鰭上目
+                                                                  from: セノマニアン
+                                                                  children:
+                                                                    - name: 
+                                                                      children:
+                                                                        - name: ボラ目
+                                                                        - name: トウゴロウイワシ系
+                                                                          children:
+                                                                            - name: トウゴロウイワシ目
+                                                                            - name: ダツ目
+                                                                            - name: カダヤシ目 
+                                                                    - name: スズキ系
+                                                                      children:
+                                                                        - name: クジラウオ目
+                                                                        - name: キンメダイ目
+                                                                        - name: トゲウオ目
+                                                                        - name: タウナギ目
+                                                                        - name: カサゴ目
+                                                                        - name: スズキ目
+                                                                          from: 暁新世
+                                                                        - name: カレイ目
+                                                                        - name: フグ目
+
+              - name: 肉鰭亜綱
+                from: 後期シルル紀
                 children:
-                  - name: ハイギョ目                        
-                  - name: 四肢動物
+                  - name: シーラカンス目
+                    from: デボン紀
+                  - name:
                     children:
-                      - name: 両生類
+                      - name: ハイギョ目
+                        from: デボン紀
+                      - name: 四肢動物
+                        from: ビゼーアン
                         children:
-                          - name: 無尾目
-                          - name: 有尾目
-                          - name: 無足目
-                      - name: 有羊膜類
-                        children:
-                          - name: 哺乳綱
-                            from: ノーリアン
-                            to: 完新世
+                          - name: 両生綱
+                            from: 後期デボン紀
                             children:
-                              - name: 原獣亜綱
+                              - name: 迷歯亜綱
+                                from: ファメニアン
+                                to: 前期白亜紀
                                 children:
-                                  - name: カモノハシ目
-                              - name: 獣形類
+                                  - name: イクチオステガ目
+                                  - name: 分椎目
+                                  - name: 炭竜目
+                              - name: 空椎亜綱
+                                from: ビゼーアン
+                                to: 前期白亜紀
                                 children:
-                                  - name: 有袋類
-                                    children:
-                                      - name: アメリカ有袋大目
-                                        children:
-                                          - name: オポッサム形目
-                                          - name: 
-                                            children:
-                                              - name: ケノレステス目
-                                              - name: オーストラリア有袋大目
-                                                children:
-                                                  - name: ミクロビオテリウム目
-                                                  - name: フクロネコ形目
-                                                  - name: バンディクート形目
-                                                  - name: フクロモグラ目
-                                                  - name: 双前歯目
-                                  - name: 有胎盤類
-                                    children:
-                                      - name: アフリカ獣類
-                                        children:
-                                          - name: アフリカ食虫類
-                                            children:
-                                              - name: アフリカトガリネズミ目
-                                              - name: ハネジネズミ目
-                                              - name: ツチブタ目
-                                          - name: 近蹄類
-                                            children:
-                                              - name: イワダヌキ目
-                                              - name: テティス獣類
-                                                children:
-                                                  - name: 長鼻目
-                                                    from: ヤプレシアン
-                                                    to: 完新世
-                                                  - name: カイギュウ目
-                                                    from: 始新世
-                                                    to: 完新世
-                                      - name: 異節類
-                                        children:
-                                          - name: 被甲目
-                                          - name: 有毛目
-                                      - name: 北方真獣類
-                                        children:
-                                          - name: 真主齧上目
-                                            children:
-                                            - name: 霊長目
-                                            - name: グリレス大目
-                                              children:
-                                                - name: 齧歯目
-                                                - name: 兎形目
-                                          - name: ローラシア獣上目
-                                            children:
-                                              - name: 真無盲腸目
-                                              - name: 陰嚢類
-                                                children:
-                                                  - name: 翼手目
-                                                    from: ヤプレシアン
-                                                    to: 完新世
-                                                  - name: 猛獣有蹄類
-                                                    children:
-                                                      - name: 有蹄類
-                                                        children:
-                                                          - name: メソニクス目
-                                                            from: 暁新世
-                                                            to: ルペリアン
-                                                          - name: 鯨偶蹄目
-                                                            from: ヤプレシアン
-                                                            to: 完新世
-                                                          - name: 奇蹄目
-                                                      - name: 広獣類
-                                                        children:
-                                                          - name: 鱗甲目
-                                                          - name: 食肉目
-                          - name: 双弓類
-                            children:
-                              - name: 主竜形類
+                                  - name: 欠脚目
+                                  - name: ネクトリド目
+                                  - name: 細竜目
+                                  - name: リソロフィス目
+                              - name: 平滑両生亜綱
+                                from: 前期三畳紀
                                 children:
-                                  - name: カメ目                                        
-                                  - name: 主竜類
-                                    children:
-                                      - name: ワニ目                                            
-                                      - name: 今鳥亜綱
-                                        from: アルビアン
-                                        to: 完新世
-                                        children:
-                                          - name: 古顎類
-                                            children:
-                                              - name: ダチョウ目
-                                              - name: Notopalaeognathae
-                                                children:
-                                                  - name: レア目
-                                                  - name: 
-                                                    children:
-                                                      - name: シギダチョウ目
-                                                      - name: Novaeratitae
-                                                        children:
-                                                          - name: キーウィ目
-                                                          - name: ヒクイドリ目
-                                          - name: 新顎類
-                                            children:
-                                              - name: キジカモ類
-                                                children:
-                                                  - name: キジ目
-                                                  - name: カモ目
-                                              - name: 新鳥類
-                                                children:
-                                                  - name: ツメバケイ目
-                                                  - name: ネッタイチョウ目
-                                                  - name: ジャノメドリ目
-                                                  - name: チドリ目
-                                                  - name: クイナモドキ目
-                                                  - name: ツル目
-                                                  - name: カッコウ目
-                                                  - name: ノガン目
-                                                  - name: ハト目
-                                                  - name: サケイ目
-                                                  - name: 賛鳥類
-                                                    children:
-                                                      - name: カイツブリ目
-                                                      - name: フラミンゴ目
-                                                  - name: 水禽類
-                                                    children:
-                                                      - name: アビ目
-                                                      - name: 
-                                                        children:
-                                                          - name: コウノトリ目
-                                                          - name: ペンギン・ミズナギドリ類
-                                                            children:
-                                                              - name: ペンギン目
-                                                              - name: ミズナギドリ目
-                                                          - name: 
-                                                            children:
-                                                              - name: ペリカン目
-                                                              - name: カツオドリ目
-                                                  - name: ヨタカ・アマツバメ類
-                                                  - name: 陸鳥類
-                                                    children:
-                                                    - name: フクロウ目
-                                                    - name: タカ目
-                                                    - name: ゲラ・ブッポウソウ類
-                                                      children:
-                                                        - name: サイチョウ目
-                                                        - name: キツツキ・ブッポウソウ類
-                                                          children:
-                                                            - name: キツツキ目
-                                                            - name: ブッポウソウ目
-                                                    - name: 真ハヤブサ形類
-                                                      children:
-                                                        - name: ハヤブサ目
-                                                        - name: オウム・スズメ類
-                                                          children:
-                                                            - name: オウム目
-                                                            - name: スズメ目                                                          
-                              - name: 鱗竜形類
-                                children:
-                                  - name: 有鱗目
-                                    from: ノーリアン
+                                  - name: 無尾目
+                                    from: 前期ジュラ紀
                                     to: 完新世
-                                  - name: ムカシトカゲ目
+                                  - name: 有尾目
+                                    from: 中期ジュラ紀
+                                  - name: 無足目
+                                    from: ノーリアン
+                          - name: 有羊膜類
+                            from: モスコビアン
+                            children:
+                              - name: 爬虫類
+                                children:
+                                  - name: 無弓類
+                                    from: 石炭紀
+                                    to: ペルム紀
+                                  - name: 双弓類
+                                    children:
+                                      - name: 魚鰭類
+                                        from: オレネキアン
+                                        to: セノマニアン
+                                        children:
+                                          - name: 魚竜目
+                                      - name: 鱗竜形類
+                                        children:
+                                          - name: 鰭竜類
+                                            from: 前期三畳紀
+                                            to: 後期白亜紀
+                                            children:
+                                              - name: 板歯目
+                                                from: 前期三畳紀
+                                                to: 後期三畳紀
+                                              - name: 偽竜類
+                                                from: 三畳紀
+                                                to: 三畳紀
+                                              - name: 首長竜類
+                                                from: 後期三畳紀
+                                                to: 白亜紀
+                                          - name: 鱗竜類
+                                            children:
+                                              - name: 有鱗目
+                                                from: ノーリアン
+                                              - name: ムカシトカゲ目
+                                                from: 前期三畳紀
+
+                                      - name: 主竜形類
+                                        children:
+                                          - name: カメ目
+                                            from: 後期三畳紀
+                                            to: 完新世
+                                          - name: 主竜類
+                                            children:
+                                              - name: ワニ目
+                                                from: 後期白亜紀
+                                                to: 完新世
+                                              - name: 鳥頸類
+                                                from: 前期三畳紀
+                                                children:
+                                                  - name: 翼竜目
+                                                    from: 後期三畳紀
+                                                    to: 後期白亜紀
+                                                  - name: 恐竜上目
+                                                    children:
+                                                      - name: 鳥盤類
+                                                        from: 中期三畳紀
+                                                        to: マーストリヒチアン
+                                                      - name: 竜盤類
+                                                        children:
+                                                          - name: 竜脚形亜目
+                                                            from: 中期三畳紀
+                                                            to: マーストリヒチアン
+                                                          - name: 獣脚類
+                                                            children:
+                                                              - name: 今鳥亜綱
+                                                                from: アルビアン
+                                                                to: 完新世
+                                                                children:
+                                                                  - name: 古顎類
+                                                                    from: マーストリヒチアン
+                                                                    to: 完新世
+                                                                    children:
+                                                                      - name: ダチョウ目
+                                                                      - name: Notopalaeognathae
+                                                                        children:
+                                                                          - name: レア目
+                                                                          - name: 
+                                                                            children:
+                                                                              - name: シギダチョウ目
+                                                                              - name: Novaeratitae
+                                                                                children:
+                                                                                  - name: キーウィ目
+                                                                                  - name: ヒクイドリ目
+                                                                  - name: 新顎類
+                                                                    children:
+                                                                      - name: キジカモ類
+                                                                        from: マーストリヒチアン
+                                                                        to: 完新世
+                                                                        children:
+                                                                          - name: キジ目
+                                                                          - name: 
+                                                                            children:
+                                                                              - name: ヴェガヴィス目
+                                                                                from: マーストリヒチアン
+                                                                                to: マーストリヒチアン
+                                                                              - name: カモ目
+                                                                      - name: 新鳥類
+                                                                        from: マーストリヒチアン
+                                                                        to: 完新世
+                                                                        children:
+                                                                          - name: ツメバケイ目
+                                                                          - name: ネッタイチョウ目
+                                                                          - name: ジャノメドリ目
+                                                                          - name: チドリ目
+                                                                          - name: クイナモドキ目
+                                                                          - name: ツル目
+                                                                          - name: カッコウ目
+                                                                          - name: ノガン目
+                                                                          - name: ハト目
+                                                                          - name: サケイ目
+                                                                          - name: 賛鳥類
+                                                                            children:
+                                                                              - name: カイツブリ目
+                                                                              - name: フラミンゴ目
+                                                                          - name: 水禽類
+                                                                            children:
+                                                                              - name: アビ目
+                                                                              - name: 
+                                                                                children:
+                                                                                  - name: コウノトリ目
+                                                                                  - name: ペンギン・ミズナギドリ類
+                                                                                    children:
+                                                                                      - name: ペンギン目
+                                                                                      - name: ミズナギドリ目
+                                                                                  - name: 
+                                                                                    children:
+                                                                                      - name: ペリカン目
+                                                                                      - name: カツオドリ目
+                                                                          - name: ヨタカ・アマツバメ類
+                                                                          - name: 陸鳥類
+                                                                            children:
+                                                                            - name: フクロウ目
+                                                                            - name: タカ目
+                                                                            - name: ゲラ・ブッポウソウ類
+                                                                              children:
+                                                                                - name: サイチョウ目
+                                                                                - name: キツツキ・ブッポウソウ類
+                                                                                  children:
+                                                                                    - name: キツツキ目
+                                                                                    - name: ブッポウソウ目
+                                                                            - name: 真ハヤブサ形類
+                                                                              children:
+                                                                                - name: ハヤブサ目
+                                                                                - name: オウム・スズメ類
+                                                                                  children:
+                                                                                    - name: オウム目
+                                                                                    - name: スズメ目                                                          
+
+                              - name: 単弓類
+                                from: モスコビアン
+                                children:
+                                  - name: 盤竜類
+                                    children:
+                                      - name: カセアサウルス亜目
+                                        from: カシモビアン
+                                        to: チャンシンジアン
+                                      - name: 真盤竜亜目
+                                        children:
+                                          - name: 獣弓類
+                                            children:
+                                              - name: ビアルモスクス亜目
+                                                from: グアダルピアン # 中期ペルム紀
+                                                to: ローピンジアン # 後期ペルム紀
+                                              - name: Eutherapsida
+                                                children:
+                                                  - name: ディノケファルス亜目
+                                                    from: クングーリアン
+                                                    to: キャピタニアン
+                                                  - name: Neotherapsida
+                                                    children:
+                                                      - name: 異歯亜目
+                                                        from: ローピンジアン
+                                                        to: 前期白亜紀
+                                                        children:
+                                                          - name: ドロマサウルス下目
+                                                            from: グアダルピアン
+                                                            to: グアダルピアン
+                                                          - name: ディキノドン下目
+                                                            from: グアダルピアン # 中期ペルム紀
+                                                            to: 後期三畳紀
+                                                      - name: 獣歯類
+                                                        children:
+                                                          - name: ゴルゴノプス亜目
+                                                            from: グアダルピアン
+                                                            to: ローピンジアン
+                                                          - name: 真正獣歯類
+                                                            children:
+                                                              - name: テロケファルス亜目
+                                                                from: ローピンジアン # 後期ペルム紀
+                                                                to: 後期三畳紀
+                                                              - name: キノドン亜目
+                                                                children:
+                                                                  - name: 哺乳形類
+                                                                    from: 後期三畳紀
+                                                                    children:
+                                                                      - name: モルガヌコドン目
+                                                                        from: 後期三畳紀
+                                                                        to: 中期ジュラ紀
+                                                                      - name: 梁歯目
+                                                                        from: バトニアン
+                                                                        to: アプチアン
+                                                                      - name: 哺乳綱
+                                                                        from: ノーリアン
+                                                                        to: 完新世
+                                                                        children:
+                                                                          - name: 原獣亜綱
+                                                                            children:
+                                                                              - name: 単孔目
+                                                                          - name: 獣形類
+                                                                            children:
+                                                                              - name: 後獣下綱
+                                                                                from: 前期白亜紀
+                                                                                to: 完新世
+                                                                                children:
+                                                                                  - name: アメリカ有袋大目
+                                                                                    children:
+                                                                                      - name: オポッサム形目
+                                                                                        from: 暁新世
+                                                                                        to: 完新世
+                                                                                      - name: 
+                                                                                        children:
+                                                                                          - name: ケノレステス目
+                                                                                          - name: オーストラリア有袋大目
+                                                                                            children:
+                                                                                              - name: ミクロビオテリウム目
+                                                                                              - name: Eometatheria
+                                                                                                children:
+                                                                                                  - name: Polyprotodontia
+                                                                                                    children:
+                                                                                                      - name: フクロモグラ形目
+                                                                                                      - name: 
+                                                                                                        children:
+                                                                                                          - name: バンディクート形目
+                                                                                                          - name: フクロネコ形目
+                                                                                                  - name: 双前歯目
+                                                                              - name: 真獣下綱
+                                                                                from: 後期ジュラ紀
+                                                                                to: 完新世
+                                                                                children:
+                                                                                  - name: アフリカ獣類
+                                                                                    children:
+                                                                                      - name: アフリカ食虫類
+                                                                                        children:
+                                                                                          - name: アフリカトガリネズミ目
+                                                                                          - name: ハネジネズミ目
+                                                                                          - name: ツチブタ目
+                                                                                      - name: 近蹄類
+                                                                                        children:
+                                                                                          - name: イワダヌキ目
+                                                                                          - name: テティス獣類
+                                                                                            children:
+                                                                                              - name: 長鼻目
+                                                                                                from: ヤプレシアン
+                                                                                                to: 完新世
+                                                                                              - name: カイギュウ目
+                                                                                                from: 始新世
+                                                                                                to: 完新世
+                                                                                  - name: 異節類
+                                                                                    children:
+                                                                                      - name: 被甲目
+                                                                                      - name: 有毛目
+                                                                                  - name: 北方真獣類
+                                                                                    children:
+                                                                                      - name: 真主齧上目
+                                                                                        children:
+                                                                                        - name: 霊長目
+                                                                                        - name: グリレス大目
+                                                                                          children:
+                                                                                            - name: 齧歯目
+                                                                                              from: サネティアン
+                                                                                              to: 完新世
+                                                                                            - name: 兎形目
+                                                                                      - name: ローラシア獣上目
+                                                                                        children:
+                                                                                          - name: 恐角目
+                                                                                            from: サネティアン
+                                                                                            to: バートニアン
+                                                                                          - name: 真無盲腸目
+                                                                                          - name: 陰嚢類
+                                                                                            children:
+                                                                                              - name: 翼手目
+                                                                                                from: ヤプレシアン
+                                                                                                to: 完新世
+                                                                                              - name: 猛獣有蹄類
+                                                                                                children:
+                                                                                                  - name: 有蹄類
+                                                                                                    children:
+                                                                                                      - name: メソニクス目
+                                                                                                        from: 暁新世
+                                                                                                        to: ルペリアン
+                                                                                                      - name: 鯨偶蹄目
+                                                                                                        from: ヤプレシアン
+                                                                                                        to: 完新世
+                                                                                                      - name: 
+                                                                                                        children:
+                                                                                                          - name: 奇蹄目
+                                                                                                          - name: 
+                                                                                                            from: 暁新世
+                                                                                                            to: 更新世
+                                                                                                            children:
+                                                                                                              - name: 南蹄目
+                                                                                                                from: 暁新世
+                                                                                                                to: 更新世
+                                                                                                              - name: 滑距目
+                                                                                                                from: 暁新世
+                                                                                                                to: 更新世
+                                                                                                  - name: 広獣類
+                                                                                                    children:
+                                                                                                      - name: 鱗甲目
+                                                                                                      - name: Pan-Carnivora
+                                                                                                        children:
+                                                                                                          - name: 肉歯目
+                                                                                                            from: セランディアン
+                                                                                                            to: トートニアン
+                                                                                                          - name: 食肉目
+                                                                                                            from: ダニアン
+                                                                                                            to: 完新世
