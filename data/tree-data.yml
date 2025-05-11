@@ -329,7 +329,7 @@ children:
                                                                         to: 完新世
                                                                         children:
                                                                           - name: キジ目
-                                                                          - name: 
+                                                                          - name: Anserimorphae
                                                                             children:
                                                                               - name: ヴェガヴィス目
                                                                                 from: マーストリヒチアン
@@ -339,54 +339,91 @@ children:
                                                                         from: マーストリヒチアン
                                                                         to: 完新世
                                                                         children:
-                                                                          - name: ツメバケイ目
-                                                                          - name: ネッタイチョウ目
-                                                                          - name: ジャノメドリ目
-                                                                          - name: チドリ目
-                                                                          - name: クイナモドキ目
-                                                                          - name: ツル目
-                                                                          - name: カッコウ目
-                                                                          - name: ノガン目
-                                                                          - name: ハト目
-                                                                          - name: サケイ目
                                                                           - name: 賛鳥類
                                                                             children:
                                                                               - name: カイツブリ目
+                                                                                from: 始新世
                                                                               - name: フラミンゴ目
-                                                                          - name: 水禽類
+                                                                                from: 中新世
+                                                                          - name: 鳩形類
                                                                             children:
-                                                                              - name: アビ目
-                                                                              - name: 
+                                                                              - name: ハト目
+                                                                                from: 中新世
+                                                                              - name: # クイナモドキ・サケイ
+                                                                                children: 
+                                                                                  - name: クイナモドキ目
+                                                                                  - name: サケイ目
+
+                                                                          - name: 燕雀上類
+                                                                            from: 暁新世
+                                                                            children:
+                                                                              - name: エボシドリ目
+                                                                                from: チャッティアン
+                                                                              - name: ツメバケイ目
+                                                                                from: プリアボニアン
+                                                                              - name: チドリ目
+                                                                                from: 暁新世
+                                                                              - name: ツル目
+                                                                                from: 暁新世
+                                                                              - name: # カッコウ・ノガン
                                                                                 children:
-                                                                                  - name: コウノトリ目
-                                                                                  - name: ペンギン・ミズナギドリ類
-                                                                                    children:
-                                                                                      - name: ペンギン目
-                                                                                      - name: ミズナギドリ目
+                                                                                  - name: カッコウ目
+                                                                                  - name: ノガン目
+                                                                          - name: Ardeae
+                                                                            children:
+                                                                              - name: 広尾形類
+                                                                                children:
+                                                                                  - name: ネッタイチョウ目
+                                                                                  - name: ジャノメドリ目
+                                                                              - name: 水禽類
+                                                                                children:
+                                                                                  - name: アビ目
                                                                                   - name: 
                                                                                     children:
-                                                                                      - name: ペリカン目
-                                                                                      - name: カツオドリ目
-                                                                          - name: ヨタカ・アマツバメ類
+                                                                                      - name: Austrodyptornithes
+                                                                                        children:
+                                                                                          - name: ペンギン目
+                                                                                          - name: ミズナギドリ目
+                                                                                      - name: コウノトリ目
+                                                                                        from: 鮮新世
+                                                                                      - name: 
+                                                                                        children:
+                                                                                          - name: ペリカン目
+                                                                                          - name: カツオドリ目
+                                                                          - name: Strisores
+                                                                            children:
+                                                                              - name: ヨタカ目
+                                                                              - name: アマツバメ目
                                                                           - name: 陸鳥類
                                                                             children:
                                                                             - name: フクロウ目
                                                                             - name: タカ目
-                                                                            - name: ゲラ・ブッポウソウ類
+                                                                              from: 始新世
+                                                                            - name: ブッポウソウ上目
                                                                               children:
-                                                                                - name: サイチョウ目
-                                                                                - name: キツツキ・ブッポウソウ類
+                                                                                - name: ネズミドリ目
+                                                                                - name: 樹鳥類
                                                                                   children:
-                                                                                    - name: キツツキ目
-                                                                                    - name: ブッポウソウ目
+                                                                                    - name: オオブッポウソウ目
+                                                                                    - name: # キヌバネドリ・ゲラ・ブッポウソウ
+                                                                                      children:
+                                                                                        - name: キヌバネドリ目
+                                                                                        - name: ゲラ・ブッポウソウ類
+                                                                                          children:
+                                                                                            - name: サイチョウ目
+                                                                                            - name: 強カゲラ類
+                                                                                              children:
+                                                                                                - name: キツツキ目
+                                                                                                - name: ブッポウソウ目
                                                                             - name: 真ハヤブサ形類
+                                                                              from: 始新世
                                                                               children:
                                                                                 - name: ハヤブサ目
                                                                                 - name: オウム・スズメ類
                                                                                   children:
                                                                                     - name: オウム目
-                                                                                    - name: スズメ目                                                          
-
+                                                                                    - name: スズメ目
+                                                                                      from: 始新世
                               - name: 単弓類
                                 from: モスコビアン
                                 children:
