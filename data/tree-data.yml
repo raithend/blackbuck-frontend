@@ -97,6 +97,7 @@ children:
                   - name: Actinopteri
                     children:
                       - name: チョウザメ目
+                        from: 前期ジュラ紀
                       - name: 新鰭類
                         children:
                           - name: 全骨類
@@ -490,27 +491,26 @@ children:
                                                                                 from: 前期白亜紀
                                                                                 to: 完新世
                                                                                 children:
-                                                                                  - name: アメリカ有袋大目
+                                                                                  - name: オポッサム形目
+                                                                                    from: 暁新世
+                                                                                    to: 完新世
+                                                                                  - name: 
                                                                                     children:
-                                                                                      - name: オポッサム形目
-                                                                                        from: 暁新世
-                                                                                        to: 完新世
-                                                                                      - name: 
+                                                                                      - name: ケノレステス目
+                                                                                      - name: オーストラリア有袋大目
+                                                                                        from: セランディアン
                                                                                         children:
-                                                                                          - name: ケノレステス目
-                                                                                          - name: オーストラリア有袋大目
+                                                                                          - name: ミクロビオテリウム目
+                                                                                          - name: Eometatheria
                                                                                             children:
-                                                                                              - name: ミクロビオテリウム目
-                                                                                              - name: Eometatheria
+                                                                                              - name: Polyprotodontia
                                                                                                 children:
-                                                                                                  - name: Polyprotodontia
+                                                                                                  - name: フクロモグラ形目
+                                                                                                  - name: 
                                                                                                     children:
-                                                                                                      - name: フクロモグラ形目
-                                                                                                      - name: 
-                                                                                                        children:
-                                                                                                          - name: バンディクート形目
-                                                                                                          - name: フクロネコ形目
-                                                                                                  - name: 双前歯目
+                                                                                                      - name: バンディクート形目
+                                                                                                      - name: フクロネコ形目
+                                                                                              - name: 双前歯目
                                                                               - name: 真獣下綱
                                                                                 from: 後期ジュラ紀
                                                                                 to: 完新世
