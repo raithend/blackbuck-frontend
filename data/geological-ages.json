@@ -1172,7 +1172,7 @@
               "nameEn": "Early Silurian",
               "startAge": 443.8,
               "endAge": 427.4,
-              "map": "Map76a_ES_Early_Llandovery_440",
+              "map": "Map76a_ES_early_Llandovery_440",
               "ages": [
                 {
                   "id": "81",
@@ -1180,7 +1180,7 @@
                   "nameEn": "Homerian",
                   "startAge": 430.5,
                   "endAge": 427.4,
-                  "map": "Map75a_ES_Late_Llandovery_430",
+                  "map": "Map75a_ES_late_Llandovery_430",
                   "description": "温暖な気候",
                   "descriptionEn": "Warm climate"
                 },
@@ -1190,7 +1190,7 @@
                   "nameEn": "Sheinwoodian",
                   "startAge": 433.4,
                   "endAge": 430.5,
-                  "map": "Map75a_ES_Late_Llandovery_430",
+                  "map": "Map75a_ES_late_Llandovery_430",
                   "description": "海進期",
                   "descriptionEn": "Marine transgression"
                 },
@@ -1200,7 +1200,7 @@
                   "nameEn": "Telychian",
                   "startAge": 438.5,
                   "endAge": 433.4,
-                  "map": "Map76a_ES_Early_Llandovery_440",
+                  "map": "Map76a_ES_early_Llandovery_440",
                   "description": "温暖な気候",
                   "descriptionEn": "Warm climate"
                 },
@@ -1210,7 +1210,7 @@
                   "nameEn": "Aeronian",
                   "startAge": 440.8,
                   "endAge": 438.5,
-                  "map": "Map76a_ES_Early_Llandovery_440",
+                  "map": "Map76a_ES_early_Llandovery_440",
                   "description": "海進期",
                   "descriptionEn": "Marine transgression"
                 },
@@ -1220,7 +1220,7 @@
                   "nameEn": "Rhuddanian",
                   "startAge": 443.8,
                   "endAge": 440.8,
-                  "map": "Map76a_ES_Early_Llandovery_440",
+                  "map": "Map76a_ES_early_Llandovery_440",
                   "description": "前期シルル紀の始まり",
                   "descriptionEn": "Beginning of Early Silurian"
                 }
