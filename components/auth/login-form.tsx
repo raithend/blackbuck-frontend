@@ -1,12 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import { createBrowserClient } from '@supabase/ssr'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { createClient } from '@/lib/supabase-browser'
 
 export function LoginForm() {
   const [email, setEmail] = useState('')
@@ -14,10 +14,7 @@ export function LoginForm() {
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
 
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  const supabase = createClient()
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -35,8 +32,6 @@ export function LoginForm() {
       }
 
       if (data.session) {
-        // JWTトークンをコンソールに表示
-        console.log('JWT Token:', data.session.access_token)
         router.push('/')
       }
     } catch (err) {

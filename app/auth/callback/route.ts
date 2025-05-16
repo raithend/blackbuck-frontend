@@ -1,28 +1,27 @@
 "use server";
 
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
-import { type NextRequest, NextResponse } from "next/server";
+import { createClient } from '@/lib/supabase-server'
+import { NextResponse } from 'next/server'
+import { cookies } from 'next/headers'
 
-export async function GET(request: NextRequest) {
-	const requestUrl = new URL(request.url);
-	const code = requestUrl.searchParams.get("code");
+export async function GET(request: Request) {
+	const requestUrl = new URL(request.url)
+	const code = requestUrl.searchParams.get('code')
 
 	if (code) {
-		const cookieStore = await cookies();
+		const supabase = await createClient()
+		const { data, error } = await supabase.auth.exchangeCodeForSession(code)
 
-		const supabase = createServerClient(
-			process.env.NEXT_PUBLIC_SUPABASE_URL!,
-			process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-			{
-				cookies: cookieStore,
-			},
-		);
+		if (error) {
+			return NextResponse.redirect(`${requestUrl.origin}/login?error=${error.message}`)
+		}
 
-		// code をセッションに交換
-		await supabase.auth.exchangeCodeForSession(code);
+		if (data.session) {
+			// プロフィール入力ページにリダイレクト
+			return NextResponse.redirect(`${requestUrl.origin}/complete-profile`)
+		}
 	}
 
-	// ダッシュボードにリダイレクト
-	return NextResponse.redirect(new URL("/", request.url));
+	// エラー時はログインページにリダイレクト
+	return NextResponse.redirect(`${requestUrl.origin}/login?error=認証に失敗しました`)
 }

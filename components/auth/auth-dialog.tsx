@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { DialogContent, DialogHeader, DialogTitle	 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LoginForm } from '@/components/auth/login-form'
-import { SignupForm } from '@/components/auth/signup-form'
+import { SignUpForm } from '@/components/auth/signup-form'
 import { useSupabaseSession } from '@/hooks/use-supabase-session'
 
 interface AuthDialogProps {
@@ -62,7 +62,7 @@ export function AuthDialog({ trigger, defaultTab = 'login' }: AuthDialogProps) {
 						<LoginForm />
 					</TabsContent>
 					<TabsContent value="signup">
-						<SignupForm />
+						<SignUpForm />
 					</TabsContent>
 				</Tabs>
 			)}

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { createBrowserClient } from '@/lib/supabase-browser'
+import { createClient } from '@/lib/supabase-browser'
 import { Button } from '@/components/ui/button'
 
 interface LogoutButtonProps {
@@ -16,7 +16,7 @@ export function LogoutButton({ variant = 'default', size = 'default' }: LogoutBu
   const [supabase, setSupabase] = useState<any>(null)
 
   useEffect(() => {
-    setSupabase(createBrowserClient())
+    setSupabase(createClient())
   }, [])
 
   const handleLogout = async () => {

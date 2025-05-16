@@ -1,7 +1,7 @@
 'use client'
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
-import { createBrowserClient } from '@/lib/supabase-browser'
+import { createClient } from '@/lib/supabase-browser'
 import { Session, User } from '@supabase/supabase-js'
 
 interface SupabaseAuthContextType {
@@ -24,7 +24,7 @@ export function SupabaseAuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     // Supabaseクライアントの初期化
-    const client = createBrowserClient()
+    const client = createClient()
     setSupabase(client)
 
     // 現在のセッション情報を取得
