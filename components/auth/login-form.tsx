@@ -62,7 +62,7 @@ export function LoginForm() {
       await checkSession()
 
       // ログイン成功後のリダイレクト
-      router.push('/dashboard')
+      router.push('/')
     } catch (err) {
       console.error('ログインエラー:', err)
       setError(err instanceof Error ? err.message : 'ログインに失敗しました')
