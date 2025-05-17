@@ -80,7 +80,8 @@ export default function CompleteProfile() {
         },
         body: JSON.stringify({
           account_id: accountId,
-          username: username
+          username: username,
+          uuid: session.user.id
         })
       })
 
