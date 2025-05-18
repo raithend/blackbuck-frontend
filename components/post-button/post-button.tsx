@@ -16,7 +16,6 @@ import {
 import { Label } from "@/components/ui/label";
 import { ImageIcon, ImageUp } from "lucide-react";
 import { LocationCombobox } from "./location-combobox";
-import { TaxonomyCombobox } from "./taxonomy-combobox";
 
 export function PostButton() {
 	const [content, setContent] = useState('')
@@ -109,7 +108,6 @@ export function PostButton() {
 							</div>
 							<div className="grid gap-2">
 								<Label htmlFor="width">分類</Label>
-								<TaxonomyCombobox />
 							</div>
 							<div className="grid gap-2">
 								<Label htmlFor="width">撮影地</Label>
