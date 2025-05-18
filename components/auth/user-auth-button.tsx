@@ -16,6 +16,7 @@ import {
 import { LogoutButton } from '@/components/auth/logout-button'
 import { useUser } from '@/contexts/user-context'
 import Link from 'next/link'
+import { UserRound } from 'lucide-react'
 
 export function UserAuthButton() {
   const [open, setOpen] = useState(false)
@@ -54,9 +55,11 @@ export function UserAuthButton() {
           <Avatar className="h-8 w-8">
             <AvatarImage 
               src={backendSession.user.avatar_url} 
-              alt={userProfile.username || backendSession.user.username || 'ユーザー'} 
+              alt={backendSession.user.username || 'ユーザー'} 
             />
-            <AvatarFallback>{getInitials()}</AvatarFallback>
+            <AvatarFallback>
+              <UserRound className="h-4 w-4" />
+            </AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
