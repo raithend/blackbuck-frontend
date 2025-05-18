@@ -10,12 +10,10 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useUser } from '@/contexts/user-context';
-import { useSupabaseSession } from '@/hooks/use-supabase-session';
-import { LogoutButton } from '@/components/auth/logout-button';
 import { UserAuthButton } from '@/components/auth/user-auth-button';
 
 export function Header() {
-  const { user, isLoading } = useUser();
+  const { userProfile, isLoading } = useUser();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">

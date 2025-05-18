@@ -19,13 +19,13 @@ import Link from 'next/link'
 
 export function UserAuthButton() {
   const [open, setOpen] = useState(false)
-  const { user, userProfile, isLoading } = useUser()
+  const { backendSession, userProfile, isLoading } = useUser()
 
   if (isLoading) {
     return <Button variant="ghost" disabled>読み込み中...</Button>
   }
 
-  if (!user || !userProfile) {
+  if (!backendSession || !userProfile) {
     return (
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
@@ -39,10 +39,10 @@ export function UserAuthButton() {
   // アバターのフォールバック用のイニシャルを生成
   const getInitials = () => {
     if (userProfile?.username) {
-      return userProfile.username.charAt(0).toUpperCase()
+      return userProfile.username
     }
-    if (user?.email) {
-      return user.email.charAt(0).toUpperCase()
+    if (backendSession?.user?.username) {
+      return backendSession.user.username
     }
     return 'U'
   }
@@ -53,8 +53,8 @@ export function UserAuthButton() {
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-8 w-8">
             <AvatarImage 
-              src={user.user_metadata?.avatar_url || ''} 
-              alt={userProfile.username || user.email || 'ユーザー'} 
+              src={backendSession.user.avatar_url} 
+              alt={userProfile.username || backendSession.user.username || 'ユーザー'} 
             />
             <AvatarFallback>{getInitials()}</AvatarFallback>
           </Avatar>
@@ -63,9 +63,9 @@ export function UserAuthButton() {
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{userProfile.username || 'ユーザー'}</p>
+            <p className="text-sm font-medium leading-none">{backendSession.user.username}</p>
             <p className="text-xs leading-none text-muted-foreground">
-              {user.email}
+              @{backendSession.user.account_id}
             </p>
           </div>
         </DropdownMenuLabel>

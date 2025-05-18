@@ -6,7 +6,7 @@ import { DialogContent, DialogHeader, DialogTitle	 } from "@/components/ui/dialo
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LoginForm } from '@/components/auth/login-form'
 import { SignUpForm } from '@/components/auth/signup-form'
-import { useSupabaseSession } from '@/hooks/use-supabase-session'
+import { useUser } from '@/contexts/user-context'
 
 interface AuthDialogProps {
 	trigger?: React.ReactNode
@@ -15,7 +15,7 @@ interface AuthDialogProps {
 
 export function AuthDialog({ trigger, defaultTab = 'login' }: AuthDialogProps) {
 	const [activeTab, setActiveTab] = useState<'login' | 'signup'>(defaultTab)
-	const { session, user, loading, error, signOut } = useSupabaseSession()
+	const { backendSession, userProfile, isLoading, error } = useUser()
 
 	return (
 		<DialogContent>
@@ -28,16 +28,16 @@ export function AuthDialog({ trigger, defaultTab = 'login' }: AuthDialogProps) {
 				</DialogTitle>
 			</DialogHeader>
 			
-			{loading ? (
+			{isLoading ? (
 				<div className="flex justify-center py-4">
 					<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
 				</div>
-			) : session ? (
+			) : backendSession ? (
 				<div className="py-4 text-center">
 					<p className="mb-2">ログイン済みです</p>
-					<p className="mb-4 text-sm text-gray-500">{user?.email}</p>
+					<p className="mb-4 text-sm text-gray-500">{userProfile?.username}</p>
 					<Button 
-						onClick={signOut}
+						onClick={() => window.location.href = '/logout'}
 						variant="outline"
 						className="mr-2"
 					>
@@ -69,7 +69,7 @@ export function AuthDialog({ trigger, defaultTab = 'login' }: AuthDialogProps) {
 			
 			{error && (
 				<div className="mt-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-					<p>エラーが発生しました: {error.message}</p>
+					<p>エラーが発生しました: {error}</p>
 				</div>
 			)}
 		</DialogContent>
