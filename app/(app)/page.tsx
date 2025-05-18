@@ -1,9 +1,7 @@
-import { PostCards } from "@/components/post/post-cards";
+import DescriptionArea from "@/components/description/description-area";
 
 export default function Page() {
 	return (
-		<main>
-			<PostCards apiUrl="/api/v1/posts" />
-		</main>
+		<DescriptionArea />
 	);
 }

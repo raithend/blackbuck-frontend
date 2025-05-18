@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useProfile } from "@/contexts/profile-context";
+import { useUser } from "@/contexts/user-context";
 import {
   Dialog,
   DialogContent,
@@ -21,7 +21,7 @@ interface CommentProps {
 export function CommentButton({ postId }: CommentProps) {
   const [content, setContent] = useState("");
   const [isOpen, setIsOpen] = useState(false);
-  const { profile } = useProfile();
+  const { user } = useUser();
 
   const handleSubmit = async () => {
     try {
@@ -54,14 +54,14 @@ export function CommentButton({ postId }: CommentProps) {
         <div className="space-y-4">
           <div className="flex items-center space-x-2">
             <Avatar>
-              <AvatarImage src={profile?.avatar_url} />
+              <AvatarImage src={user?.avatar_url ?? undefined} />
               <AvatarFallback>
                 <UserRound />
               </AvatarFallback>
             </Avatar>
             <div>
-              <p className="font-medium">{profile?.username}</p>
-              <p className="text-sm text-gray-500">{profile?.id}</p>
+              <p className="font-medium">{user?.username}</p>
+              <p className="text-sm text-gray-500">{user?.id}</p>
             </div>
           </div>
           <Textarea

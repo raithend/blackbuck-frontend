@@ -1,7 +1,9 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { useState } from 'react'
+import { useDropzone } from 'react-dropzone'
+import { Button } from '@/components/ui/button'
+import { Textarea } from '@/components/ui/textarea'
 import {
 	Dialog,
 	DialogContent,
@@ -11,39 +13,70 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { ImageIcon, ImageUp } from "lucide-react";
-import React, { useCallback } from "react";
-import { useDropzone } from "react-dropzone";
 import { LocationCombobox } from "./location-combobox";
-import { TaxonomyCombobox } from "./taxonomy-combobox";
-
-function Dropzone() {
-	const onDrop = useCallback((acceptedFiles: File[]) => {
-		console.log("受け取ったファイル:", acceptedFiles);
-	}, []);
-	const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
-
-	return (
-		<div
-			{...getRootProps()}
-			className={`flex flex-col items-center justify-center h-full w-full
-            ${isDragActive ? "bg-accent text-accent-foreground" : ""}`}
-		>
-			<input {...getInputProps()} />
-			<div className="flex flex-col items-center">
-				<ImageIcon className="h-16 w-16 mb-4" />
-			</div>
-			<div>画像をドラッグアンドドロップ</div>
-			<div>または</div>
-			<div>コンピューターから選択</div>
-		</div>
-	);
-}
 
 export function PostButton() {
+	const [content, setContent] = useState('')
+	const [files, setFiles] = useState<File[]>([])
+	const [isUploading, setIsUploading] = useState(false)
+
+	const { getRootProps, getInputProps } = useDropzone({
+		accept: {
+			'image/*': ['.jpeg', '.jpg', '.png', '.gif']
+		},
+		onDrop: (acceptedFiles) => {
+			setFiles(acceptedFiles)
+		}
+	})
+
+	const handleSubmit = async () => {
+		if (files.length === 0) return
+
+		setIsUploading(true)
+		try {
+			// 画像をS3にアップロード
+			const imageUrls = await Promise.all(
+				files.map(async (file) => {
+					// 署名付きURLを取得
+					const { signedUrl } = await fetch('/api/v1/upload', {
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/json',
+						},
+						body: JSON.stringify({
+							fileName: file.name,
+							fileType: file.type,
+						}),
+					}).then(res => res.json())
+
+					// S3にアップロード
+					await fetch(signedUrl, {
+						method: 'PUT',
+						body: file,
+						headers: {
+							'Content-Type': file.type,
+						},
+					})
+
+					// アップロードされた画像のURLを返す
+					const imageUrl = signedUrl.split('?')[0]
+					console.log('Uploaded image URL:', imageUrl)
+					return imageUrl
+				})
+			)
+
+			console.log('All uploaded image URLs:', imageUrls)
+			setFiles([])
+
+		} catch (error) {
+			console.error('Error uploading images:', error)
+		} finally {
+			setIsUploading(false)
+		}
+	}
+
 	return (
 		<div className="flex items-center justify-center">
 			<Dialog>
@@ -61,29 +94,46 @@ export function PostButton() {
 					<div className="grid gap-4">
 						<div className="grid gap-4">
 							<div className="grid gap-2">
-								<Label htmlFor="width">画像</Label>
-								<Card className="h-72 w-full">
-									<CardContent className="h-full p-0">
-										<Dropzone />
-									</CardContent>
-								</Card>
+								<Textarea
+									placeholder="いまどうしてる？"
+									value={content}
+									onChange={(e) => setContent(e.target.value)}
+								/>
 							</div>
 							<div className="grid gap-2">
-								<Label htmlFor="width">コメント</Label>
-								<Textarea />
+								<div {...getRootProps()} className="border-2 border-dashed p-4 rounded-lg">
+									<input {...getInputProps()} />
+									<p>画像をドラッグ＆ドロップ、またはクリックして選択</p>
+								</div>
 							</div>
 							<div className="grid gap-2">
 								<Label htmlFor="width">分類</Label>
-								<TaxonomyCombobox />
 							</div>
 							<div className="grid gap-2">
 								<Label htmlFor="width">撮影地</Label>
 								<LocationCombobox />
 							</div>
 						</div>
+						{files.length > 0 && (
+							<div className="flex gap-2">
+								{files.map((file, index) => (
+									<img
+										key={index}
+										src={URL.createObjectURL(file)}
+										alt={`Preview ${index}`}
+										className="w-20 h-20 object-cover rounded"
+									/>
+								))}
+							</div>
+						)}
 						<div className="w-full flex justify-center">
-							<Button variant="outline" className="w-24">
-								投稿 !
+							<Button
+								variant="outline"
+								className="w-24"
+								onClick={handleSubmit}
+								disabled={isUploading}
+							>
+								{isUploading ? 'アップロード中...' : 'アップロード'}
 							</Button>
 						</div>
 					</div>

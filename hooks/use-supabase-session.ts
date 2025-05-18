@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { createBrowserClient } from '@/lib/supabase-browser'
+import { createClient } from '@/lib/supabase-browser'
 import { Session, User } from '@supabase/supabase-js'
 
 interface UseSupabaseSessionReturn {
@@ -20,7 +20,7 @@ export function useSupabaseSession(): UseSupabaseSessionReturn {
 
   useEffect(() => {
     // Supabaseクライアントの初期化
-    const supabase = createBrowserClient()
+    const supabase = createClient()
 
     // 現在のセッション情報を取得
     const getSession = async () => {
@@ -58,7 +58,7 @@ export function useSupabaseSession(): UseSupabaseSessionReturn {
 
   // ログアウト関数
   const signOut = async () => {
-    const supabase = createBrowserClient()
+    const supabase = createClient()
     await supabase.auth.signOut()
   }
 

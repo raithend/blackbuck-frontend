@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
-import { SupabaseAuthProvider } from "@/contexts/supabase-auth-context";
-import { ProfileProvider } from "@/contexts/profile-context";
+import { UserProvider } from "@/contexts/user-context";
+
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -25,11 +25,9 @@ export default function RootLayout({
 					enableSystem
 					disableTransitionOnChange
 				>
-					<SupabaseAuthProvider>
-						<ProfileProvider>
-							{children}
-						</ProfileProvider>
-					</SupabaseAuthProvider>
+					<UserProvider>
+						{children}
+					</UserProvider>
 				</ThemeProvider>
 			</body>
 		</html>
