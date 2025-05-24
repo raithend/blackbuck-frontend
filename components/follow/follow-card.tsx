@@ -15,11 +15,11 @@ export function FollowCard({ user, isFollowing, apiUrl, onFollowStatusChange }: 
     <Card className="">
       <CardHeader className="flex flex-row items-center gap-4 py-2">
         <Avatar>
-          <AvatarImage src={user.avatar_url} alt={user.username} />
-          <AvatarFallback>{user.username[0]}</AvatarFallback>
+          <AvatarImage src={user.avatar_url} alt={user.name} />
+          <AvatarFallback>{user.name[0]}</AvatarFallback>
         </Avatar>
         <div className="flex-1">
-          <h3 className="text-lg font-semibold">{user.username}</h3>
+          <h3 className="text-lg font-semibold">{user.name}</h3>
           <p className="text-sm text-muted-foreground">@{user.id}</p>
         </div>
         <FollowButton

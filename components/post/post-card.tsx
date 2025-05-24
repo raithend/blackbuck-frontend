@@ -37,7 +37,7 @@ export function PostCard({ post }: PostCardProps) {
 					</Avatar>
 				</div>
 				<div className="pl-2">
-					<div className="text-base font-semibold">{post.user.username}</div>
+					<div className="text-base font-semibold">{post.user.name}</div>
 					<div>{post.user.id}</div>
 				</div>
 			</CardHeader>

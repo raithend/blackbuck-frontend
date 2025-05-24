@@ -35,7 +35,7 @@ export function AuthDialog({ trigger, defaultTab = 'login' }: AuthDialogProps) {
 			) : backendSession ? (
 				<div className="py-4 text-center">
 					<p className="mb-2">ログイン済みです</p>
-					<p className="mb-4 text-sm text-gray-500">{userProfile?.username}</p>
+					<p className="mb-4 text-sm text-gray-500">{userProfile?.name}</p>
 					<Button 
 						onClick={() => window.location.href = '/logout'}
 						variant="outline"

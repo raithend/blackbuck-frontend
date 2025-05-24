@@ -39,11 +39,11 @@ export function UserAuthButton() {
 
   // アバターのフォールバック用のイニシャルを生成
   const getInitials = () => {
-    if (userProfile?.username) {
-      return userProfile.username
+    if (userProfile?.name) {
+      return userProfile.name
     }
-    if (backendSession?.user?.username) {
-      return backendSession.user.username
+    if (backendSession?.user?.name) {
+      return backendSession.user.name
     }
     return 'U'
   }
@@ -55,7 +55,7 @@ export function UserAuthButton() {
           <Avatar className="h-8 w-8">
             <AvatarImage 
               src={backendSession.user.avatar_url} 
-              alt={backendSession.user.username || 'ユーザー'} 
+              alt={backendSession.user.name || 'ユーザー'} 
             />
             <AvatarFallback>
               <UserRound className="h-4 w-4" />
@@ -66,7 +66,7 @@ export function UserAuthButton() {
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{backendSession.user.username}</p>
+            <p className="text-sm font-medium leading-none">{backendSession.user.name}</p>
             <p className="text-xs leading-none text-muted-foreground">
               @{backendSession.user.account_id}
             </p>

@@ -6,14 +6,14 @@ import useSWR from 'swr'
 // バックエンドのユーザー情報の型定義
 interface UserProfile {
   accountId: string
-  username: string
+  name: string
 }
 
 // バックエンドのセッション情報の型定義
 interface BackendSession {
   user: {
     id: number
-    username: string
+    name: string
     account_id: string
     avatar_url: string
     header_url: string
@@ -94,7 +94,7 @@ const sessionFetcher = async (url: string): Promise<SessionResponse> => {
     const session: BackendSession = {
       user: {
         id: data.id,
-        username: data.username,
+        name: data.name,
         account_id: data.account_id,
         avatar_url: data.avatar_url || '',
         header_url: data.header_url || '',
@@ -107,7 +107,7 @@ const sessionFetcher = async (url: string): Promise<SessionResponse> => {
 
     const userProfile: UserProfile = {
       accountId: data.account_id,
-      username: data.username
+      name: data.name
     }
 
     return {

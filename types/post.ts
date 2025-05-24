@@ -9,7 +9,7 @@ export interface Post {
   liked: boolean;
   user: {
     id: string;
-    username: string;
+    name: string;
     avatar_url?: string;
   };
 } 

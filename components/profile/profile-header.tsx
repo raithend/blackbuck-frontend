@@ -6,7 +6,7 @@ import { EditProfileButton } from "./edit-profile-button";
 interface ProfileHeaderProps {
   profile: {
     id: string;
-    username: string;
+    name: string;
     avatar_url?: string;
     header_url?: string;
     bio?: string;
@@ -25,14 +25,14 @@ export function ProfileHeader({ profile }: ProfileHeaderProps) {
       <div className="px-4 pb-4">
         <div className="relative -mt-16">
           <Avatar className="h-32 w-32 border-4 border-background">
-            <AvatarImage src={profile.avatar_url} alt={profile.username} />
-            <AvatarFallback>{profile.username[0].toUpperCase()}</AvatarFallback>
+            <AvatarImage src={profile.avatar_url} alt={profile.name} />
+            <AvatarFallback>{profile.name[0].toUpperCase()}</AvatarFallback>
           </Avatar>
         </div>
         <div className="mt-4 flex items-start justify-between">
           <div>
             <p className="text-muted-foreground">@{profile.id}</p>
-            <h1 className="text-2xl font-bold">{profile.username}</h1>
+            <h1 className="text-2xl font-bold">{profile.name}</h1>
             {profile.bio && <p className="mt-2">{profile.bio}</p>}
           </div>
           <EditProfileButton />

@@ -60,7 +60,7 @@ export function CommentButton({ postId }: CommentProps) {
               </AvatarFallback>
             </Avatar>
             <div>
-              <p className="font-medium">{user?.username}</p>
+              <p className="font-medium">{user?.name}</p>
               <p className="text-sm text-gray-500">{user?.id}</p>
             </div>
           </div>

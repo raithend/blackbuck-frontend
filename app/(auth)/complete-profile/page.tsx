@@ -11,7 +11,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 
 export default function CompleteProfile() {
   const [accountId, setAccountId] = useState('')
-  const [username, setUsername] = useState('')
+  const [name, setName] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [accountIdStatus, setAccountIdStatus] = useState<'checking' | 'available' | 'unavailable' | null>(null)
@@ -80,7 +80,7 @@ export default function CompleteProfile() {
         },
         body: JSON.stringify({
           account_id: accountId,
-          username: username,
+          name: name,
           uuid: session.user.id
         })
       })
@@ -98,7 +98,7 @@ export default function CompleteProfile() {
     }
   }
 
-  const isFormValid = accountId && username && accountIdStatus === 'available'
+  const isFormValid = accountId && name && accountIdStatus === 'available'
 
   return (
     <div className="container flex h-screen w-screen flex-col items-center justify-center">
@@ -130,11 +130,11 @@ export default function CompleteProfile() {
               )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="username">ユーザー名</Label>
+              <Label htmlFor="name">ユーザー名</Label>
               <Input
-                id="username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                id="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
                 required
               />
             </div>

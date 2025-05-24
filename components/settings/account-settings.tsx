@@ -13,8 +13,8 @@ export function AccountSettings() {
       <div className="space-y-4">
         <h2 className="text-xl font-semibold">プロフィール情報</h2>
         <div className="space-y-2">
-          <Label htmlFor="username">ユーザー名</Label>
-          <Input id="username" placeholder="ユーザー名を入力" />
+          <Label htmlFor="name">ユーザー名</Label>
+          <Input id="name" placeholder="ユーザー名を入力" />
         </div>
         <div className="space-y-2">
           <Label htmlFor="bio">自己紹介</Label>
