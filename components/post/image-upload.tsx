@@ -8,42 +8,20 @@ import Image from 'next/image'
 import { cn } from '@/lib/utils'
 
 interface ImageUploadProps {
-  value: string[]
-  onChange: (value: string[]) => void
+  value: File[]
+  onChange: (value: File[]) => void
 }
 
 export function ImageUpload({ value, onChange }: ImageUploadProps) {
-  const [isUploading, setIsUploading] = useState(false)
+  const [previewUrls, setPreviewUrls] = useState<string[]>([])
 
-  const onDrop = useCallback(async (acceptedFiles: File[]) => {
-    try {
-      setIsUploading(true)
-      const newUrls: string[] = []
-
-      for (const file of acceptedFiles) {
-        const formData = new FormData()
-        formData.append('file', file)
-
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/upload`, {
-          method: 'POST',
-          credentials: 'include',
-          body: formData
-        })
-
-        if (!response.ok) {
-          throw new Error('アップロードに失敗しました')
-        }
-
-        const data = await response.json()
-        newUrls.push(data.url)
-      }
-
-      onChange([...value, ...newUrls])
-    } catch (error) {
-      console.error('アップロードエラー:', error)
-    } finally {
-      setIsUploading(false)
-    }
+  const onDrop = useCallback((acceptedFiles: File[]) => {
+    // プレビューURLの生成
+    const newPreviewUrls = acceptedFiles.map(file => URL.createObjectURL(file))
+    setPreviewUrls(prev => [...prev, ...newPreviewUrls])
+    
+    // 親コンポーネントにファイルを渡す
+    onChange([...value, ...acceptedFiles])
   }, [value, onChange])
 
   const { getRootProps, getInputProps } = useDropzone({
@@ -54,14 +32,19 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
   })
 
   const handleRemove = (index: number) => {
-    const newUrls = value.filter((_, i) => i !== index)
-    onChange(newUrls)
+    // プレビューURLの削除
+    const newPreviewUrls = previewUrls.filter((_, i) => i !== index)
+    setPreviewUrls(newPreviewUrls)
+    
+    // 親コンポーネントに更新されたファイルリストを渡す
+    const newFiles = value.filter((_, i) => i !== index)
+    onChange(newFiles)
   }
 
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
-        {value.map((url, index) => (
+        {previewUrls.map((url, index) => (
           <div key={url} className="relative aspect-square">
             <Image
               src={url}
