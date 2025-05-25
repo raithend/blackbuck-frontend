@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase-browser'
 import { Button } from '@/components/ui/button'
@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 
-export default function CompleteProfile() {
+function CompleteProfileContent() {
   const [accountId, setAccountId] = useState('')
   const [name, setName] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -150,5 +150,13 @@ export default function CompleteProfile() {
         </CardContent>
       </Card>
     </div>
+  )
+}
+
+export default function CompleteProfile() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <CompleteProfileContent />
+    </Suspense>
   )
 } 
