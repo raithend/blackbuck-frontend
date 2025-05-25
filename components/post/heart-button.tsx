@@ -6,6 +6,14 @@ import { useState } from "react";
 export function HeartButton() {
 	const [flag, setCount] = useState(false);
 
+	const handleClick = async () => {
+		try {
+			// いいね処理
+		} catch (error) {
+			// エラー処理
+		}
+	};
+
 	return (
 		<div>
 			<button type="button" onClick={() => setCount(!flag)}>

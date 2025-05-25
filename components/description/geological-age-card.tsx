@@ -121,7 +121,7 @@ export function GeologicalAgeCard() {
   };
 
   // スライダーの値から時代を探す関数
-  const findAgeBySliderValue = (value: number) => {
+  const findAgeBySliderValue = useCallback((value: number) => {
     const reversedValue = 103 - value;
     const ageId = reversedValue.toString();
     
@@ -144,16 +144,7 @@ export function GeologicalAgeCard() {
       }
     }
     return null;
-  };
-
-  const handleSliderChange = useCallback((value: number[]) => {
-    const age = findAgeBySliderValue(value[0]);
-    if (age) {
-      // 選択された時代のID配列を更新
-      const ageIds = getAgeIds(age);
-      setSelectedAgeIds(ageIds);
-    }
-  }, [setSelectedAgeIds, findAgeBySliderValue]);
+  }, [setSelectedEra, setSelectedPeriod, setSelectedEpoch, setSelectedAge, setSelectedMap]);
 
   // 時代のID配列を取得する関数
   const getAgeIds = (age: any): number[] => {
@@ -178,10 +169,23 @@ export function GeologicalAgeCard() {
     return ids;
   };
 
+  const handleSliderChange = useCallback((value: number[]) => {
+    const age = findAgeBySliderValue(value[0]);
+    if (age) {
+      // 選択された時代のID配列を更新
+      const ageIds = getAgeIds(age);
+      setSelectedAgeIds(ageIds);
+    }
+  }, [findAgeBySliderValue, setSelectedAgeIds, getAgeIds]);
+
   // 初期状態で最新の時代を選択
   React.useEffect(() => {
-    handleSliderChange([102]);
-  }, [handleSliderChange]);
+    const age = findAgeBySliderValue(102);
+    if (age) {
+      const ageIds = getAgeIds(age);
+      setSelectedAgeIds(ageIds);
+    }
+  }, []); // 依存配列を空にして、初回のみ実行
 
   return (
     <Card className="w-72">

@@ -60,7 +60,6 @@ const sessionFetcher = async (url: string): Promise<SessionResponse> => {
           userProfile: null
         }
       }
-      const errorText = await response.text()
       throw new Error(`APIエラー: ${response.status}`)
     }
 

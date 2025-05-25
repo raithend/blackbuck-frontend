@@ -62,8 +62,7 @@ export function PostButton() {
 					})
 
 					// アップロードされた画像のURLを返す
-					const imageUrl = signedUrl.split('?')[0]
-					return imageUrl
+					return signedUrl.split('?')[0]
 				})
 			)
 

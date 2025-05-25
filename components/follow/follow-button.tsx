@@ -10,12 +10,11 @@ interface FollowButtonProps {
 export function FollowButton({ isFollowing, userId, apiUrl, onFollowStatusChange }: FollowButtonProps) {
   const handleFollow = async () => {
     try {
-      const response = await fetch(`${apiUrl}/follow`, {
-        method: "POST",
+      const response = await fetch(`/api/v1/users/${userId}/follow`, {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ userId }),
       });
 
       if (!response.ok) {
@@ -30,12 +29,11 @@ export function FollowButton({ isFollowing, userId, apiUrl, onFollowStatusChange
 
   const handleUnfollow = async () => {
     try {
-      const response = await fetch(`${apiUrl}/unfollow`, {
-        method: "POST",
+      const response = await fetch(`/api/v1/users/${userId}/follow`, {
+        method: 'DELETE',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ userId }),
       });
 
       if (!response.ok) {

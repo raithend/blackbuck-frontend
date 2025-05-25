@@ -26,7 +26,7 @@ export async function POST(request: Request) {
     })
 
     const signedUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 })
-    await fetch(signedUrl, {
+    const uploadResponse = await fetch(signedUrl, {
       method: 'PUT',
       body: file,
       headers: {
@@ -34,9 +34,16 @@ export async function POST(request: Request) {
       }
     })
 
+    if (!uploadResponse.ok) {
+      throw new Error('S3へのアップロードに失敗しました')
+    }
+
     const url = `https://${process.env.AWS_S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`
     return NextResponse.json({ url })
   } catch (error) {
-    return NextResponse.json({ error: 'アップロードに失敗しました' }, { status: 500 })
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : 'ファイルのアップロードに失敗しました' },
+      { status: 500 }
+    )
   }
 } 
