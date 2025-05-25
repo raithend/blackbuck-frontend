@@ -153,7 +153,7 @@ export function GeologicalAgeCard() {
       const ageIds = getAgeIds(age);
       setSelectedAgeIds(ageIds);
     }
-  }, [setSelectedAgeIds]);
+  }, [setSelectedAgeIds, findAgeBySliderValue]);
 
   // 時代のID配列を取得する関数
   const getAgeIds = (age: any): number[] => {

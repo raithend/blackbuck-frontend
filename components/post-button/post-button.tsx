@@ -16,6 +16,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { ImageIcon, ImageUp } from "lucide-react";
 import { LocationCombobox } from "./location-combobox";
+import Image from 'next/image'
 
 export function PostButton() {
 	const [content, setContent] = useState('')
@@ -117,12 +118,14 @@ export function PostButton() {
 						{files.length > 0 && (
 							<div className="flex gap-2">
 								{files.map((file, index) => (
-									<img
-										key={index}
-										src={URL.createObjectURL(file)}
-										alt={`Preview ${index}`}
-										className="w-20 h-20 object-cover rounded"
-									/>
+									<div key={index} className="relative w-20 h-20">
+										<Image
+											src={URL.createObjectURL(file)}
+											alt={`Preview ${index}`}
+											fill
+											className="object-cover rounded"
+										/>
+									</div>
 								))}
 							</div>
 						)}

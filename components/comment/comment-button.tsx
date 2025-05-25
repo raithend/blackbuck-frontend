@@ -21,7 +21,8 @@ interface CommentProps {
 export function CommentButton({ postId }: CommentProps) {
   const [content, setContent] = useState("");
   const [isOpen, setIsOpen] = useState(false);
-  const { user } = useUser();
+  const { backendSession } = useUser();
+  const user = backendSession?.user;
 
   const handleSubmit = async () => {
     try {
