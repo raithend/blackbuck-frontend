@@ -22,9 +22,17 @@ function CompleteProfileContent() {
   // セッションの確認
   useEffect(() => {
     const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) {
-        router.push('/login?error=セッションが無効です')
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession()
+        if (error) {
+          throw error
+        }
+        if (!session) {
+          router.push('/login?error=セッションが無効です')
+        }
+      } catch (error) {
+        console.error('セッションエラー:', error)
+        router.push('/login?error=セッションの確認に失敗しました')
       }
     }
     checkSession()
@@ -39,7 +47,7 @@ function CompleteProfileContent() {
 
     const timer = setTimeout(async () => {
       try {
-        const response = await fetch(`/api/v1/users/${accountId}`)
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/users/${accountId}`)
         if (response.ok) {
           setAccountIdStatus('unavailable')
         } else if (response.status === 404) {
@@ -48,6 +56,7 @@ function CompleteProfileContent() {
           setAccountIdStatus(null)
         }
       } catch (err) {
+        console.error('アカウントIDチェックエラー:', err)
         setAccountIdStatus(null)
       }
     }, 1000)
@@ -66,13 +75,16 @@ function CompleteProfileContent() {
         throw new Error('アカウントIDが使用できません')
       }
 
-      const { data: { session } } = await supabase.auth.getSession()
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+      if (sessionError) {
+        throw sessionError
+      }
       if (!session) {
         throw new Error('セッションが無効です')
       }
 
       // バックエンドにユーザー情報を送信
-      const response = await fetch('/api/v1/signup', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/signup`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -86,12 +98,14 @@ function CompleteProfileContent() {
       })
 
       if (!response.ok) {
-        throw new Error('ユーザー情報の登録に失敗しました')
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.message || 'ユーザー情報の登録に失敗しました')
       }
 
       // ホームページにリダイレクト
       router.push('/')
     } catch (error) {
+      console.error('プロフィール登録エラー:', error)
       setError(error instanceof Error ? error.message : 'プロフィールの登録に失敗しました')
     } finally {
       setIsLoading(false)
@@ -155,7 +169,7 @@ function CompleteProfileContent() {
 
 export default function CompleteProfile() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<div className="flex items-center justify-center h-screen">Loading...</div>}>
       <CompleteProfileContent />
     </Suspense>
   )
