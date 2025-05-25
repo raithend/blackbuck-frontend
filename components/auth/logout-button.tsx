@@ -1,9 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase-browser'
 import { Button } from '@/components/ui/button'
+import { useUser } from '@/contexts/user-context'
+import { toast } from 'sonner'
 
 interface LogoutButtonProps {
   variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link'
@@ -11,26 +13,40 @@ interface LogoutButtonProps {
 }
 
 export function LogoutButton({ variant = 'default', size = 'default' }: LogoutButtonProps) {
-  const [loading, setLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
-  const [supabase, setSupabase] = useState<any>(null)
-
-  useEffect(() => {
-    setSupabase(createClient())
-  }, [])
+  const { checkSession } = useUser()
+  const supabase = createClient()
 
   const handleLogout = async () => {
-    if (!supabase) return
-    
-    setLoading(true)
+    setIsLoading(true)
     try {
-      await supabase.auth.signOut()
+      // バックエンドのログアウト
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/logout`, {
+        method: 'DELETE',
+        credentials: 'include',
+      })
+
+      if (!response.ok) {
+        throw new Error('バックエンドのログアウトに失敗しました')
+      }
+
+      // Supabaseのログアウト
+      const { error } = await supabase.auth.signOut()
+      if (error) {
+        throw new Error('Supabaseのログアウトに失敗しました')
+      }
+
+      // セッションを再チェック
+      await checkSession()
+
+      // ログインページにリダイレクト
       router.push('/login')
-      router.refresh()
+      toast.success('ログアウトしました')
     } catch (error) {
-      // エラー処理
+      toast.error('ログアウトに失敗しました')
     } finally {
-      setLoading(false)
+      setIsLoading(false)
     }
   }
 
@@ -39,9 +55,9 @@ export function LogoutButton({ variant = 'default', size = 'default' }: LogoutBu
       variant={variant}
       size={size}
       onClick={handleLogout}
-      disabled={loading || !supabase}
+      disabled={isLoading}
     >
-      {loading ? 'ログアウト中...' : 'ログアウト'}
+      {isLoading ? 'ログアウト中...' : 'ログアウト'}
     </Button>
   )
 } 
