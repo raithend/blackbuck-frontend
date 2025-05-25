@@ -1,15 +1,18 @@
 export interface Post {
-  id: string;
+  id: number;
   content: string;
-  location?: string;
-  species?: string;
-  image_urls: string[];
+  location: string;
+  classification: string;
   created_at: string;
   updated_at: string;
-  liked: boolean;
   user: {
-    id: string;
+    id: number;
     name: string;
-    avatar_url?: string;
+    avatar_url: string | null;
+    account_id: string;
   };
+  post_images: {
+    id: number;
+    url: string;
+  }[];
 } 

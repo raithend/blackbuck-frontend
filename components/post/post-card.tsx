@@ -22,7 +22,7 @@ import { HeartButton } from "./heart-button";
 
 interface PostCardProps {
 	post: Post;
-  }
+}
   
 export function PostCard({ post }: PostCardProps) {
 	return (
@@ -30,7 +30,7 @@ export function PostCard({ post }: PostCardProps) {
 			<CardHeader className="flex-row items-center p-0 m-4 md:m-0">
 				<div>
 					<Avatar>
-						<AvatarImage src={post.user.avatar_url}  />
+						<AvatarImage src={post.user.avatar_url || undefined}  />
 						<AvatarFallback>
 							<UserRound />
 						</AvatarFallback>
@@ -38,19 +38,19 @@ export function PostCard({ post }: PostCardProps) {
 				</div>
 				<div className="pl-2">
 					<div className="text-base font-semibold">{post.user.name}</div>
-					<div>{post.user.id}</div>
+					<div>{post.user.account_id}</div>
 				</div>
 			</CardHeader>
 
 			<CardContent className="p-0">
 				<Carousel>
 					<CarouselContent>
-						{post.image_urls.map((url, index) => (
-							<CarouselItem key={index}>
+						{post.post_images.map((image) => (
+							<CarouselItem key={image.id}>
 								<Card>
 									<CardContent className="flex aspect-square items-center justify-center p-0">
 										<Image
-											src={url}
+											src={image.url}
 											alt="species picture"
 											width={1000}
 											height={1000}
@@ -74,15 +74,15 @@ export function PostCard({ post }: PostCardProps) {
 					<div className="grid gap-1">
 						<div>{post.content}</div>
 						<div>{post.location}</div>
-						<div>{post.species}</div>
+						<div>{post.classification}</div>
 					</div>
 					<div className="flex justify-between items-center">
 						<div className="flex gap-2">
 							<HeartButton />
-							<CommentButton postId={post.id} />
+							<CommentButton postId={post.id.toString()} />
 						</div>
 						<div className="text-sm text-gray-500 text-right">
-							最終更新：{formatDistanceToNow(post.updated_at, { locale: ja })}
+							最終更新：{formatDistanceToNow(new Date(post.updated_at), { locale: ja })}
 						</div>
 					</div>
 				</div>

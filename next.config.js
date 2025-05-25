@@ -31,6 +31,15 @@ const nextConfig = {
       },
     ]
   },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'blackbuck-bucket.s3.ap-northeast-1.amazonaws.com',
+        pathname: '/uploads/**',
+      },
+    ],
+  },
 };
 
 module.exports = nextConfig; 
