@@ -5,7 +5,6 @@ import { useState } from "react";
 
 export function HeartButton() {
 	const [flag, setCount] = useState(false);
-	console.log(flag);
 
 	return (
 		<div>

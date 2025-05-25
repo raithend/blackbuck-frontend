@@ -44,11 +44,6 @@ const UserContext = createContext<UserContextType | undefined>(undefined)
 // セッションとユーザープロフィール取得用のフェッチャー
 const sessionFetcher = async (url: string): Promise<SessionResponse> => {
   try {
-    console.log('セッションフェッチャー: リクエスト開始', {
-      url: `${process.env.NEXT_PUBLIC_API_URL}${url}`,
-      credentials: 'include'
-    })
-
     const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${url}`, {
       method: 'GET',
       headers: {
@@ -56,12 +51,6 @@ const sessionFetcher = async (url: string): Promise<SessionResponse> => {
         'Accept': 'application/json',
       },
       credentials: 'include',
-    })
-
-    console.log('セッションフェッチャー: レスポンス受信', {
-      status: response.status,
-      statusText: response.statusText,
-      headers: Object.fromEntries(response.headers.entries())
     })
 
     if (!response.ok) {
@@ -72,16 +61,10 @@ const sessionFetcher = async (url: string): Promise<SessionResponse> => {
         }
       }
       const errorText = await response.text()
-      console.error('セッションフェッチャー: エラーレスポンス', {
-        status: response.status,
-        statusText: response.statusText,
-        body: errorText
-      })
-      throw new Error(`APIエラー: ${response.status} - ${errorText}`)
+      throw new Error(`APIエラー: ${response.status}`)
     }
 
     const data = await response.json()
-    console.log('セッションフェッチャー: データ取得成功', data)
     
     if (!data) {
       return {
@@ -115,7 +98,6 @@ const sessionFetcher = async (url: string): Promise<SessionResponse> => {
       userProfile
     }
   } catch (error) {
-    console.error('セッションチェックエラー:', error)
     throw error
   }
 }
@@ -134,13 +116,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
       revalidateOnFocus: false,
       revalidateOnReconnect: false,
       dedupingInterval: 5000,
-      shouldRetryOnError: false,
-      onError: (err) => {
-        console.error('セッションの取得に失敗:', err)
-      },
-      onSuccess: (data) => {
-        console.log('セッションの取得に成功:', data)
-      }
+      shouldRetryOnError: false
     }
   )
 
@@ -181,7 +157,6 @@ export function UserProvider({ children }: { children: ReactNode }) {
       setIsLoading(true)
       await mutate()
     } catch (error) {
-      console.error('セッションチェックエラー:', error)
       setError('セッションの確認に失敗しました')
     } finally {
       setIsLoading(false)

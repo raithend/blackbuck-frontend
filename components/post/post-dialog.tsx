@@ -60,8 +60,7 @@ export function PostDialog({ onPost }: PostDialogProps) {
         imageUrls
       })
     } catch (error) {
-      console.error('投稿エラー:', error)
-      throw error
+      // エラー処理
     } finally {
       setIsSubmitting(false)
     }

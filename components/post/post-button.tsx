@@ -47,7 +47,6 @@ export function PostButton() {
       toast.success('投稿が完了しました')
       setOpen(false)
     } catch (error) {
-      console.error('投稿エラー:', error)
       toast.error('投稿に失敗しました')
     }
   }

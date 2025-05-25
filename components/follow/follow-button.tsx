@@ -19,12 +19,12 @@ export function FollowButton({ isFollowing, userId, apiUrl, onFollowStatusChange
       });
 
       if (!response.ok) {
-        throw new Error("フォローに失敗しました");
+        throw new Error('フォローに失敗しました');
       }
 
       onFollowStatusChange(userId, true);
     } catch (err) {
-      console.error("フォローエラー:", err);
+      // エラー処理
     }
   };
 
@@ -39,12 +39,12 @@ export function FollowButton({ isFollowing, userId, apiUrl, onFollowStatusChange
       });
 
       if (!response.ok) {
-        throw new Error("フォロー解除に失敗しました");
+        throw new Error('フォロー解除に失敗しました');
       }
 
       onFollowStatusChange(userId, false);
     } catch (err) {
-      console.error("フォロー解除エラー:", err);
+      // エラー処理
     }
   };
 

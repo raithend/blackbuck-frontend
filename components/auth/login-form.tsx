@@ -64,7 +64,6 @@ export function LoginForm() {
       // ログイン成功後のリダイレクト
       router.push('/')
     } catch (err) {
-      console.error('ログインエラー:', err)
       setError(err instanceof Error ? err.message : 'ログインに失敗しました')
     } finally {
       setIsLoading(false)

@@ -31,7 +31,6 @@ function CompleteProfileContent() {
           router.push('/login?error=セッションが無効です')
         }
       } catch (error) {
-        console.error('セッションエラー:', error)
         router.push('/login?error=セッションの確認に失敗しました')
       }
     }
@@ -56,7 +55,6 @@ function CompleteProfileContent() {
           setAccountIdStatus(null)
         }
       } catch (err) {
-        console.error('アカウントIDチェックエラー:', err)
         setAccountIdStatus(null)
       }
     }, 1000)
@@ -105,7 +103,6 @@ function CompleteProfileContent() {
       // ホームページにリダイレクト
       router.push('/')
     } catch (error) {
-      console.error('プロフィール登録エラー:', error)
       setError(error instanceof Error ? error.message : 'プロフィールの登録に失敗しました')
     } finally {
       setIsLoading(false)

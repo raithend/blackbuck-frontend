@@ -63,16 +63,14 @@ export function PostButton() {
 
 					// アップロードされた画像のURLを返す
 					const imageUrl = signedUrl.split('?')[0]
-					console.log('Uploaded image URL:', imageUrl)
 					return imageUrl
 				})
 			)
 
-			console.log('All uploaded image URLs:', imageUrls)
 			setFiles([])
 
 		} catch (error) {
-			console.error('Error uploading images:', error)
+			// エラー処理
 		} finally {
 			setIsUploading(false)
 		}

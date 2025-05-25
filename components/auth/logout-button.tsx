@@ -28,7 +28,7 @@ export function LogoutButton({ variant = 'default', size = 'default' }: LogoutBu
       router.push('/login')
       router.refresh()
     } catch (error) {
-      console.error('ログアウト中にエラーが発生しました:', error)
+      // エラー処理
     } finally {
       setLoading(false)
     }

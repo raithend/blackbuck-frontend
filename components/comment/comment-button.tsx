@@ -41,7 +41,7 @@ export function CommentButton({ postId }: CommentProps) {
       setContent("");
       setIsOpen(false);
     } catch (error) {
-      console.error("コメントの投稿に失敗しました:", error);
+      // エラー処理
     }
   };
 

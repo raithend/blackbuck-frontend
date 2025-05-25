@@ -131,7 +131,7 @@ const Globe: React.FC = () => {
       },
       undefined,
       (error) => {
-        console.error('テクスチャの読み込みに失敗しました:', error);
+        // エラー処理
       }
     );
 

@@ -37,7 +37,6 @@ export async function POST(request: Request) {
     const url = `https://${process.env.AWS_S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`
     return NextResponse.json({ url })
   } catch (error) {
-    console.error('アップロードエラー:', error)
     return NextResponse.json({ error: 'アップロードに失敗しました' }, { status: 500 })
   }
 } 
