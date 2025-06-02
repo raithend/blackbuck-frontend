@@ -39,6 +39,12 @@ export function PostButton() {
         return
       }
 
+      if (!process.env.NEXT_PUBLIC_API_URL) {
+        console.error('APIのURLが設定されていません')
+        toast.error('システムエラーが発生しました')
+        return
+      }
+
       const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/posts`
       const requestBody = {
         content: data.content || '',
@@ -48,7 +54,7 @@ export function PostButton() {
       }
 
       console.log('投稿リクエスト準備:', {
-        url: apiUrl,
+        apiUrl,
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -74,7 +80,13 @@ export function PostButton() {
           status: response.status,
           statusText: response.statusText,
           error: errorText,
-          headers: Object.fromEntries(response.headers.entries())
+          headers: Object.fromEntries(response.headers.entries()),
+          requestUrl: apiUrl,
+          requestHeaders: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${token.substring(0, 10)}...`
+          }
         })
         throw new Error(errorText)
       }
