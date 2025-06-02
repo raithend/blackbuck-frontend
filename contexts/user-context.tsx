@@ -108,26 +108,9 @@ const sessionFetcher = async (url: string): Promise<SessionResponse> => {
       }
     }
 
-    // バックエンドからのレスポンスデータをSessionResponseの形式に変換
-    const backendSession: BackendSession = {
-      user: {
-        id: data.id,
-        name: data.name,
-        account_id: data.account_id,
-        avatar_url: data.avatar_url || '',
-        header_url: data.header_url || '',
-        bio: data.bio || '',
-        created_at: data.created_at || new Date().toISOString(),
-        updated_at: data.updated_at || new Date().toISOString()
-      },
-      expires_at: data.expires_at || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
-    }
-
-    // userProfileの値を正しく設定
-    const userProfile: UserProfile = {
-      accountId: data.account_id,
-      name: data.name
-    }
+    // バックエンドからのレスポンスデータをそのまま使用
+    const backendSession: BackendSession = data.session
+    const userProfile: UserProfile = data.userProfile
 
     console.log('セッション確認完了:', {
       session: backendSession,
