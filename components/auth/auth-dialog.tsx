@@ -1,77 +1,110 @@
 'use client'
 
 import { useState } from 'react'
-import { Button } from "@/components/ui/button";
-import { DialogContent, DialogHeader, DialogTitle	 } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LoginForm } from '@/components/auth/login-form'
-import { SignUpForm } from '@/components/auth/signup-form'
 import { useUser } from '@/contexts/user-context'
+import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { LoginForm } from './login-form'
+import { SignUpForm } from './signup-form'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { createClient } from '@/lib/supabase-browser'
+import { useRouter } from 'next/navigation'
 
-interface AuthDialogProps {
-	trigger?: React.ReactNode
-	defaultTab?: 'login' | 'signup'
-}
+export function AuthDialog() {
+	const [isOpen, setIsOpen] = useState(false)
+	const [activeTab, setActiveTab] = useState<'login' | 'signup'>('login')
+	const { userProfile, backendSession, isLoading, error } = useUser()
+	const router = useRouter()
+	const [supabase] = useState(() => createClient())
 
-export function AuthDialog({ trigger, defaultTab = 'login' }: AuthDialogProps) {
-	const [activeTab, setActiveTab] = useState<'login' | 'signup'>(defaultTab)
-	const { backendSession, userProfile, isLoading, error } = useUser()
+	console.log('AuthDialog - 現在の状態:', {
+		userProfile,
+		backendSession,
+		isLoading,
+		error
+	})
+
+	const handleLogout = async () => {
+		try {
+			console.log('ログアウト開始')
+			const { error } = await supabase.auth.signOut()
+			if (error) {
+				console.error('ログアウトエラー:', error)
+				throw error
+			}
+			console.log('ログアウト成功')
+			router.refresh()
+		} catch (err) {
+			console.error('ログアウト処理エラー:', err)
+		}
+	}
+
+	if (isLoading) {
+		return (
+			<Button variant="outline" disabled>
+				読み込み中...
+			</Button>
+		)
+	}
+
+	if (error) {
+		console.error('AuthDialog - エラー発生:', error)
+		return (
+			<Button variant="outline" onClick={() => router.refresh()}>
+				再読み込み
+			</Button>
+		)
+	}
+
+	if (userProfile && backendSession) {
+		console.log('AuthDialog - ユーザー情報表示:', {
+			userProfile,
+			backendSession
+		})
+		return (
+			<div className="flex items-center gap-4">
+				<Avatar>
+					<AvatarImage src={backendSession.user.avatar_url} alt={userProfile.name} />
+					<AvatarFallback>{userProfile.name.substring(0, 2)}</AvatarFallback>
+				</Avatar>
+				<div className="flex flex-col">
+					<span className="text-sm font-medium">{userProfile.name}</span>
+					<span className="text-xs text-muted-foreground">@{userProfile.accountId}</span>
+				</div>
+				<Button variant="outline" onClick={handleLogout}>
+					ログアウト
+				</Button>
+			</div>
+		)
+	}
 
 	return (
-		<DialogContent>
-			{/* <div className="flex items-center justify-self-center">
-				<SignInButton />
-			</div> */}
-			<DialogHeader>
-				<DialogTitle className="text-center text-2xl font-bold">
-					アカウント
-				</DialogTitle>
-			</DialogHeader>
-			
-			{isLoading ? (
-				<div className="flex justify-center py-4">
-					<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+		<Dialog open={isOpen} onOpenChange={setIsOpen}>
+			<DialogTrigger asChild>
+				<Button variant="outline">ログイン</Button>
+			</DialogTrigger>
+			<DialogContent className="sm:max-w-[425px]">
+				<DialogHeader>
+					<DialogTitle>{activeTab === 'login' ? 'ログイン' : '新規登録'}</DialogTitle>
+				</DialogHeader>
+				<div className="grid gap-4 py-4">
+					<div className="flex justify-center space-x-4">
+						<Button
+							variant={activeTab === 'login' ? 'default' : 'outline'}
+							onClick={() => setActiveTab('login')}
+						>
+							ログイン
+						</Button>
+						<Button
+							variant={activeTab === 'signup' ? 'default' : 'outline'}
+							onClick={() => setActiveTab('signup')}
+						>
+							新規登録
+						</Button>
+					</div>
+					{activeTab === 'login' ? <LoginForm /> : <SignUpForm />}
 				</div>
-			) : backendSession ? (
-				<div className="py-4 text-center">
-					<p className="mb-2">ログイン済みです</p>
-					<p className="mb-4 text-sm text-gray-500">{userProfile?.name}</p>
-					<Button 
-						onClick={() => window.location.href = '/logout'}
-						variant="outline"
-						className="mr-2"
-					>
-						ログアウト
-					</Button>
-					<Button>
-						マイページ
-					</Button>
-				</div>
-			) : (
-				<Tabs
-					defaultValue={activeTab}
-					value={activeTab}
-					onValueChange={(value) => setActiveTab(value as 'login' | 'signup')}
-					className="w-full"
-				>
-					<TabsList className="grid w-full grid-cols-2 mb-6">
-						<TabsTrigger value="login">ログイン</TabsTrigger>
-						<TabsTrigger value="signup">サインアップ</TabsTrigger>
-					</TabsList>
-					<TabsContent value="login">
-						<LoginForm />
-					</TabsContent>
-					<TabsContent value="signup">
-						<SignUpForm />
-					</TabsContent>
-				</Tabs>
-			)}
-			
-			{error && (
-				<div className="mt-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-					<p>エラーが発生しました: {error}</p>
-				</div>
-			)}
-		</DialogContent>
-	);
+			</DialogContent>
+		</Dialog>
+	)
 }

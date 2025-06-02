@@ -128,7 +128,11 @@ const sessionFetcher = async (url: string): Promise<SessionResponse> => {
       name: data.name
     }
 
-    console.log('セッション確認完了')
+    console.log('セッション確認完了:', {
+      session: backendSession,
+      userProfile
+    })
+
     return {
       session: backendSession,
       userProfile
@@ -159,11 +163,17 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
   // セッションデータの更新
   useEffect(() => {
+    console.log('セッションデータ更新:', sessionData)
     if (sessionData) {
       if (sessionData.session === null) {
+        console.log('セッションなし - 状態をクリア')
         setBackendSession(null)
         setUserProfile(null)
       } else {
+        console.log('セッションあり - 状態を更新:', {
+          session: sessionData.session,
+          userProfile: sessionData.userProfile
+        })
         setBackendSession(sessionData.session)
         setUserProfile(sessionData.userProfile)
       }
@@ -173,6 +183,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   // エラー状態の更新
   useEffect(() => {
     if (sessionError) {
+      console.error('セッションエラー:', sessionError)
       setError(sessionError.message)
     } else {
       setError(null)
@@ -191,9 +202,12 @@ export function UserProvider({ children }: { children: ReactNode }) {
   // セッションチェック関数
   const checkSession = async () => {
     try {
+      console.log('セッションチェック開始')
       setIsLoading(true)
       await mutate()
+      console.log('セッションチェック完了')
     } catch (error) {
+      console.error('セッションチェックエラー:', error)
       setError('セッションの確認に失敗しました')
     } finally {
       setIsLoading(false)
@@ -207,6 +221,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
     error,
     checkSession
   }
+
+  console.log('UserContext現在の状態:', contextValue)
 
   return (
     <UserContext.Provider value={contextValue}>
