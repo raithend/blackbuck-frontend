@@ -81,7 +81,9 @@ export function LoginForm() {
       console.log('バックエンド認証成功:', responseData)
 
       // セッションを再チェック
+      console.log('セッション再チェック開始')
       await checkSession()
+      console.log('セッション再チェック完了')
 
       // ログイン成功後のリダイレクト
       router.push('/')

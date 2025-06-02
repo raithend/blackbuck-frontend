@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 import useSWR from 'swr'
+import { createClient } from '@/lib/supabase-browser'
 
 // バックエンドのユーザー情報の型定義
 interface UserProfile {
@@ -32,8 +33,8 @@ interface SessionResponse {
 
 // コンテキストの型定義
 interface UserContextType {
-  backendSession: BackendSession | null  // バックエンドのセッション情報
-  userProfile: UserProfile | null  // バックエンドのユーザープロフィール
+  backendSession: BackendSession | null
+  userProfile: UserProfile | null
   isLoading: boolean
   error: string | null
   checkSession: () => Promise<void>
@@ -44,16 +45,49 @@ const UserContext = createContext<UserContextType | undefined>(undefined)
 // セッションとユーザープロフィール取得用のフェッチャー
 const sessionFetcher = async (url: string): Promise<SessionResponse> => {
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${url}`, {
+    console.log('セッション確認開始')
+    const supabase = createClient()
+    const { data: { session: supabaseSession } } = await supabase.auth.getSession()
+
+    console.log('Supabaseセッション確認:', {
+      hasSession: !!supabaseSession,
+      token: supabaseSession?.access_token?.substring(0, 10) + '...'
+    })
+
+    if (!supabaseSession) {
+      console.log('Supabaseセッションなし')
+      return {
+        session: null,
+        userProfile: null
+      }
+    }
+
+    const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}${url}`
+    console.log('バックエンドセッション確認リクエスト:', {
+      url: apiUrl,
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
+        'Authorization': `Bearer ${supabaseSession.access_token?.substring(0, 10)}...`
+      }
+    })
+
+    const response = await fetch(apiUrl, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${supabaseSession.access_token}`
       },
       credentials: 'include',
     })
 
     if (!response.ok) {
+      console.error('バックエンドセッション確認エラー:', {
+        status: response.status,
+        statusText: response.statusText
+      })
       if (response.status === 401) {
         return {
           session: null,
@@ -64,8 +98,10 @@ const sessionFetcher = async (url: string): Promise<SessionResponse> => {
     }
 
     const data = await response.json()
+    console.log('バックエンドセッション確認成功:', data)
     
     if (!data) {
+      console.log('バックエンドセッションデータなし')
       return {
         session: null,
         userProfile: null
@@ -73,7 +109,7 @@ const sessionFetcher = async (url: string): Promise<SessionResponse> => {
     }
 
     // バックエンドからのレスポンスデータをSessionResponseの形式に変換
-    const session: BackendSession = {
+    const backendSession: BackendSession = {
       user: {
         id: data.id,
         name: data.name,
@@ -92,11 +128,13 @@ const sessionFetcher = async (url: string): Promise<SessionResponse> => {
       name: data.name
     }
 
+    console.log('セッション確認完了')
     return {
-      session,
+      session: backendSession,
       userProfile
     }
   } catch (error) {
+    console.error('セッション取得エラー:', error)
     throw error
   }
 }
