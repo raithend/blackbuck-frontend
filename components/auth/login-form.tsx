@@ -47,7 +47,7 @@ export function LoginForm() {
 
       // バックエンドのセッションを作成
       const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/login`
-      console.error('バックエンドリクエスト:', {
+      console.log('バックエンドリクエスト:', {
         url: apiUrl,
         method: 'POST',
         headers: {
@@ -64,29 +64,21 @@ export function LoginForm() {
           'Accept': 'application/json',
           'Authorization': `Bearer ${session.access_token}`
         },
-        credentials: 'include',
-        body: JSON.stringify({
-          access_token: session.access_token,
-          refresh_token: session.refresh_token
-        })
+        credentials: 'include'
       })
 
       if (!response.ok) {
         const errorData = await response.json()
-        const errorMessage = errorData.error || 'バックエンドのセッション作成に失敗しました'
         console.error('バックエンド認証エラー:', {
           status: response.status,
           statusText: response.statusText,
-          error: errorData,
-          url: apiUrl,
-          requestHeaders: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${session.access_token?.substring(0, 10)}...`
-          }
+          error: errorData
         })
-        throw new Error(`${errorMessage} (Status: ${response.status})`)
+        throw new Error(errorData.error || 'バックエンドのセッション作成に失敗しました')
       }
+
+      const responseData = await response.json()
+      console.log('バックエンド認証成功:', responseData)
 
       // セッションを再チェック
       await checkSession()
@@ -94,6 +86,7 @@ export function LoginForm() {
       // ログイン成功後のリダイレクト
       router.push('/')
     } catch (err) {
+      console.error('ログインエラー:', err)
       setError(err instanceof Error ? err.message : 'ログインに失敗しました')
     } finally {
       setIsLoading(false)
