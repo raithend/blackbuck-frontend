@@ -30,7 +30,8 @@ export function PostButton() {
       const token = await getAuthToken()
       console.log('認証トークン取得結果:', {
         hasToken: !!token,
-        tokenPreview: token ? `${token.substring(0, 10)}...` : null
+        tokenPreview: token ? `${token.substring(0, 10)}...` : null,
+        tokenLength: token?.length
       })
       
       if (!token) {
@@ -53,12 +54,17 @@ export function PostButton() {
         image_urls: data.imageUrls
       }
 
+      const headers = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${token}`
+      }
+
       console.log('投稿リクエスト準備:', {
         apiUrl,
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
+          ...headers,
           'Authorization': `Bearer ${token.substring(0, 10)}...`
         },
         body: requestBody
@@ -66,11 +72,7 @@ export function PostButton() {
 
       const response = await fetch(apiUrl, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
+        headers,
         body: JSON.stringify(requestBody)
       })
 
@@ -83,8 +85,7 @@ export function PostButton() {
           headers: Object.fromEntries(response.headers.entries()),
           requestUrl: apiUrl,
           requestHeaders: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
+            ...headers,
             'Authorization': `Bearer ${token.substring(0, 10)}...`
           }
         })
