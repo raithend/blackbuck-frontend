@@ -138,8 +138,25 @@ export function UserProvider({ children }: { children: ReactNode }) {
   // 認証トークンを取得する関数
   const getAuthToken = async (): Promise<string | null> => {
     try {
-      const { data: { session } } = await supabase.auth.getSession()
-      return session?.access_token || null
+      console.log('認証トークン取得開始')
+      const { data: { session }, error } = await supabase.auth.getSession()
+      
+      if (error) {
+        console.error('認証トークン取得エラー:', error)
+        return null
+      }
+
+      if (!session) {
+        console.log('セッションなし')
+        return null
+      }
+
+      console.log('認証トークン取得成功:', {
+        token: session.access_token?.substring(0, 10) + '...',
+        expires_at: session.expires_at
+      })
+
+      return session.access_token
     } catch (error) {
       console.error('認証トークン取得エラー:', error)
       return null

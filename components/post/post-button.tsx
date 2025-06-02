@@ -18,6 +18,8 @@ export function PostButton() {
     imageUrls: string[]
   }) => {
     try {
+      console.log('投稿開始:', data)
+
       // 画像が1つ以上あることを確認
       if (!data.imageUrls || data.imageUrls.length === 0) {
         toast.error('画像を1枚以上アップロードしてください')
@@ -26,37 +28,65 @@ export function PostButton() {
 
       // 認証トークンを取得
       const token = await getAuthToken()
+      console.log('認証トークン取得結果:', {
+        hasToken: !!token,
+        tokenPreview: token ? `${token.substring(0, 10)}...` : null
+      })
+      
       if (!token) {
+        console.error('認証トークンが取得できません')
         toast.error('認証が必要です')
         return
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/posts`, {
+      const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/posts`
+      const requestBody = {
+        content: data.content || '',
+        location: data.location || '',
+        classification: data.classification || '',
+        image_urls: data.imageUrls
+      }
+
+      console.log('投稿リクエスト準備:', {
+        url: apiUrl,
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token.substring(0, 10)}...`
+        },
+        body: requestBody
+      })
+
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        credentials: 'include',
-        body: JSON.stringify({
-          content: data.content || '',
-          location: data.location || '',
-          classification: data.classification || '',
-          image_urls: data.imageUrls
-        })
+        body: JSON.stringify(requestBody)
       })
 
       if (!response.ok) {
-        const error = await response.text()
-        throw new Error(error)
+        const errorText = await response.text()
+        console.error('投稿エラー詳細:', {
+          status: response.status,
+          statusText: response.statusText,
+          error: errorText,
+          headers: Object.fromEntries(response.headers.entries())
+        })
+        throw new Error(errorText)
       }
+
+      const responseData = await response.json()
+      console.log('投稿成功:', responseData)
 
       toast.success('投稿が完了しました')
       setOpen(false)
     } catch (error) {
       console.error('投稿エラー:', error)
-      toast.error('投稿に失敗しました')
+      toast.error(error instanceof Error ? error.message : '投稿に失敗しました')
     }
   }
 
