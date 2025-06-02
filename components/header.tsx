@@ -17,14 +17,6 @@ export function Header() {
           <Link href="/" className="mr-6 flex items-center space-x-2">
             <span className="font-bold">BlackBuck</span>
           </Link>
-          <nav className="flex items-center space-x-6 text-sm font-medium">
-            <Link href="/explore" className="transition-colors hover:text-foreground/80">
-              探索
-            </Link>
-            <Link href="/about" className="transition-colors hover:text-foreground/80">
-              概要
-            </Link>
-          </nav>
         </div>
         <PostButton />
         <div className="flex flex-1 items-center justify-end space-x-4">
