@@ -31,15 +31,33 @@ export function LoginForm() {
       })
 
       if (supabaseError) {
+        console.error('Supabase認証エラー:', supabaseError)
         throw new Error(supabaseError.message)
       }
 
       if (!session) {
+        console.error('セッションが作成されませんでした')
         throw new Error('ログインに失敗しました')
       }
 
+      console.log('Supabase認証成功:', {
+        access_token: session.access_token?.substring(0, 10) + '...',
+        refresh_token: session.refresh_token?.substring(0, 10) + '...'
+      })
+
       // バックエンドのセッションを作成
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/login`, {
+      const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/login`
+      console.error('バックエンドリクエスト:', {
+        url: apiUrl,
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${session.access_token?.substring(0, 10)}...`
+        }
+      })
+
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -55,7 +73,19 @@ export function LoginForm() {
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.error || 'バックエンドのセッション作成に失敗しました')
+        const errorMessage = errorData.error || 'バックエンドのセッション作成に失敗しました'
+        console.error('バックエンド認証エラー:', {
+          status: response.status,
+          statusText: response.statusText,
+          error: errorData,
+          url: apiUrl,
+          requestHeaders: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${session.access_token?.substring(0, 10)}...`
+          }
+        })
+        throw new Error(`${errorMessage} (Status: ${response.status})`)
       }
 
       // セッションを再チェック
