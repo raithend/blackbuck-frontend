@@ -38,6 +38,7 @@ interface UserContextType {
   isLoading: boolean
   error: string | null
   checkSession: () => Promise<void>
+  getAuthToken: () => Promise<string | null>
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined)
@@ -132,6 +133,18 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const supabase = createClient()
+
+  // 認証トークンを取得する関数
+  const getAuthToken = async (): Promise<string | null> => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      return session?.access_token || null
+    } catch (error) {
+      console.error('認証トークン取得エラー:', error)
+      return null
+    }
+  }
 
   // セッションとユーザープロフィール取得用のSWR
   const { data: sessionData, error: sessionError, mutate } = useSWR<SessionResponse>(
@@ -203,7 +216,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
     userProfile,
     isLoading,
     error,
-    checkSession
+    checkSession,
+    getAuthToken
   }
 
   console.log('UserContext現在の状態:', contextValue)

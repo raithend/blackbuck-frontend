@@ -9,7 +9,7 @@ import { toast } from 'sonner'
 
 export function PostButton() {
   const [open, setOpen] = useState(false)
-  const { backendSession } = useUser()
+  const { backendSession, getAuthToken } = useUser()
 
   const handlePost = async (data: {
     content?: string
@@ -24,11 +24,19 @@ export function PostButton() {
         return
       }
 
+      // 認証トークンを取得
+      const token = await getAuthToken()
+      if (!token) {
+        toast.error('認証が必要です')
+        return
+      }
+
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/posts`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         credentials: 'include',
         body: JSON.stringify({
@@ -47,6 +55,7 @@ export function PostButton() {
       toast.success('投稿が完了しました')
       setOpen(false)
     } catch (error) {
+      console.error('投稿エラー:', error)
       toast.error('投稿に失敗しました')
     }
   }
