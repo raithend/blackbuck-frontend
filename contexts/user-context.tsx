@@ -123,6 +123,7 @@ const sessionFetcher = async (url: string): Promise<SessionResponse> => {
       expires_at: data.expires_at || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
     }
 
+    // userProfileの値を正しく設定
     const userProfile: UserProfile = {
       accountId: data.account_id,
       name: data.name
