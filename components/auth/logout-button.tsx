@@ -21,20 +21,25 @@ export function LogoutButton({ variant = 'default', size = 'default' }: LogoutBu
   const handleLogout = async () => {
     setIsLoading(true)
     try {
+      // Supabaseのログアウトを先に実行
+      const { error: supabaseError } = await supabase.auth.signOut()
+      if (supabaseError) {
+        throw new Error('Supabaseのログアウトに失敗しました')
+      }
+
       // バックエンドのログアウト
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/logout`, {
         method: 'DELETE',
         credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
       })
 
       if (!response.ok) {
-        throw new Error('バックエンドのログアウトに失敗しました')
-      }
-
-      // Supabaseのログアウト
-      const { error } = await supabase.auth.signOut()
-      if (error) {
-        throw new Error('Supabaseのログアウトに失敗しました')
+        console.error('バックエンドのログアウトに失敗:', response.status)
+        // バックエンドのログアウトに失敗しても、フロントエンドのログアウトは続行
       }
 
       // セッションを再チェック
@@ -44,6 +49,7 @@ export function LogoutButton({ variant = 'default', size = 'default' }: LogoutBu
       router.push('/login')
       toast.success('ログアウトしました')
     } catch (error) {
+      console.error('ログアウトエラー:', error)
       toast.error('ログアウトに失敗しました')
     } finally {
       setIsLoading(false)
