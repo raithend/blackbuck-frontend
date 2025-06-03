@@ -151,9 +151,38 @@ export function UserProvider({ children }: { children: ReactNode }) {
         return null
       }
 
+      if (!session.access_token) {
+        console.error('アクセストークンなし')
+        return null
+      }
+
+      // トークンの形式を確認
+      const tokenParts = session.access_token.split('.')
+      if (tokenParts.length !== 3) {
+        console.error('トークン形式が不正:', {
+          parts: tokenParts.length,
+          tokenPreview: session.access_token.substring(0, 10) + '...'
+        })
+        return null
+      }
+
+      // トークンの有効期限を確認
+      if (session.expires_at) {
+        const expiresAt = new Date(session.expires_at)
+        if (expiresAt < new Date()) {
+          console.error('トークンの有効期限が切れています:', {
+            expiresAt: expiresAt.toISOString(),
+            now: new Date().toISOString()
+          })
+          return null
+        }
+      }
+
       console.log('認証トークン取得成功:', {
-        token: session.access_token?.substring(0, 10) + '...',
-        expires_at: session.expires_at
+        token: session.access_token.substring(0, 10) + '...',
+        expires_at: session.expires_at,
+        tokenLength: session.access_token.length,
+        tokenParts: tokenParts.length
       })
 
       return session.access_token
