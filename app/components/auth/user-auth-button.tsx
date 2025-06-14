@@ -42,12 +42,10 @@ export function UserAuthButton() {
     return (
       <>
         <Button
-          variant="ghost"
-          size="icon"
+          variant="outline"
           onClick={() => setIsAuthDialogOpen(true)}
-          className="relative"
         >
-          <UserRound className="h-5 w-5" />
+          ログイン
         </Button>
         <AuthDialog
           isOpen={isAuthDialogOpen}

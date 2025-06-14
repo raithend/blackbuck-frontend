@@ -1,10 +1,10 @@
 'use client'
 
-import { createContext, useContext } from 'react'
+import { createContext, useContext, useState, useEffect } from 'react'
 import { User } from '@/app/types/types'
-import { getSession } from '@/app/lib/auth'
 import { createClient } from '@/app/lib/supabase-browser'
 import useSWR from 'swr'
+import { Session } from '@supabase/supabase-js'
 
 interface UserContextType {
   user: User | null
@@ -15,10 +15,13 @@ interface UserContextType {
 
 const UserContext = createContext<UserContextType | undefined>(undefined)
 
-// セッションを取得するためのフェッチャー関数
 const fetcher = async (url: string) => {
-  const session = await getSession()
-  if (!session?.user) return null
+  const supabase = createClient()
+  const { data: { session } } = await supabase.auth.getSession()
+  
+  if (!session?.user) {
+    return { user: null }
+  }
 
   const response = await fetch(url, {
     headers: {
@@ -35,13 +38,53 @@ const fetcher = async (url: string) => {
 }
 
 export function UserProvider({ children }: { children: React.ReactNode }) {
-  const { data, error, mutate } = useSWR('/api/users/me', fetcher, {
-    revalidateOnFocus: false, // フォーカス時に再検証しない
-    revalidateOnReconnect: false, // 再接続時に再検証しない
-  })
+  const [session, setSession] = useState<Session | null>(null)
+  const [isSessionLoading, setIsSessionLoading] = useState(true)
 
-  const user = data?.user || null
-  const loading = !data && !error
+  useEffect(() => {
+    const supabase = createClient()
+    
+    // 初期セッションの取得
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session)
+      setIsSessionLoading(false)
+    })
+
+    // セッション変更の監視
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
+
+  // セッションの読み込みが完了していない場合は、データフェッチを行わない
+  const shouldFetch = !isSessionLoading && session?.user
+  const { data, error, mutate } = useSWR(
+    shouldFetch ? '/api/users/me' : null,
+    fetcher,
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      shouldRetryOnError: false,
+      errorRetryCount: 0
+    }
+  )
+
+  const user = data?.user ?? null
+  // セッションの読み込み中の場合のみloadingをtrueに
+  const loading = isSessionLoading
+
+  console.log('UserProvider state:', { 
+    user, 
+    loading, 
+    error, 
+    session,
+    isSessionLoading,
+    shouldFetch
+  })
 
   const value = {
     user,
