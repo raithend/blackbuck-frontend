@@ -1,9 +1,10 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext } from 'react'
 import { User } from '@/app/types/types'
 import { getSession } from '@/app/lib/auth'
 import { createClient } from '@/app/lib/supabase-browser'
+import useSWR from 'swr'
 
 interface UserContextType {
   user: User | null
@@ -14,112 +15,39 @@ interface UserContextType {
 
 const UserContext = createContext<UserContextType | undefined>(undefined)
 
-export function UserProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<Error | null>(null)
+// セッションを取得するためのフェッチャー関数
+const fetcher = async (url: string) => {
+  const session = await getSession()
+  if (!session?.user) return null
 
-  const refreshUser = async () => {
-    try {
-      setLoading(true)
-      setError(null)
-
-      const session = await getSession()
-      console.log('Current session:', session)
-
-      if (!session?.user) {
-        console.log('No session found')
-        setUser(null)
-        setLoading(false)
-        return
-      }
-
-      const response = await fetch('/api/users/me', {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`
-        }
-      })
-
-      if (!response.ok) {
-        const error = await response.json()
-        console.error('Failed to fetch user:', error)
-        setUser(null)
-        setError(new Error(error.message))
-        setLoading(false)
-        return
-      }
-
-      const data = await response.json()
-      console.log('User data:', data)
-      setUser(data.user)
-    } catch (err) {
-      console.error('Error in refreshUser:', err)
-      setError(err instanceof Error ? err : new Error('ユーザー情報の取得に失敗しました'))
-      setUser(null)
-    } finally {
-      setLoading(false)
+  const response = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${session.access_token}`
     }
+  })
+
+  if (!response.ok) {
+    const error = await response.json()
+    throw new Error(error.message)
   }
 
-  useEffect(() => {
-    let mounted = true
+  return response.json()
+}
 
-    const initialize = async () => {
-      try {
-        console.log('Initializing UserContext')
-        const session = await getSession()
-        console.log('Initial session:', session)
+export function UserProvider({ children }: { children: React.ReactNode }) {
+  const { data, error, mutate } = useSWR('/api/users/me', fetcher, {
+    revalidateOnFocus: false, // フォーカス時に再検証しない
+    revalidateOnReconnect: false, // 再接続時に再検証しない
+  })
 
-        if (!mounted) return
-
-        if (!session?.user) {
-          console.log('No initial session')
-          setUser(null)
-          setLoading(false)
-          return
-        }
-
-        await refreshUser()
-      } catch (err) {
-        console.error('Error in initialize:', err)
-        if (mounted) {
-          setError(err instanceof Error ? err : new Error('初期化に失敗しました'))
-          setUser(null)
-          setLoading(false)
-        }
-      }
-    }
-
-    // 即時実行
-    initialize()
-
-    const supabase = createClient()
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth state changed:', event, session)
-      if (!mounted) return
-
-      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
-        await refreshUser()
-      } else if (event === 'SIGNED_OUT') {
-        setUser(null)
-        setLoading(false)
-        setError(null)
-      }
-    })
-
-    return () => {
-      mounted = false
-      subscription.unsubscribe()
-    }
-  }, [])
+  const user = data?.user || null
+  const loading = !data && !error
 
   const value = {
     user,
     loading,
     error,
-    refreshUser
+    refreshUser: mutate
   }
 
   return (
