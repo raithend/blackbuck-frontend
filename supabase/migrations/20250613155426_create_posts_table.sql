@@ -13,10 +13,10 @@ create table public.posts (
 -- RLSポリシーを設定
 alter table public.posts enable row level security;
 
--- 認証済みユーザーは全投稿を閲覧可能
-create policy "Posts are viewable by authenticated users"
+-- 投稿の閲覧（誰でも可能）
+create policy "Posts are viewable by everyone"
   on public.posts for select
-  to authenticated
+  to public
   using (true);
 
 -- ユーザーは自分の投稿のみ作成可能
@@ -36,3 +36,18 @@ create policy "Users can delete their own posts"
   on public.posts for delete
   to authenticated
   using (auth.uid() = user_id);
+
+-- 更新日時を自動更新するトリガー関数を作成
+create or replace function public.handle_updated_at()
+returns trigger as $$
+begin
+  new.updated_at = timezone('utc'::text, now());
+  return new;
+end;
+$$ language plpgsql;
+
+-- トリガーを設定
+create trigger handle_posts_updated_at
+  before update on public.posts
+  for each row
+  execute function public.handle_updated_at();

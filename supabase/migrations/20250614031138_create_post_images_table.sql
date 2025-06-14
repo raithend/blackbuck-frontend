@@ -15,10 +15,10 @@ create table if not exists public.post_images (
 -- RLSポリシーを設定
 alter table public.post_images enable row level security;
 
--- 認証済みユーザーは全投稿画像を閲覧可能
-create policy "Post images are viewable by authenticated users"
+-- 投稿画像の閲覧（誰でも可能）
+create policy "Post images are viewable by everyone"
   on public.post_images for select
-  to authenticated
+  to public
   using (true);
 
 -- ユーザーは自分の投稿の画像のみ作成可能
