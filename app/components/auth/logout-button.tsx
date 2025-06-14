@@ -1,0 +1,45 @@
+'use client'
+
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { signOut } from '@/app/lib/auth'
+import { Button } from '@/app/components/ui/button'
+import { useUser } from '@/app/contexts/user-context'
+import { toast } from 'sonner'
+
+interface LogoutButtonProps {
+  variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link'
+  size?: 'default' | 'sm' | 'lg' | 'icon'
+}
+
+export function LogoutButton({ variant = 'default', size = 'default' }: LogoutButtonProps) {
+  const [isLoading, setIsLoading] = useState(false)
+  const router = useRouter()
+  const { refreshUser } = useUser()
+
+  const handleLogout = async () => {
+    setIsLoading(true)
+    try {
+      await signOut()
+      await refreshUser()
+      router.push('/login')
+      toast.success('ログアウトしました')
+    } catch (error) {
+      console.error('ログアウトエラー:', error)
+      toast.error('ログアウトに失敗しました')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  return (
+    <Button
+      variant={variant}
+      size={size}
+      onClick={handleLogout}
+      disabled={isLoading}
+    >
+      {isLoading ? 'ログアウト中...' : 'ログアウト'}
+    </Button>
+  )
+} 

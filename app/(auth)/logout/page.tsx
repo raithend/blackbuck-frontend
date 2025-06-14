@@ -1,4 +1,4 @@
-import { LogoutButton } from '@/components/auth/logout-button'
+import { LogoutButton } from '@/app/components/auth/logout-button'
 
 export default function LogoutPage() {
   return (

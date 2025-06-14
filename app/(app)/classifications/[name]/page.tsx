@@ -1,8 +1,8 @@
-import { Post } from "@/types/post";
-import { PostCard } from "@/components/post/post-card";
+import { Post } from "@/app/api/db/types";
+import { PostCard } from "@/app/components/post/post-card";
 
 async function getPosts(name: string) {
-  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/classifications/${name}`);
+  const response = await fetch(`/api/classifications/${name}`);
   if (!response.ok) {
     throw new Error("投稿の取得に失敗しました");
   }

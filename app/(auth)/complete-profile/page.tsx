@@ -1,13 +1,13 @@
 'use client'
 
 import { useState, useEffect, Suspense } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { createClient } from '@/lib/supabase-browser'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+import { useRouter } from 'next/navigation'
+import { getSession, completeProfile } from '@/app/lib/auth'
+import { Button } from '@/app/components/ui/button'
+import { Input } from '@/app/components/ui/input'
+import { Label } from '@/app/components/ui/label'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/app/components/ui/card'
+import { Alert, AlertDescription } from '@/app/components/ui/alert'
 
 function CompleteProfileContent() {
   const [accountId, setAccountId] = useState('')
@@ -16,26 +16,18 @@ function CompleteProfileContent() {
   const [isLoading, setIsLoading] = useState(false)
   const [accountIdStatus, setAccountIdStatus] = useState<'checking' | 'available' | 'unavailable' | null>(null)
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const supabase = createClient()
 
   // セッションの確認
   useEffect(() => {
     const checkSession = async () => {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession()
-        if (error) {
-          throw error
-        }
-        if (!session) {
-          router.push('/login?error=セッションが無効です')
-        }
+        await getSession()
       } catch (error) {
-        router.push('/login?error=セッションの確認に失敗しました')
+        router.push('/login?error=セッションが無効です')
       }
     }
     checkSession()
-  }, [router, supabase])
+  }, [router])
 
   // account_idのバリデーション
   useEffect(() => {
@@ -46,7 +38,7 @@ function CompleteProfileContent() {
 
     const timer = setTimeout(async () => {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/users/${accountId}`)
+        const response = await fetch(`/api/users/account/${accountId}`)
         if (response.ok) {
           setAccountIdStatus('unavailable')
         } else if (response.status === 404) {
@@ -73,34 +65,7 @@ function CompleteProfileContent() {
         throw new Error('アカウントIDが使用できません')
       }
 
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-      if (sessionError) {
-        throw sessionError
-      }
-      if (!session) {
-        throw new Error('セッションが無効です')
-      }
-
-      // バックエンドにユーザー情報を送信
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/signup`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`
-        },
-        body: JSON.stringify({
-          account_id: accountId,
-          name: name,
-          uuid: session.user.id
-        })
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}))
-        throw new Error(errorData.message || 'ユーザー情報の登録に失敗しました')
-      }
-
-      // ホームページにリダイレクト
+      await completeProfile({ accountId, name })
       router.push('/')
     } catch (error) {
       setError(error instanceof Error ? error.message : 'プロフィールの登録に失敗しました')
