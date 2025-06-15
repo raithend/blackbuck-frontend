@@ -41,12 +41,16 @@ create policy "Users can delete their own posts"
 
 -- 更新日時を自動更新するトリガー関数を作成
 create or replace function public.handle_updated_at()
-returns trigger as $$
+returns trigger
+language plpgsql
+security invoker
+set search_path = public
+as $$
 begin
   new.updated_at = timezone('utc'::text, now());
   return new;
 end;
-$$ language plpgsql;
+$$;
 
 -- トリガーを設定
 create trigger handle_posts_updated_at
