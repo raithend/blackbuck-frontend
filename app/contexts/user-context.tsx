@@ -11,6 +11,7 @@ interface UserContextType {
   loading: boolean
   error: Error | null
   refreshUser: () => Promise<void>
+  session: Session | null
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined)
@@ -55,6 +56,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session)
+      setIsSessionLoading(false)
     })
 
     return () => subscription.unsubscribe()
@@ -66,15 +68,14 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     shouldFetch ? '/api/users/me' : null,
     fetcher,
     {
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false,
-      shouldRetryOnError: false,
-      errorRetryCount: 0
+      revalidateOnFocus: true,
+      revalidateOnReconnect: true,
+      shouldRetryOnError: true,
+      errorRetryCount: 3
     }
   )
 
   const user = data?.user ?? null
-  // セッションの読み込み中の場合のみloadingをtrueに
   const loading = isSessionLoading
 
   console.log('UserProvider state:', { 
@@ -90,7 +91,8 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     user,
     loading,
     error,
-    refreshUser: mutate
+    refreshUser: mutate,
+    session
   }
 
   return (

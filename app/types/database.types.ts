@@ -7,27 +7,93 @@ export type Json =
   | Json[]
 
 export type Database = {
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          operationName?: string
+          query?: string
+          variables?: Json
+          extensions?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
+      post_images: {
+        Row: {
+          created_at: string
+          id: string
+          image_url: string
+          order_index: number
+          post_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          image_url: string
+          order_index: number
+          post_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          image_url?: string
+          order_index?: number
+          post_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_images_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       posts: {
         Row: {
+          classification: string | null
           content: string
           created_at: string
           id: string
+          location: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          classification?: string | null
           content: string
           created_at?: string
           id?: string
+          location?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          classification?: string | null
           content?: string
           created_at?: string
           id?: string
+          location?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -45,6 +111,7 @@ export type Database = {
         Row: {
           account_id: string
           avatar_url: string | null
+          bio: string | null
           created_at: string
           header_url: string | null
           id: string
@@ -54,6 +121,7 @@ export type Database = {
         Insert: {
           account_id: string
           avatar_url?: string | null
+          bio?: string | null
           created_at?: string
           header_url?: string | null
           id: string
@@ -63,6 +131,7 @@ export type Database = {
         Update: {
           account_id?: string
           avatar_url?: string | null
+          bio?: string | null
           created_at?: string
           header_url?: string | null
           id?: string
@@ -193,6 +262,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {},
   },

@@ -5,10 +5,8 @@ import { DialogContent, DialogHeader, DialogTitle } from "@/app/components/ui/di
 import { Button } from "@/app/components/ui/button"
 import { Input } from "@/app/components/ui/input"
 import { Textarea } from "@/app/components/ui/textarea"
-import { LocationCombobox } from './location-combobox'
 import { ImageUpload } from '@/app/components/post/image-upload'
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
+import { LocationCombobox } from '@/app/components/post/location-combobox'
 
 interface PostDialogProps {
   onPost: (data: {
@@ -77,7 +75,10 @@ export function PostDialog({ onPost }: PostDialogProps) {
           value={content}
           onChange={(e) => setContent(e.target.value)}
         />
-        <LocationCombobox />
+        <LocationCombobox
+          value={location}
+          onChange={setLocation}
+        />
         <Input
           type="text"
           placeholder="分類"

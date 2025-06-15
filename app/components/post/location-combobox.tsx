@@ -26,9 +26,13 @@ import { zoo } from "./location.ts.d/zoo";
 
 const locations = famousLocations;
 
-export function LocationCombobox() {
+interface LocationComboboxProps {
+	value?: string;
+	onChange?: (value: string) => void;
+}
+
+export function LocationCombobox({ value, onChange }: LocationComboboxProps) {
 	const [open, setOpen] = React.useState(false);
-	const [value, setValue] = React.useState("");
 
 	return (
 		<Popover open={open} onOpenChange={setOpen}>
@@ -39,9 +43,7 @@ export function LocationCombobox() {
 					aria-expanded={open}
 					className="w-full justify-between"
 				>
-					{value
-						? locations.find((location) => location === value)
-						: "撮影地を選択"}
+					{value || "撮影地を選択"}
 					<ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
 				</Button>
 			</PopoverTrigger>
@@ -56,7 +58,7 @@ export function LocationCombobox() {
 									key={location}
 									value={location}
 									onSelect={(currentValue) => {
-										setValue(currentValue === value ? "" : currentValue);
+										onChange?.(currentValue === value ? "" : currentValue);
 										setOpen(false);
 									}}
 								>
