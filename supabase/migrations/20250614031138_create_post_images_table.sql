@@ -31,6 +31,13 @@ create policy "Users can create images for their own posts"
       where id = post_id
       and user_id = auth.uid()
     )
+    or
+    exists (
+      select 1 from public.posts
+      where id = post_id
+      and user_id = auth.uid()
+      and created_at = updated_at
+    )
   );
 
 -- ユーザーは自分の投稿の画像のみ更新可能
