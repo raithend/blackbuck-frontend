@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader } from "@/app/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/app/components/ui/avatar";
-import { User } from "@/app/types";
+import { User } from "@/app/types/types";
 import { FollowButton } from "./follow-button";
 
 interface FollowCardProps {
@@ -15,12 +15,12 @@ export function FollowCard({ user, isFollowing, apiUrl, onFollowStatusChange }: 
     <Card className="">
       <CardHeader className="flex flex-row items-center gap-4 py-2">
         <Avatar>
-          <AvatarImage src={user.avatar_url || ''} alt={user.name} />
-          <AvatarFallback>{user.name[0]}</AvatarFallback>
+          <AvatarImage src={user.avatar_url || ''} alt={user.username} />
+          <AvatarFallback>{user.username[0]}</AvatarFallback>
         </Avatar>
         <div className="flex-1">
-          <h3 className="text-lg font-semibold">{user.name}</h3>
-          <p className="text-sm text-muted-foreground">@{user.id}</p>
+          <h3 className="text-lg font-semibold">{user.username}</h3>
+          <p className="text-sm text-muted-foreground">@{user.account_id}</p>
         </div>
         <FollowButton
           isFollowing={isFollowing}
