@@ -11,7 +11,7 @@ import Link from "next/link";
 
 import { SearchBox } from "../search-box";
 
-import { PostButton } from "../post-button/post-button";
+import { PostButton } from "@/app/components/post/post-button";
 
 export function RightSidebar() {
 	return (
