@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { Post } from "@/app/types/types";
+import { PostWithUser } from "@/app/types/types";
 import { Avatar, AvatarFallback, AvatarImage } from "@/app/components/ui/avatar";
 import {
 	Card,
@@ -21,7 +21,7 @@ import { CommentButton } from "@/app/components/comment/comment-button";
 import { HeartButton } from "./heart-button";
 
 interface PostCardProps {
-	post: Post;
+	post: PostWithUser;
 }
   
 export function PostCard({ post }: PostCardProps) {
@@ -37,36 +37,38 @@ export function PostCard({ post }: PostCardProps) {
 					</Avatar>
 				</div>
 				<div className="pl-2">
-					<div className="text-base font-semibold">{post.user.name}</div>
+					<div className="text-base font-semibold">{post.user.username}</div>
 					<div>{post.user.account_id}</div>
 				</div>
 			</CardHeader>
 
 			<CardContent className="p-0">
-				<Carousel>
-					<CarouselContent>
-						{post.post_images.map((image) => (
-							<CarouselItem key={image.id}>
-								<Card>
-									<CardContent className="flex aspect-square items-center justify-center p-0">
-										<Image
-											src={image.url}
-											alt="species picture"
-											width={1000}
-											height={1000}
-										/>
-									</CardContent>
-								</Card>
-							</CarouselItem>
-						))}
-					</CarouselContent>
-					<div className="hidden md:block">
-						<CarouselPrevious />
-					</div>
-					<div className="hidden md:block">
-						<CarouselNext />
-					</div>
-				</Carousel>
+				{post.post_images && post.post_images.length > 0 && (
+					<Carousel>
+						<CarouselContent>
+							{post.post_images.map((image) => (
+								<CarouselItem key={image.id}>
+									<Card>
+										<CardContent className="flex aspect-square items-center justify-center p-0">
+											<Image
+												src={image.image_url}
+												alt="species picture"
+												width={1000}
+												height={1000}
+											/>
+										</CardContent>
+									</Card>
+								</CarouselItem>
+							))}
+						</CarouselContent>
+						<div className="hidden md:block">
+							<CarouselPrevious />
+						</div>
+						<div className="hidden md:block">
+							<CarouselNext />
+						</div>
+					</Carousel>
+				)}
 			</CardContent>
 
 			<CardFooter className="ml-12 md:m-0 p-0">
