@@ -3,7 +3,7 @@
 
 import { useMemo, useState } from "react";
 import { FollowCard } from "./follow-card";
-import { User } from "@/app/types";
+import { User } from "@/app/types/types";
 
 interface FollowCardsProps {
   initialUsers: User[];

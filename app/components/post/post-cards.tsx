@@ -1,10 +1,10 @@
 "use client";
 
 import { PostCard } from './post-card';
-import { Post } from '@/app/types';
+import { PostWithUser } from '@/app/types/types';
 
 interface PostCardsProps {
-  posts: Post[];
+  posts: PostWithUser[];
 }
 
 export function PostCards({ posts }: PostCardsProps) {
