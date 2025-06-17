@@ -1,6 +1,9 @@
-import Image from "next/image";
-import { PostWithUser } from "@/app/types/types";
-import { Avatar, AvatarFallback, AvatarImage } from "@/app/components/ui/avatar";
+import { CommentButton } from "@/app/components/comment/comment-button";
+import {
+	Avatar,
+	AvatarFallback,
+	AvatarImage,
+} from "@/app/components/ui/avatar";
 import {
 	Card,
 	CardContent,
@@ -14,23 +17,24 @@ import {
 	CarouselNext,
 	CarouselPrevious,
 } from "@/app/components/ui/carousel";
+import type { PostWithUser } from "@/app/types/types";
 import { formatDistanceToNow } from "date-fns";
 import { ja } from "date-fns/locale";
 import { UserRound } from "lucide-react";
-import { CommentButton } from "@/app/components/comment/comment-button";
+import Image from "next/image";
 import { HeartButton } from "./heart-button";
 
 interface PostCardProps {
 	post: PostWithUser;
 }
-  
+
 export function PostCard({ post }: PostCardProps) {
 	return (
 		<Card className="grid gap-2 p-0 md:px-16">
 			<CardHeader className="flex-row items-center p-0 m-4 md:m-0">
 				<div>
 					<Avatar>
-						<AvatarImage src={post.user.avatar_url || undefined}  />
+						<AvatarImage src={post.user.avatar_url || undefined} />
 						<AvatarFallback>
 							<UserRound />
 						</AvatarFallback>
@@ -84,7 +88,8 @@ export function PostCard({ post }: PostCardProps) {
 							<CommentButton postId={post.id.toString()} />
 						</div>
 						<div className="text-sm text-gray-500 text-right">
-							最終更新：{formatDistanceToNow(new Date(post.updated_at), { locale: ja })}
+							最終更新：
+							{formatDistanceToNow(new Date(post.updated_at), { locale: ja })}
 						</div>
 					</div>
 				</div>

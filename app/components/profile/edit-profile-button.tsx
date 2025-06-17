@@ -4,14 +4,11 @@ import { Button } from "@/app/components/ui/button";
 import { useRouter } from "next/navigation";
 
 export function EditProfileButton() {
-  const router = useRouter();
+	const router = useRouter();
 
-  return (
-    <Button
-      variant="outline"
-      onClick={() => router.push("/settings/profile")}
-    >
-      プロフィールを編集
-    </Button>
-  );
-} 
+	return (
+		<Button variant="outline" onClick={() => router.push("/settings/profile")}>
+			プロフィールを編集
+		</Button>
+	);
+}

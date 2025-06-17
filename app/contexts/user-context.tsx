@@ -1,111 +1,109 @@
-'use client'
+"use client";
 
-import { createContext, useContext, useState, useEffect } from 'react'
-import { User } from '@/app/types/types'
-import { createClient } from '@/app/lib/supabase-browser'
-import useSWR from 'swr'
-import { Session } from '@supabase/supabase-js'
+import { createClient } from "@/app/lib/supabase-browser";
+import type { User } from "@/app/types/types";
+import type { Session } from "@supabase/supabase-js";
+import { createContext, useContext, useEffect, useState } from "react";
+import useSWR from "swr";
 
 interface UserContextType {
-  user: User | null
-  loading: boolean
-  error: Error | null
-  refreshUser: () => Promise<void>
-  session: Session | null
+	user: User | null;
+	loading: boolean;
+	error: Error | null;
+	refreshUser: () => Promise<void>;
+	session: Session | null;
 }
 
-const UserContext = createContext<UserContextType | undefined>(undefined)
+const UserContext = createContext<UserContextType | undefined>(undefined);
 
 const fetcher = async (url: string) => {
-  const supabase = createClient()
-  const { data: { session } } = await supabase.auth.getSession()
-  
-  if (!session?.user) {
-    return { user: null }
-  }
+	const supabase = createClient();
+	const {
+		data: { session },
+	} = await supabase.auth.getSession();
 
-  const response = await fetch(url, {
-    headers: {
-      Authorization: `Bearer ${session.access_token}`
-    }
-  })
+	if (!session?.user) {
+		return { user: null };
+	}
 
-  if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.message)
-  }
+	const response = await fetch(url, {
+		headers: {
+			Authorization: `Bearer ${session.access_token}`,
+		},
+	});
 
-  return response.json()
-}
+	if (!response.ok) {
+		const error = await response.json();
+		throw new Error(error.message);
+	}
+
+	return response.json();
+};
 
 export function UserProvider({ children }: { children: React.ReactNode }) {
-  const [session, setSession] = useState<Session | null>(null)
-  const [isSessionLoading, setIsSessionLoading] = useState(true)
+	const [session, setSession] = useState<Session | null>(null);
+	const [isSessionLoading, setIsSessionLoading] = useState(true);
 
-  useEffect(() => {
-    const supabase = createClient()
-    
-    // 初期セッションの取得
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
-      setIsSessionLoading(false)
-    })
+	useEffect(() => {
+		const supabase = createClient();
 
-    // セッション変更の監視
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session)
-      setIsSessionLoading(false)
-    })
+		// 初期セッションの取得
+		supabase.auth.getSession().then(({ data: { session } }) => {
+			setSession(session);
+			setIsSessionLoading(false);
+		});
 
-    return () => subscription.unsubscribe()
-  }, [])
+		// セッション変更の監視
+		const {
+			data: { subscription },
+		} = supabase.auth.onAuthStateChange((_event, session) => {
+			setSession(session);
+			setIsSessionLoading(false);
+		});
 
-  // セッションの読み込みが完了していない場合は、データフェッチを行わない
-  const shouldFetch = !isSessionLoading && session?.user
-  const { data, error, mutate } = useSWR(
-    shouldFetch ? '/api/users/me' : null,
-    fetcher,
-    {
-      revalidateOnFocus: true,
-      revalidateOnReconnect: true,
-      shouldRetryOnError: true,
-      errorRetryCount: 3
-    }
-  )
+		return () => subscription.unsubscribe();
+	}, []);
 
-  const user = data?.user ?? null
-  const loading = isSessionLoading
+	// セッションの読み込みが完了していない場合は、データフェッチを行わない
+	const shouldFetch = !isSessionLoading && session?.user;
+	const { data, error, mutate } = useSWR(
+		shouldFetch ? "/api/users/me" : null,
+		fetcher,
+		{
+			revalidateOnFocus: true,
+			revalidateOnReconnect: true,
+			shouldRetryOnError: true,
+			errorRetryCount: 3,
+		},
+	);
 
-  console.log('UserProvider state:', { 
-    user, 
-    loading, 
-    error, 
-    session,
-    isSessionLoading,
-    shouldFetch
-  })
+	const user = data?.user ?? null;
+	const loading = isSessionLoading;
 
-  const value = {
-    user,
-    loading,
-    error,
-    refreshUser: mutate,
-    session
-  }
+	console.log("UserProvider state:", {
+		user,
+		loading,
+		error,
+		session,
+		isSessionLoading,
+		shouldFetch,
+	});
 
-  return (
-    <UserContext.Provider value={value}>
-      {children}
-    </UserContext.Provider>
-  )
+	const value = {
+		user,
+		loading,
+		error,
+		refreshUser: mutate,
+		session,
+	};
+
+	return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
 }
 
 export function useUser() {
-  const context = useContext(UserContext)
-  if (context === undefined) {
-    throw new Error('useUser must be used within a UserProvider')
-  }
-  return context
-} 
+	const context = useContext(UserContext);
+	if (context === undefined) {
+		throw new Error("useUser must be used within a UserProvider");
+	}
+	return context;
+}

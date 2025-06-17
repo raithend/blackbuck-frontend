@@ -1,4 +1,8 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@/app/components/ui/avatar";
+import {
+	Avatar,
+	AvatarFallback,
+	AvatarImage,
+} from "@/app/components/ui/avatar";
 import {
 	Card,
 	CardContent,

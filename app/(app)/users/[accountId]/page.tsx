@@ -17,17 +17,17 @@ import useSWR from "swr";
 // };
 
 export default function UserProfilePage() {
-// export default function UserProfilePage({ params }: { params: { accountId: string } }) {
-// 	const { data: profile, error: profileError } = useSWR<User>(`/api/users/account/${params.accountId}`, fetcherWithProfile);
-// 	const { data: posts, error: postsError } = useSWR<Post[]>(`/api/users/account/${params.accountId}/posts`, fetcherWithPosts);
+	// export default function UserProfilePage({ params }: { params: { accountId: string } }) {
+	// 	const { data: profile, error: profileError } = useSWR<User>(`/api/users/account/${params.accountId}`, fetcherWithProfile);
+	// 	const { data: posts, error: postsError } = useSWR<Post[]>(`/api/users/account/${params.accountId}/posts`, fetcherWithPosts);
 
-// 	if (profileError || postsError) {
-// 		return <div>エラーが発生しました</div>;
-// 	}
+	// 	if (profileError || postsError) {
+	// 		return <div>エラーが発生しました</div>;
+	// 	}
 
-// 	if (!profile) {
-// 		return <div>読み込み中...</div>;
-// 	}
+	// 	if (!profile) {
+	// 		return <div>読み込み中...</div>;
+	// 	}
 
 	return (
 		<div className="container mx-auto px-4 py-8">
@@ -36,4 +36,3 @@ export default function UserProfilePage() {
 		</div>
 	);
 }
- 

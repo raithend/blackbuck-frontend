@@ -1,20 +1,20 @@
-import { Database } from './database.types'
- 
-export type User = Database['public']['Tables']['users']['Row']
+import type { Database } from "./database.types";
 
-export type Post = Database['public']['Tables']['posts']['Row'] & {
-  post_images: {
-    id: string
-    image_url: string
-    order_index: number
-  }[]
-}
+export type User = Database["public"]["Tables"]["users"]["Row"];
+
+export type Post = Database["public"]["Tables"]["posts"]["Row"] & {
+	post_images: {
+		id: string;
+		image_url: string;
+		order_index: number;
+	}[];
+};
 
 export type PostWithUser = Post & {
-  user: User
-}
+	user: User;
+};
 
 export type Classification = {
-  name: string
-  count: number
-} 
+	name: string;
+	count: number;
+};

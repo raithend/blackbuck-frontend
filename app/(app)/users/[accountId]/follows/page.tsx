@@ -5,7 +5,7 @@ import { User } from "@/app/types/types";
 import useSWR from "swr";
 
 export default function FollowsPage() {
-// export default function FollowsPage({ params }: { params: { id: string } }) {
+	// export default function FollowsPage({ params }: { params: { id: string } }) {
 	// const {
 	// 	data: follows,
 	// 	error,

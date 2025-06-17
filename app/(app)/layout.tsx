@@ -1,4 +1,4 @@
-import { Header } from '@/app/components/header';
+import { Header } from "@/app/components/header";
 
 export default function AppLayout({
 	children,
@@ -8,9 +8,7 @@ export default function AppLayout({
 	return (
 		<div className="min-h-screen pb-16">
 			<Header />
-			<main className="pt-16">
-				{children}
-			</main>
+			<main className="pt-16">{children}</main>
 		</div>
 	);
 }

@@ -6,7 +6,7 @@ import { Post } from "@/app/types/types";
 import useSWR from "swr";
 
 export default function LikesPage() {
-// export default function LikesPage({ params }: { params: { id: string } }) {
+	// export default function LikesPage({ params }: { params: { id: string } }) {
 	// const {
 	// 	data: posts,
 	// 	error,

@@ -1,38 +1,50 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { signOut } from '@/app/lib/auth'
-import { Button } from '@/app/components/ui/button'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/app/components/ui/dialog'
-import { LoginForm } from './login-form'
-import { SignUpForm } from './signup-form'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/app/components/ui/tabs'
+import { Button } from "@/app/components/ui/button";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "@/app/components/ui/dialog";
+import {
+	Tabs,
+	TabsContent,
+	TabsList,
+	TabsTrigger,
+} from "@/app/components/ui/tabs";
+import { signOut } from "@/app/lib/auth";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { LoginForm } from "./login-form";
+import { SignUpForm } from "./signup-form";
 
 interface AuthDialogProps {
-	isOpen: boolean
-	onClose: () => void
-	mode: 'login' | 'logout'
+	isOpen: boolean;
+	onClose: () => void;
+	mode: "login" | "logout";
 }
 
 export function AuthDialog({ isOpen, onClose, mode }: AuthDialogProps) {
-	const [isLoading, setIsLoading] = useState(false)
-	const router = useRouter()
+	const [isLoading, setIsLoading] = useState(false);
+	const router = useRouter();
 
 	const handleLogout = async () => {
-		setIsLoading(true)
+		setIsLoading(true);
 		try {
-			await signOut()
-			router.push('/login')
+			await signOut();
+			router.push("/login");
 		} catch (error) {
-			console.error('ログアウトエラー:', error)
+			console.error("ログアウトエラー:", error);
 		} finally {
-			setIsLoading(false)
-			onClose()
+			setIsLoading(false);
+			onClose();
 		}
-	}
+	};
 
-	if (mode === 'login') {
+	if (mode === "login") {
 		return (
 			<Dialog open={isOpen} onOpenChange={onClose}>
 				<DialogContent className="sm:max-w-[425px]">
@@ -56,7 +68,7 @@ export function AuthDialog({ isOpen, onClose, mode }: AuthDialogProps) {
 					</Tabs>
 				</DialogContent>
 			</Dialog>
-		)
+		);
 	}
 
 	return (
@@ -72,11 +84,15 @@ export function AuthDialog({ isOpen, onClose, mode }: AuthDialogProps) {
 					<Button variant="outline" onClick={onClose} disabled={isLoading}>
 						キャンセル
 					</Button>
-					<Button variant="destructive" onClick={handleLogout} disabled={isLoading}>
-						{isLoading ? 'ログアウト中...' : 'ログアウト'}
+					<Button
+						variant="destructive"
+						onClick={handleLogout}
+						disabled={isLoading}
+					>
+						{isLoading ? "ログアウト中..." : "ログアウト"}
 					</Button>
 				</DialogFooter>
 			</DialogContent>
 		</Dialog>
-	)
+	);
 }
