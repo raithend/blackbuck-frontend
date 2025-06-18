@@ -5,6 +5,20 @@ import React, { useEffect, useRef } from "react";
 import { useGeologicalAge } from "./geological-context";
 import { processTreeData } from "./tree-data-processor";
 
+// ツリーデータの型定義
+export interface TreeNode {
+	name: string;
+	children?: TreeNode[];
+	color?: string;
+}
+
+// d3の階層ノードの型を拡張
+interface ExtendedHierarchyNode extends d3.HierarchyNode<TreeNode> {
+	color: string; // undefinedを許容しない
+	x: number;
+	y: number;
+}
+
 export function PhylogeneticTree() {
 	const svgRef = useRef<SVGSVGElement>(null);
 	const { selectedAgeIds } = useGeologicalAge();
@@ -39,18 +53,12 @@ export function PhylogeneticTree() {
 		// 色の設定
 		const color = d3.scaleOrdinal(d3.schemeCategory10);
 
-		// ノードの色を設定する関数
-		function setColor(d: any) {
-			d.color = d.parent ? d.parent.color : color(d.depth.toString());
-			if (d.children) d.children.forEach(setColor);
-		}
-
 		// データの階層構造を作成
-		const root = d3.hierarchy(processedData);
+		const root = d3.hierarchy<TreeNode>(processedData) as ExtendedHierarchyNode;
 
 		// クラスターレイアウトの設定
 		const cluster = d3
-			.cluster()
+			.cluster<TreeNode>()
 			.size([360, radius - innerRadius])
 			.separation((a, b) => {
 				// すべてのノード間の距離を一定に設定
@@ -59,6 +67,14 @@ export function PhylogeneticTree() {
 
 		// レイアウトを適用
 		cluster(root);
+
+		// ノードの色を設定する関数
+		const setColor = (d: ExtendedHierarchyNode) => {
+			d.color = d.parent
+				? (d.parent as ExtendedHierarchyNode).color
+				: color(d.depth.toString());
+			if (d.children) d.children.forEach(setColor);
+		};
 
 		// 色を設定
 		setColor(root);
@@ -72,11 +88,13 @@ export function PhylogeneticTree() {
 			.selectAll("path")
 			.data(root.links())
 			.join("path")
-			.attr("d", (d: any) => {
-				const startAngle = ((d.source.x - 90) / 180) * Math.PI;
-				const endAngle = ((d.target.x - 90) / 180) * Math.PI;
-				const startRadius = d.source.y;
-				const endRadius = d.target.y;
+			.attr("d", (d: d3.HierarchyLink<TreeNode>) => {
+				const source = d.source as ExtendedHierarchyNode;
+				const target = d.target as ExtendedHierarchyNode;
+				const startAngle = ((source.x - 90) / 180) * Math.PI;
+				const endAngle = ((target.x - 90) / 180) * Math.PI;
+				const startRadius = source.y;
+				const endRadius = target.y;
 
 				const c0 = Math.cos(startAngle);
 				const s0 = Math.sin(startAngle);
@@ -91,9 +109,13 @@ export function PhylogeneticTree() {
 								}
                 L${endRadius * c1},${endRadius * s1}`;
 			})
-			.attr("stroke", (d: any) => d.target.color)
+			.attr(
+				"stroke",
+				(d: d3.HierarchyLink<TreeNode>) =>
+					(d.target as ExtendedHierarchyNode).color || "#555",
+			)
 			.attr("stroke-opacity", 0.4)
-			.attr("id", (d: any, i: number) => `link-${i}`);
+			.attr("id", (d: d3.HierarchyLink<TreeNode>, i: number) => `link-${i}`);
 
 		// ノードの描画
 		const node = svg
@@ -103,12 +125,13 @@ export function PhylogeneticTree() {
 			.join("a")
 			.attr(
 				"xlink:href",
-				(d: any) => `https://ja.wikipedia.org/wiki/${d.data.name}`,
+				(d: ExtendedHierarchyNode) =>
+					`https://ja.wikipedia.org/wiki/${d.data.name}`,
 			)
 			.attr("target", "_blank")
 			.attr(
 				"transform",
-				(d: any) => `
+				(d: ExtendedHierarchyNode) => `
         rotate(${d.x - 90})
         translate(${d.y},0)
       `,
@@ -117,40 +140,42 @@ export function PhylogeneticTree() {
 		// ノードの円を描画
 		node
 			.append("circle")
-			.attr("fill", (d: any) => d.color)
+			.attr("fill", (d: ExtendedHierarchyNode) => d.color || "#555")
 			.attr("r", 2.5);
 
 		// 葉ノードのみラベルを描画
 		node
-			.filter((d: any) => !d.children)
+			.filter((d: ExtendedHierarchyNode) => !d.children)
 			.append("text")
 			.attr("dy", "0.31em")
-			.attr("x", (d: any) => {
+			.attr("x", (d: ExtendedHierarchyNode) => {
 				const angle = d.x;
 				const isRightSide = angle < 180;
 				return isRightSide ? labelOffset : -labelOffset;
 			})
-			.attr("text-anchor", (d: any) => {
+			.attr("text-anchor", (d: ExtendedHierarchyNode) => {
 				const angle = d.x;
 				return angle < 180 ? "start" : "end";
 			})
-			.attr("transform", (d: any) => {
+			.attr("transform", (d: ExtendedHierarchyNode) => {
 				const angle = d.x;
 				const isRightSide = angle < 180;
 				const rotation = isRightSide ? 0 : 180;
 				const translateX = isRightSide ? labelOffset : -labelOffset;
 				return `rotate(${rotation}) translate(${translateX},0)`;
 			})
-			.text((d: any) => d.data.name)
+			.text((d: ExtendedHierarchyNode) => d.data.name)
 			.style("fill", "white")
 			.style("font-size", "24px")
-			.on("mouseover", (event: any, d: any) => {
+			.on("mouseover", (event: MouseEvent, d: ExtendedHierarchyNode) => {
 				// 現在のノードからルートまでのパスを強調
 				let current = d;
 				while (current.parent) {
-					const link = links.filter((l: any) => l.target === current);
+					const link = links.filter(
+						(l: d3.HierarchyLink<TreeNode>) => l.target === current,
+					);
 					link.attr("stroke-opacity", 1).attr("stroke-width", 4);
-					current = current.parent;
+					current = current.parent as ExtendedHierarchyNode;
 				}
 			})
 			.on("mouseout", () => {

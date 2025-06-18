@@ -3,7 +3,6 @@
 import {
 	Card,
 	CardContent,
-	CardDescription,
 	CardFooter,
 	CardHeader,
 	CardTitle,
@@ -17,7 +16,7 @@ import {
 } from "@/app/components/ui/select";
 import { Slider } from "@/app/components/ui/slider";
 import geologicalAgesData from "@/app/data/geological-ages.json";
-import React, { useState, useContext, useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useGeologicalAge } from "./geological-context";
 
 interface GeologicalAge {

@@ -27,7 +27,7 @@ export function FollowCards({ initialUsers = [], apiUrl }: FollowCardsProps) {
 	};
 
 	if (!users || users.length === 0) {
-		return <div></div>;
+		return <div>follow cards</div>;
 	}
 
 	return (

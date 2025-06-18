@@ -45,7 +45,9 @@ const Globe: React.FC = () => {
 				if (globeRef.current.geometry) globeRef.current.geometry.dispose();
 				if (globeRef.current.material) {
 					if (Array.isArray(globeRef.current.material)) {
-						globeRef.current.material.forEach((material) => material.dispose());
+						for (const material of globeRef.current.material) {
+							material.dispose();
+						}
 					} else {
 						globeRef.current.material.dispose();
 					}
@@ -151,9 +153,9 @@ const Globe: React.FC = () => {
 				if (globeRef.current.geometry) globeRef.current.geometry.dispose();
 				if (globeRef.current.material) {
 					if (Array.isArray(globeRef.current.material)) {
-						globeRef.current.material.forEach((material) => material.dispose());
-					} else {
-						globeRef.current.material.dispose();
+						for (const material of globeRef.current.material) {
+							material.dispose();
+						}
 					}
 				}
 			}
