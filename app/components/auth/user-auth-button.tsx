@@ -1,11 +1,6 @@
 "use client";
 
-import { AuthDialog } from "@/app/components/auth/auth-dialog";
-import {
-	Avatar,
-	AvatarFallback,
-	AvatarImage,
-} from "@/app/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/app/components/ui/avatar";
 import { Button } from "@/app/components/ui/button";
 import {
 	DropdownMenu,
@@ -15,63 +10,41 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/app/components/ui/dropdown-menu";
+import { LogoutButton } from "@/app/components/auth/logout-button";
 import { useUser } from "@/app/contexts/user-context";
-import { createClient } from "@/app/lib/supabase-browser";
-import { UserRound } from "lucide-react";
+import { Settings, User } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 
 export function UserAuthButton() {
 	const { user, loading } = useUser();
 	const router = useRouter();
-	const [isAuthDialogOpen, setIsAuthDialogOpen] = useState(false);
-
-	const handleClick = () => {
-		if (user) {
-			router.push("/profile");
-		} else {
-			setIsAuthDialogOpen(true);
-		}
-	};
 
 	if (loading) {
 		return (
-			<Button variant="outline" disabled>
-				読み込み中...
+			<Button variant="ghost" size="sm" disabled>
+				<Avatar className="h-8 w-8">
+					<AvatarFallback>...</AvatarFallback>
+				</Avatar>
 			</Button>
 		);
 	}
 
 	if (!user) {
 		return (
-			<>
-				<Button variant="outline" onClick={() => setIsAuthDialogOpen(true)}>
-					ログイン
-				</Button>
-				<AuthDialog
-					isOpen={isAuthDialogOpen}
-					onClose={() => setIsAuthDialogOpen(false)}
-					mode="login"
-				/>
-			</>
+			<Button variant="ghost" size="sm" onClick={() => router.push("/login")}>
+				ログイン
+			</Button>
 		);
 	}
 
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger asChild>
-				<Button
-					variant="ghost"
-					size="icon"
-					className="relative h-8 w-8 rounded-full"
-				>
+				<Button variant="ghost" size="sm" className="relative h-8 w-8 rounded-full">
 					<Avatar className="h-8 w-8">
-						<AvatarImage
-							src={user.avatar_url || undefined}
-							alt={user.username}
-						/>
+						<AvatarImage src={user.avatar_url || undefined} alt={user.username} />
 						<AvatarFallback>
-							{user.username.slice(0, 2).toUpperCase()}
+							{user.username ? user.username.charAt(0).toUpperCase() : "U"}
 						</AvatarFallback>
 					</Avatar>
 				</Button>
@@ -86,22 +59,16 @@ export function UserAuthButton() {
 					</div>
 				</DropdownMenuLabel>
 				<DropdownMenuSeparator />
-				<DropdownMenuItem onClick={() => router.push("/profile")}>
-					プロフィール
+				<DropdownMenuItem onClick={() => router.push(`/users/${user.account_id}`)}>
+					<User className="mr-2 h-4 w-4" />
+					<span>プロフィール</span>
 				</DropdownMenuItem>
 				<DropdownMenuItem onClick={() => router.push("/settings")}>
-					設定
+					<Settings className="mr-2 h-4 w-4" />
+					<span>設定</span>
 				</DropdownMenuItem>
 				<DropdownMenuSeparator />
-				<DropdownMenuItem
-					onClick={async () => {
-						const supabase = createClient();
-						await supabase.auth.signOut();
-						router.push("/");
-					}}
-				>
-					ログアウト
-				</DropdownMenuItem>
+				<LogoutButton />
 			</DropdownMenuContent>
 		</DropdownMenu>
 	);
