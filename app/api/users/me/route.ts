@@ -53,3 +53,76 @@ export async function GET(request: Request) {
 		);
 	}
 }
+
+export async function PUT(request: Request) {
+	try {
+		// Authorizationヘッダーからアクセストークンを取得
+		const authHeader = request.headers.get("authorization");
+		const accessToken = authHeader?.replace("Bearer ", "");
+
+		if (!accessToken) {
+			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+		}
+
+		// アクセストークンを使ってSupabaseクライアントを作成
+		const supabase = await createClient(accessToken);
+
+		// ユーザー情報を取得
+		const {
+			data: { user },
+			error: userError,
+		} = await supabase.auth.getUser();
+
+		if (userError || !user) {
+			console.error("ユーザー取得エラー:", userError);
+			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+		}
+
+		// リクエストボディから更新データを取得
+		const { username, bio } = await request.json();
+
+		// 更新データのバリデーション
+		if (username !== undefined && (typeof username !== "string" || username.length > 50)) {
+			return NextResponse.json(
+				{ error: "ユーザー名は50文字以内で入力してください" },
+				{ status: 400 },
+			);
+		}
+
+		if (bio !== undefined && (typeof bio !== "string" || bio.length > 500)) {
+			return NextResponse.json(
+				{ error: "自己紹介は500文字以内で入力してください" },
+				{ status: 400 },
+			);
+		}
+
+		// 更新するフィールドを準備
+		const updateData: { username?: string; bio?: string } = {};
+		if (username !== undefined) updateData.username = username;
+		if (bio !== undefined) updateData.bio = bio;
+
+		// usersテーブルを更新
+		const { data: updatedProfile, error: updateError } = await supabase
+			.from("users")
+			.update(updateData)
+			.eq("id", user.id)
+			.select()
+			.single();
+
+		if (updateError) {
+			console.error("プロフィール更新エラー:", updateError);
+			return NextResponse.json(
+				{ error: updateError.message },
+				{ status: 500 },
+			);
+		}
+
+		return NextResponse.json({ user: updatedProfile });
+	} catch (error) {
+		console.error("エラー:", error);
+		return NextResponse.json(
+			{ error: "Internal Server Error" },
+			{ status: 500 },
+		);
+	}
+}

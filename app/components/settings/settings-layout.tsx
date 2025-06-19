@@ -9,8 +9,26 @@ import {
 import { AccountSettings } from "./account-settings";
 import { HelpSupport } from "./help-support";
 import { SecuritySettings } from "./security-settings";
+import { useEffect, useState } from "react";
 
 export function SettingsLayout() {
+	const [isClient, setIsClient] = useState(false);
+
+	useEffect(() => {
+		setIsClient(true);
+	}, []);
+
+	if (!isClient) {
+		return (
+			<div className="w-full space-y-6">
+				<div className="space-y-4">
+					<h2 className="text-xl font-semibold">設定</h2>
+					<div className="h-10 w-full animate-pulse rounded-md bg-muted"></div>
+				</div>
+			</div>
+		);
+	}
+
 	return (
 		<Tabs defaultValue="account" className="w-full">
 			<TabsList className="grid w-full grid-cols-3">
