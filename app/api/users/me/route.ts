@@ -79,7 +79,7 @@ export async function PUT(request: Request) {
 		}
 
 		// リクエストボディから更新データを取得
-		const { username, bio } = await request.json();
+		const { username, bio, header_url, avatar_url } = await request.json();
 
 		// 更新データのバリデーション
 		if (username !== undefined && (typeof username !== "string" || username.length > 50)) {
@@ -96,10 +96,31 @@ export async function PUT(request: Request) {
 			);
 		}
 
+		if (header_url !== undefined && typeof header_url !== "string") {
+			return NextResponse.json(
+				{ error: "ヘッダー画像URLは文字列で入力してください" },
+				{ status: 400 },
+			);
+		}
+
+		if (avatar_url !== undefined && typeof avatar_url !== "string") {
+			return NextResponse.json(
+				{ error: "アバター画像URLは文字列で入力してください" },
+				{ status: 400 },
+			);
+		}
+
 		// 更新するフィールドを準備
-		const updateData: { username?: string; bio?: string } = {};
+		const updateData: { 
+			username?: string; 
+			bio?: string; 
+			header_url?: string | null; 
+			avatar_url?: string | null; 
+		} = {};
 		if (username !== undefined) updateData.username = username;
 		if (bio !== undefined) updateData.bio = bio;
+		if (header_url !== undefined) updateData.header_url = header_url;
+		if (avatar_url !== undefined) updateData.avatar_url = avatar_url;
 
 		// usersテーブルを更新
 		const { data: updatedProfile, error: updateError } = await supabase
