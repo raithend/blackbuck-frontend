@@ -1,3 +1,5 @@
+"use client";
+
 import {
 	Avatar,
 	AvatarFallback,
@@ -9,45 +11,58 @@ import type { User } from "@/app/types/types";
 import { EditProfileButton } from "./edit-profile-button";
 
 interface ProfileHeaderProps {
-	profile: User | null;
+	user: User;
 }
 
-export function ProfileHeader({ profile }: ProfileHeaderProps) {
-	if (!profile) return null;
-
+export function ProfileHeader({ user }: ProfileHeaderProps) {
 	return (
-		<Card className="relative">
-			<div
-				className="h-32 bg-gradient-to-r from-blue-500 to-purple-500"
-				style={
-					profile.header_url
-						? {
-								backgroundImage: `url(${profile.header_url})`,
-								backgroundSize: "cover",
-								backgroundPosition: "center",
-							}
-						: undefined
-				}
-			/>
-			<div className="px-4 pb-4">
-				<div className="relative -mt-16">
-					<Avatar className="h-32 w-32 border-4 border-background">
-						<AvatarImage
-							src={profile.avatar_url || undefined}
-							alt={profile.username}
-						/>
-						<AvatarFallback>{profile.username[0].toUpperCase()}</AvatarFallback>
-					</Avatar>
-				</div>
-				<div className="mt-4 flex items-start justify-between">
-					<div>
-						<p className="text-muted-foreground">@{profile.account_id}</p>
-						<h1 className="text-2xl font-bold">{profile.username}</h1>
-						{/* {profile.bio && <p className="mt-2">{profile.bio}</p>} */}
+		<div className="relative mb-6">
+			{/* ヘッダー画像 */}
+			<div className="w-full h-48 bg-gray-200 rounded-lg overflow-hidden">
+				{user.header_url ? (
+					<img
+						src={user.header_url}
+						alt="ヘッダー画像"
+						className="w-full h-full object-cover"
+						onError={(e) => {
+							e.currentTarget.style.display = 'none';
+						}}
+					/>
+				) : (
+					<div className="w-full h-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center">
+						<span className="text-white text-lg font-medium">
+							{user.username}のヘッダー
+						</span>
 					</div>
-					<EditProfileButton />
+				)}
+			</div>
+
+			{/* アバター（ヘッダー画像と重ねて表示） */}
+			<div className="absolute -bottom-12 left-6">
+				<Avatar className="w-24 h-24 border-4 border-white shadow-lg">
+					<AvatarImage src={user.avatar_url || undefined} alt="アバター" />
+					<AvatarFallback className="text-2xl font-semibold">
+						{user.username ? user.username.charAt(0).toUpperCase() : "U"}
+					</AvatarFallback>
+				</Avatar>
+			</div>
+
+			{/* ユーザー情報 */}
+			<div className="pt-16 px-6">
+				<div className="space-y-2">
+					<h1 className="text-2xl font-bold text-gray-900">
+						{user.username}
+					</h1>
+					<p className="text-gray-600">
+						@{user.account_id}
+					</p>
+					{user.bio && (
+						<p className="text-gray-700 mt-2">
+							{user.bio}
+						</p>
+					)}
 				</div>
 			</div>
-		</Card>
+		</div>
 	);
 }
