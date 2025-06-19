@@ -209,6 +209,29 @@ export function GeologicalAgeCard() {
 		}
 	}, []); // 依存配列を空にして、初回のみ実行
 
+	function formatAgeRange(startMa: number, endMa: number): string {
+		const startYear = Math.round(startMa * 1_000_000);
+		const endYear = Math.round(endMa * 1_000_000);
+
+		const formatYear = (year: number): string => {
+			if (year === 0) return "現代";
+			if (year <= 2000) return `${year}年前`;
+			if (year < 10_000) return `${year}年前`;
+			if (year < 1_000_000) return `${Math.round(year / 10_000)}万年前`;
+			return `${(year / 1_000_000).toFixed(2).replace(/\.00$/, "")}億年前`;
+		};
+
+		// どちらかが1万年前より新しい場合は年単位で表示
+		if (startYear <= 10_000 || endYear <= 10_000) {
+			return `${formatYear(startYear)}〜${formatYear(endYear)}`;
+		}
+
+		// 1万年前より古い場合は「○○万年前」表記
+		const startMan = Math.round(startYear / 10_000);
+		const endMan = Math.round(endYear / 10_000);
+		return `${startMan}万年前〜${endMan}万年前`;
+	}
+
 	return (
 		<Card className="w-72">
 			<CardHeader>
@@ -292,18 +315,24 @@ export function GeologicalAgeCard() {
 					</div>
 
 					<div className="flex justify-between">
-						<span className="text-sm text-muted-foreground">基底年代:</span>
+						<span className="text-sm text-muted-foreground">年代:</span>
 						<span className="text-sm font-medium">
-							{selectedAge
-								? selectedAge.startAge
-								: selectedEpoch
-									? selectedEpoch.startAge
-									: selectedPeriod
-										? selectedPeriod.startAge
-										: selectedEra
-											? selectedEra.startAge
-											: "-"}{" "}
-							Ma
+							{(() => {
+								const start =
+									selectedAge?.startAge ??
+									selectedEpoch?.startAge ??
+									selectedPeriod?.startAge ??
+									selectedEra?.startAge;
+								const end =
+									selectedAge?.endAge ??
+									selectedEpoch?.endAge ??
+									selectedPeriod?.endAge ??
+									selectedEra?.endAge;
+								if (start !== undefined && end !== undefined) {
+									return formatAgeRange(start, end);
+								}
+								return "-";
+							})()}
 						</span>
 					</div>
 				</div>
