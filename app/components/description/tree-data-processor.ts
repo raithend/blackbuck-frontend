@@ -1,5 +1,5 @@
 import geologicalAgesData from "@/app/data/geological-ages.json";
-import treeDataYaml from "@/app/data/tree-data.yml";
+import treeDataYamlString from "@/app/data/tree-data.yml";
 import { load } from "js-yaml";
 
 interface TreeNode {
@@ -146,7 +146,7 @@ const filterNodeByAge = (
 // メインの処理関数
 export const processTreeData = (selectedAgeIds: number[]): TreeNode | null => {
 	// YAMLデータをパース
-	const parsedData = load(treeDataYaml) as TreeNode;
+	const parsedData = load(treeDataYamlString) as TreeNode;
 
 	// データをフィルタリング
 	return filterNodeByAge(parsedData, selectedAgeIds);
