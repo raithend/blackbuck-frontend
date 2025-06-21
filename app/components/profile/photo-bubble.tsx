@@ -35,6 +35,7 @@ export function PhotoBubble({
 }: PhotoBubbleProps) {
 	const [isDragging, setIsDragging] = useState(false);
 	const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+	const [isHovered, setIsHovered] = useState(false);
 
 	const handleMouseDown = (e: React.MouseEvent) => {
 		if (!isEditing) return;
@@ -64,22 +65,34 @@ export function PhotoBubble({
 		}
 	};
 
+	const handleMouseEnter = () => {
+		setIsHovered(true);
+	};
+
+	const handleMouseLeave = () => {
+		setIsHovered(false);
+		setIsDragging(false);
+	};
+
+	// 拡大率の計算
+	const scale = isDragging ? 1.1 : isHovered ? 2.0 : 1.0;
+
 	return (
 		<TooltipProvider>
 			<Tooltip>
 				<TooltipTrigger asChild>
 					<div
-						className={`absolute z-10 ${isEditing ? 'cursor-move' : 'cursor-pointer'} ${isDragging ? 'z-20' : ''}`}
+						className={`absolute z-10 ${isEditing ? 'cursor-move' : 'cursor-pointer'} ${isDragging ? 'z-20' : ''} transition-all duration-200 ease-in-out`}
 						style={{
 							left: x,
 							top: y,
-							transform: isDragging ? 'scale(1.1)' : 'scale(1)',
-							transition: isDragging ? 'none' : 'transform 0.2s ease',
+							transform: `scale(${scale})`,
 						}}
 						onMouseDown={handleMouseDown}
 						onMouseMove={handleMouseMove}
 						onMouseUp={handleMouseUp}
-						onMouseLeave={handleMouseUp}
+						onMouseEnter={handleMouseEnter}
+						onMouseLeave={handleMouseLeave}
 						onClick={handleClick}
 					>
 						<div className="relative">
