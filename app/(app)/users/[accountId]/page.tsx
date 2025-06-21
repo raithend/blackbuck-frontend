@@ -2,7 +2,6 @@
 
 import { PostCards } from "@/app/components/post/post-cards";
 import { ProfileHeader } from "@/app/components/profile/profile-header";
-import BubbleEffect from "@/app/components/profile/bubble-effect";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/components/ui/tabs";
 import { PostWithUser, User } from "@/app/types/types";
 import useSWR from "swr";
@@ -51,8 +50,6 @@ export default function UserProfilePage({ params }: { params: Promise<{ accountI
 						<div className="h-4 bg-gray-200 rounded w-1/4"></div>
 					</div>
 				</div>
-				{/* シャボン玉エフェクトエリア（ローディング時でも表示） */}
-				<BubbleEffect initialBubbles={8} />
 			</div>
 		);
 	}
@@ -64,8 +61,6 @@ export default function UserProfilePage({ params }: { params: Promise<{ accountI
 					<h1 className="text-2xl font-bold text-red-600 mb-4">エラーが発生しました</h1>
 					<p className="text-gray-600">ユーザー情報の取得に失敗しました</p>
 				</div>
-				{/* シャボン玉エフェクトエリア（エラー時でも表示） */}
-				<BubbleEffect initialBubbles={8} />
 			</div>
 		);
 	}
@@ -77,8 +72,6 @@ export default function UserProfilePage({ params }: { params: Promise<{ accountI
 					<h1 className="text-2xl font-bold text-gray-600 mb-4">ユーザーが見つかりません</h1>
 					<p className="text-gray-500">指定されたアカウントIDのユーザーは存在しません</p>
 				</div>
-				{/* シャボン玉エフェクトエリア（ユーザーが見つからない場合でも表示） */}
-				<BubbleEffect initialBubbles={8} />
 			</div>
 		);
 	}
@@ -90,9 +83,6 @@ export default function UserProfilePage({ params }: { params: Promise<{ accountI
 		<div className="container mx-auto px-4 py-8">
 			{/* プロフィールヘッダー */}
 			<ProfileHeader user={user} />
-
-			{/* シャボン玉エフェクトエリア */}
-			<BubbleEffect initialBubbles={8} />
 
 			{/* タブコンテンツ */}
 			<Tabs defaultValue="posts" className="w-full">
