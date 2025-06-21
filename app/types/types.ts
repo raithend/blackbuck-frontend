@@ -18,35 +18,3 @@ export type Classification = {
 	name: string;
 	count: number;
 };
-
-export interface PhotoBubble {
-	id: string;
-	x_coordinate: number;
-	y_coordinate: number;
-	author_id: string;
-	description?: string;
-	image_url?: string;
-	target_url?: string;
-	page_type: 'profile' | 'classification' | 'location';
-	page_identifier: string;
-	created_at: string;
-	updated_at: string;
-}
-
-export interface PhotoBubbleCreate {
-	x_coordinate: number;
-	y_coordinate: number;
-	description?: string;
-	image_url?: string;
-	target_url?: string;
-	page_type: 'profile' | 'classification' | 'location';
-	page_identifier: string;
-}
-
-export interface PhotoBubbleUpdate {
-	x_coordinate?: number;
-	y_coordinate?: number;
-	description?: string;
-	image_url?: string;
-	target_url?: string;
-}

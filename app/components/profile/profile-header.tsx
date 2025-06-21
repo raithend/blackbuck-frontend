@@ -9,7 +9,7 @@ import { Button } from "@/app/components/ui/button";
 import { Card } from "@/app/components/ui/card";
 import type { User } from "@/app/types/types";
 import { EditProfileButton } from "./edit-profile-button";
-import { PhotoBubbleEditor } from "./photo-bubble-editor";
+import { PhotoBubbleEditor } from "../photo-bubble/photo-bubble-editor";
 import { useState } from "react";
 
 interface ProfileHeaderProps {
@@ -20,11 +20,13 @@ interface PhotoBubbleData {
 	id: string;
 	x: number;
 	y: number;
+	description?: string;
+	imageUrl?: string;
+	targetUrl?: string;
 }
 
 export function ProfileHeader({ user }: ProfileHeaderProps) {
 	const [photoBubbles, setPhotoBubbles] = useState<PhotoBubbleData[]>([]);
-	const [isEditing, setIsEditing] = useState(false);
 
 	return (
 		<div className="relative mb-6">
@@ -33,8 +35,6 @@ export function ProfileHeader({ user }: ProfileHeaderProps) {
 				user={user}
 				photoBubbles={photoBubbles}
 				onPhotoBubblesChange={setPhotoBubbles}
-				isEditing={isEditing}
-				onEditingChange={setIsEditing}
 			/>
 
 			{/* アバター（ヘッダー画像と重ねて表示） */}
