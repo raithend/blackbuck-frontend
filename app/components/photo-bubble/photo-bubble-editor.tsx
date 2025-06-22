@@ -29,6 +29,7 @@ export function PhotoBubbleEditor({
 	const [isEditPanelOpen, setIsEditPanelOpen] = useState(false);
 	const [isEditing, setIsEditing] = useState(false);
 	const [clickedPosition, setClickedPosition] = useState({ x: 0, y: 0 });
+	const [showClickMarker, setShowClickMarker] = useState(false);
 	
 	// PoC用のハードコードされたデータ
 	useEffect(() => {
@@ -58,6 +59,7 @@ export function PhotoBubbleEditor({
 			
 			console.log('Header clicked at:', { x, y }); // デバッグ用
 			setClickedPosition({ x, y });
+			setShowClickMarker(true);
 			setIsEditPanelOpen(true);
 		}
 	};
@@ -67,11 +69,13 @@ export function PhotoBubbleEditor({
 		setIsEditing(!isEditing);
 		if (isEditing) {
 			setIsEditPanelOpen(false);
+			setShowClickMarker(false);
 		}
 	};
 
 	const handleEditPanelClose = () => {
 		setIsEditPanelOpen(false);
+		setShowClickMarker(false);
 	};
 
 	return (
@@ -99,6 +103,21 @@ export function PhotoBubbleEditor({
 						</div>
 					)}
 				</div>
+
+				{/* クリック位置の印 */}
+				{showClickMarker && (
+					<div
+						className="absolute w-6 h-6 bg-red-500 border-2 border-white rounded-full shadow-lg animate-pulse"
+						style={{ 
+							left: clickedPosition.x - 12, 
+							top: clickedPosition.y - 12 
+						}}
+					>
+						<div className="w-full h-full bg-red-500 rounded-full flex items-center justify-center">
+							<div className="w-2 h-2 bg-white rounded-full"></div>
+						</div>
+					</div>
+				)}
 
 				{/* フォトバブル */}
 				{photoBubbles.map((bubble) => (
@@ -135,7 +154,13 @@ export function PhotoBubbleEditor({
 			{isEditPanelOpen && (
 				<PhotoBubbleEditPanel
 					photoBubbles={photoBubbles}
-					onPhotoBubblesChange={onPhotoBubblesChange}
+					onPhotoBubblesChange={(newBubbles) => {
+						onPhotoBubblesChange(newBubbles);
+						// 新しいフォトバブルが追加された場合、クリック位置の印を非表示にする
+						if (newBubbles.length > photoBubbles.length) {
+							setShowClickMarker(false);
+						}
+					}}
 					headerImageUrl={user.header_url || undefined}
 					initialPosition={clickedPosition}
 					onClose={handleEditPanelClose}
