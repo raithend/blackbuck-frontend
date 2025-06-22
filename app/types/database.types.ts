@@ -39,6 +39,45 @@ export type Database = {
 				};
 				Relationships: [];
 			};
+			photo_bubbles: {
+				Row: {
+					created_at: string;
+					id: string;
+					image_url: string;
+					name: string;
+					page_url: string;
+					target_url: string | null;
+					updated_at: string;
+					user_id: string;
+					x_position: number;
+					y_position: number;
+				};
+				Insert: {
+					created_at?: string;
+					id?: string;
+					image_url: string;
+					name: string;
+					page_url: string;
+					target_url?: string | null;
+					updated_at?: string;
+					user_id: string;
+					x_position?: number;
+					y_position?: number;
+				};
+				Update: {
+					created_at?: string;
+					id?: string;
+					image_url?: string;
+					name?: string;
+					page_url?: string;
+					target_url?: string | null;
+					updated_at?: string;
+					user_id?: string;
+					x_position?: number;
+					y_position?: number;
+				};
+				Relationships: [];
+			};
 			post_images: {
 				Row: {
 					created_at: string;
@@ -147,7 +186,48 @@ export type Database = {
 			};
 		};
 		Views: {
-			[_ in never]: never;
+			profile_photo_bubbles: {
+				Row: {
+					created_at: string | null;
+					id: string | null;
+					image_url: string | null;
+					name: string | null;
+					page_url: string | null;
+					profile_user_id: string | null;
+					target_url: string | null;
+					updated_at: string | null;
+					user_id: string | null;
+					x_position: number | null;
+					y_position: number | null;
+				};
+				Insert: {
+					created_at?: string | null;
+					id?: string | null;
+					image_url?: string | null;
+					name?: string | null;
+					page_url?: string | null;
+					profile_user_id?: never;
+					target_url?: string | null;
+					updated_at?: string | null;
+					user_id?: string | null;
+					x_position?: number | null;
+					y_position?: number | null;
+				};
+				Update: {
+					created_at?: string | null;
+					id?: string | null;
+					image_url?: string | null;
+					name?: string | null;
+					page_url?: string | null;
+					profile_user_id?: never;
+					target_url?: string | null;
+					updated_at?: string | null;
+					user_id?: string | null;
+					x_position?: number | null;
+					y_position?: number | null;
+				};
+				Relationships: [];
+			};
 		};
 		Functions: {
 			[_ in never]: never;
