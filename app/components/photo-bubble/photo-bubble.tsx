@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import { Button } from "@/app/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/app/components/ui/avatar";
@@ -39,6 +39,9 @@ export function PhotoBubble({
 
 	const handleMouseDown = (e: React.MouseEvent) => {
 		if (!isEditing) return;
+		e.preventDefault();
+		e.stopPropagation();
+		
 		setIsDragging(true);
 		const rect = e.currentTarget.getBoundingClientRect();
 		setDragOffset({
@@ -47,8 +50,9 @@ export function PhotoBubble({
 		});
 	};
 
-	const handleMouseMove = (e: React.MouseEvent) => {
+	const handleMouseMove = (e: MouseEvent) => {
 		if (isDragging && isEditing) {
+			e.preventDefault();
 			const newX = e.clientX - dragOffset.x;
 			const newY = e.clientY - dragOffset.y;
 			onPositionChange(id, newX, newY);
@@ -59,7 +63,26 @@ export function PhotoBubble({
 		setIsDragging(false);
 	};
 
-	const handleClick = () => {
+	// グローバルマウスイベントリスナーを追加
+	useEffect(() => {
+		if (isDragging) {
+			document.addEventListener('mousemove', handleMouseMove);
+			document.addEventListener('mouseup', handleMouseUp);
+			
+			return () => {
+				document.removeEventListener('mousemove', handleMouseMove);
+				document.removeEventListener('mouseup', handleMouseUp);
+			};
+		}
+	}, [isDragging, dragOffset, isEditing, id, onPositionChange]);
+
+	const handleClick = (e: React.MouseEvent) => {
+		if (isDragging) {
+			e.preventDefault();
+			e.stopPropagation();
+			return;
+		}
+		
 		if (targetUrl) {
 			window.open(targetUrl, '_blank');
 		}
@@ -71,7 +94,6 @@ export function PhotoBubble({
 
 	const handleMouseLeave = () => {
 		setIsHovered(false);
-		setIsDragging(false);
 	};
 
 	// 拡大率の計算
@@ -87,21 +109,25 @@ export function PhotoBubble({
 							left: x,
 							top: y,
 							transform: `scale(${scale})`,
+							transformOrigin: 'center',
 						}}
 						onMouseDown={handleMouseDown}
-						onMouseMove={handleMouseMove}
-						onMouseUp={handleMouseUp}
 						onMouseEnter={handleMouseEnter}
 						onMouseLeave={handleMouseLeave}
 						onClick={handleClick}
 					>
 						<div className="relative">
 							{imageUrl ? (
-								<div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white shadow-lg">
+								<div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white shadow-lg bg-white">
 									<img 
 										src={imageUrl} 
 										alt={description || "フォトバブル"} 
 										className="w-full h-full object-cover"
+										onError={(e) => {
+											// 画像読み込みエラー時のフォールバック
+											e.currentTarget.style.display = 'none';
+											e.currentTarget.parentElement!.innerHTML = '<div class="w-full h-full bg-blue-500 rounded-full flex items-center justify-center"><span class="text-white text-xs">IMG</span></div>';
+										}}
 									/>
 								</div>
 							) : (
@@ -129,8 +155,13 @@ export function PhotoBubble({
 					</div>
 				</TooltipTrigger>
 				{description && (
-					<TooltipContent>
-						<p>{description}</p>
+					<TooltipContent side="top" className="max-w-xs">
+						<div className="p-2">
+							<p className="font-medium">{description}</p>
+							{targetUrl && (
+								<p className="text-xs text-gray-500 mt-1">クリックでリンク先に移動</p>
+							)}
+						</div>
 					</TooltipContent>
 				)}
 			</Tooltip>

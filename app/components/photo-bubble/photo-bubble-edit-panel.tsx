@@ -1,13 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Rnd } from "react-rnd";
 import { Button } from "@/app/components/ui/button";
 import { Input } from "@/app/components/ui/input";
 import { Label } from "@/app/components/ui/label";
 import { Textarea } from "@/app/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card";
-import { X, Move, Plus } from "lucide-react";
+import { X, Move, Plus, Upload } from "lucide-react";
+import { useDropzone } from "react-dropzone";
 
 interface PhotoBubbleData {
 	id: string;
@@ -35,6 +36,7 @@ export function PhotoBubbleEditPanel({
 }: PhotoBubbleEditPanelProps) {
 	const [selectedBubble, setSelectedBubble] = useState<PhotoBubbleData | null>(null);
 	const [isAdding, setIsAdding] = useState(false);
+	const [clickedPosition, setClickedPosition] = useState<{ x: number; y: number } | null>(null);
 	const [formData, setFormData] = useState({
 		description: '',
 		imageUrl: '',
@@ -49,6 +51,22 @@ export function PhotoBubbleEditPanel({
 			setFormData(prev => ({ ...prev, x: initialPosition.x, y: initialPosition.y }));
 		}
 	}, [initialPosition]);
+
+	const onDrop = useCallback((acceptedFiles: File[]) => {
+		if (acceptedFiles.length > 0) {
+			const file = acceptedFiles[0];
+			const imageUrl = URL.createObjectURL(file);
+			setFormData(prev => ({ ...prev, imageUrl }));
+		}
+	}, []);
+
+	const { getRootProps, getInputProps, isDragActive } = useDropzone({
+		onDrop,
+		accept: {
+			'image/*': ['.jpeg', '.jpg', '.png', '.gif', '.webp']
+		},
+		multiple: false
+	});
 
 	const handleAddBubble = () => {
 		const newBubble: PhotoBubbleData = {
@@ -92,14 +110,24 @@ export function PhotoBubbleEditPanel({
 			x: bubble.x,
 			y: bubble.y
 		});
+		setClickedPosition({ x: bubble.x, y: bubble.y });
 	};
 
-	const handleHeaderClick = (event: React.MouseEvent<HTMLDivElement>) => {
+	const handleHeaderClick = (e: React.MouseEvent<HTMLDivElement>) => {
+		const rect = e.currentTarget.getBoundingClientRect();
+		const x = e.clientX - rect.left;
+		const y = e.clientY - rect.top;
+		
+		setClickedPosition({ x, y });
+		setFormData(prev => ({ ...prev, x, y }));
+		
 		if (isAdding) {
-			const rect = event.currentTarget.getBoundingClientRect();
-			const x = event.clientX - rect.left;
-			const y = event.clientY - rect.top;
-			setFormData(prev => ({ ...prev, x, y }));
+			// 追加モードの場合は自動的にフォームに反映
+		} else {
+			// 編集モードの場合は選択されたバブルを更新
+			if (selectedBubble) {
+				setFormData(prev => ({ ...prev, x, y }));
+			}
 		}
 	};
 
@@ -109,6 +137,12 @@ export function PhotoBubbleEditPanel({
 		} else if (isAdding) {
 			handleAddBubble();
 		}
+
+		// フォームをリセット
+		setSelectedBubble(null);
+		setIsAdding(false);
+		setFormData({ description: '', imageUrl: '', targetUrl: '', x: 100, y: 100 });
+		onClose();
 	};
 
 	const handleCancel = () => {
@@ -119,7 +153,7 @@ export function PhotoBubbleEditPanel({
 	};
 
 	return (
-		<div className="fixed inset-0 bg-black/50 z-50">
+		<div className="fixed inset-0 bg-black/50 z-[9999] flex items-center justify-center p-4">
 			<Rnd
 				default={{
 					x: window.innerWidth / 2 - 400,
@@ -146,211 +180,84 @@ export function PhotoBubbleEditPanel({
 				}}
 			>
 				<Card className="w-full h-full overflow-y-auto shadow-2xl">
-					<CardHeader className="drag-handle cursor-grab active:cursor-grabbing select-none">
-						<div className="flex justify-between items-center">
-							<div className="flex items-center gap-2">
-								<Move className="w-4 h-4 text-gray-500" />
-								<CardTitle>フォトバブル編集</CardTitle>
-								<span className="text-xs text-gray-400">(ドラッグで移動)</span>
-							</div>
+					<CardHeader className="drag-handle cursor-move">
+						<CardTitle className="flex items-center justify-between">
+							<span>フォトバブル編集</span>
+							{clickedPosition && (
+								<span className="text-sm text-gray-500">
+									クリック位置: ({Math.round(clickedPosition.x)}, {Math.round(clickedPosition.y)})
+								</span>
+							)}
 							<Button onClick={onClose} variant="ghost" size="sm">
 								<X className="w-4 h-4" />
 							</Button>
-						</div>
+						</CardTitle>
 					</CardHeader>
 					
 					<CardContent>
-						<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-							{/* ヘッダー画像エリア */}
-							<div className="space-y-4">
-								<h4 className="font-medium">ヘッダー画像</h4>
-								<div 
-									className="relative w-full h-64 bg-gray-200 rounded-lg overflow-hidden cursor-crosshair"
-									onClick={handleHeaderClick}
-								>
-									{headerImageUrl ? (
-										<img
-											src={headerImageUrl}
-											alt="ヘッダー画像"
-											className="w-full h-full object-cover"
-										/>
-									) : (
-										<div className="w-full h-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center">
-											<span className="text-white text-lg font-medium">
-												ヘッダー画像
-											</span>
-										</div>
-									)}
-
-									{/* フォトバブル表示 */}
-									{photoBubbles.map((bubble) => (
-										<div
-											key={bubble.id}
-											className={`absolute w-8 h-8 rounded-full border-2 border-white shadow-lg cursor-pointer ${
-												selectedBubble?.id === bubble.id ? 'border-blue-500' : 'border-white'
-											}`}
-											style={{ left: bubble.x - 16, top: bubble.y - 16 }}
-											onClick={(e) => {
-												e.stopPropagation();
-												handleBubbleClick(bubble);
-											}}
-										>
-											{bubble.imageUrl ? (
-												<img 
-													src={bubble.imageUrl} 
-													alt={bubble.description || "フォトバブル"} 
-													className="w-full h-full object-cover rounded-full"
-												/>
-											) : (
-												<div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-													<span className="text-white text-xs">📷</span>
-												</div>
-											)}
-										</div>
-									))}
-
-									{/* 追加位置のプレビュー */}
-									{isAdding && (
-										<div
-											className="absolute w-8 h-8 rounded-full border-2 border-green-500 bg-green-500/20"
-											style={{ left: formData.x - 16, top: formData.y - 16 }}
-										>
-											<Plus className="w-full h-full text-green-500" />
-										</div>
-									)}
-								</div>
-								
-								<div className="flex gap-2">
-									<Button
-										onClick={() => setIsAdding(true)}
-										variant="outline"
-										size="sm"
-										className="flex-1"
-									>
-										<Plus className="w-4 h-4 mr-2" />
-										新しいフォトバブルを追加
-									</Button>
-								</div>
+						<div className="space-y-4">
+							{/* 説明文 */}
+							<div>
+								<Label htmlFor="description">説明文</Label>
+								<Textarea
+									id="description"
+									value={formData.description}
+									onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+									placeholder="フォトバブルにホバーした時に表示される説明文"
+									className="min-h-[80px]"
+								/>
 							</div>
-
-							{/* 編集フォーム */}
-							<div className="space-y-4">
-								<h4 className="font-medium">
-									{selectedBubble ? 'フォトバブル編集' : isAdding ? '新しいフォトバブル' : 'フォトバブル一覧'}
-								</h4>
-								
-								{(selectedBubble || isAdding) ? (
-									<div className="space-y-4">
-										<div className="grid grid-cols-2 gap-4">
-											<div>
-												<Label htmlFor="x">X座標</Label>
-												<Input
-													id="x"
-													type="number"
-													value={formData.x}
-													onChange={(e) => setFormData(prev => ({ ...prev, x: parseInt(e.target.value) || 0 }))}
-												/>
-											</div>
-											<div>
-												<Label htmlFor="y">Y座標</Label>
-												<Input
-													id="y"
-													type="number"
-													value={formData.y}
-													onChange={(e) => setFormData(prev => ({ ...prev, y: parseInt(e.target.value) || 0 }))}
-												/>
-											</div>
-										</div>
-										
+							
+							{/* リンク先URL */}
+							<div>
+								<Label htmlFor="targetUrl">リンク先URL</Label>
+								<Input
+									id="targetUrl"
+									value={formData.targetUrl}
+									onChange={(e) => setFormData(prev => ({ ...prev, targetUrl: e.target.value }))}
+									placeholder="クリック時の遷移先URL"
+								/>
+							</div>
+							
+							{/* 画像アップロード */}
+							<div>
+								<Label>画像</Label>
+								<div
+									{...getRootProps()}
+									className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
+										isDragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'
+									}`}
+								>
+									<input {...getInputProps()} />
+									<Upload className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+									{isDragActive ? (
+										<p className="text-blue-500">ファイルをドロップしてください</p>
+									) : (
 										<div>
-											<Label htmlFor="description">説明文</Label>
-											<Textarea
-												id="description"
-												value={formData.description}
-												onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-												placeholder="フォトバブルの説明文を入力"
-											/>
+											<p className="text-gray-600">クリックまたはドラッグ&ドロップで画像をアップロード</p>
+											<p className="text-sm text-gray-500">PNG, JPG, GIF, WebP</p>
 										</div>
-										
-										<div>
-											<Label htmlFor="imageUrl">画像URL</Label>
-											<Input
-												id="imageUrl"
-												value={formData.imageUrl}
-												onChange={(e) => setFormData(prev => ({ ...prev, imageUrl: e.target.value }))}
-												placeholder="画像のURLを入力"
-											/>
-										</div>
-										
-										<div>
-											<Label htmlFor="targetUrl">リンク先URL</Label>
-											<Input
-												id="targetUrl"
-												value={formData.targetUrl}
-												onChange={(e) => setFormData(prev => ({ ...prev, targetUrl: e.target.value }))}
-												placeholder="クリック時の遷移先URLを入力"
-											/>
-										</div>
-										
-										<div className="flex gap-2">
-											<Button onClick={handleSave} className="flex-1">
-												{selectedBubble ? '更新' : '追加'}
-											</Button>
-											<Button onClick={handleCancel} variant="outline">
-												キャンセル
-											</Button>
-										</div>
-									</div>
-								) : (
-									<div className="space-y-2">
-										{photoBubbles.length === 0 ? (
-											<p className="text-gray-500">フォトバブルがありません</p>
-										) : (
-											photoBubbles.map((bubble) => (
-												<div
-													key={bubble.id}
-													className="flex items-center justify-between p-3 border rounded-lg"
-												>
-													<div className="flex items-center gap-3">
-														<div className="w-8 h-8 rounded-full overflow-hidden">
-															{bubble.imageUrl ? (
-																<img 
-																	src={bubble.imageUrl} 
-																	alt={bubble.description || "フォトバブル"} 
-																	className="w-full h-full object-cover"
-																/>
-															) : (
-																<div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-																	<span className="text-white text-xs">📷</span>
-																</div>
-															)}
-														</div>
-														<div>
-															<p className="font-medium">{bubble.description || '説明なし'}</p>
-															<p className="text-sm text-gray-500">({bubble.x}, {bubble.y})</p>
-														</div>
-													</div>
-													<div className="flex gap-1">
-														<Button
-															onClick={() => handleBubbleClick(bubble)}
-															variant="outline"
-															size="sm"
-														>
-															<Move className="w-4 h-4" />
-														</Button>
-														<Button
-															onClick={() => handleDeleteBubble(bubble.id)}
-															variant="destructive"
-															size="sm"
-														>
-															<X className="w-4 h-4" />
-														</Button>
-													</div>
-												</div>
-											))
-										)}
+									)}
+								</div>
+								{formData.imageUrl && (
+									<div className="mt-2">
+										<img
+											src={formData.imageUrl}
+											alt="プレビュー"
+											className="w-16 h-16 object-cover rounded border"
+										/>
 									</div>
 								)}
+							</div>
+							
+							{/* ボタン */}
+							<div className="flex gap-2 pt-4">
+								<Button onClick={handleSave} className="flex-1">
+									{selectedBubble ? '更新' : '追加'}
+								</Button>
+								<Button onClick={handleCancel} variant="outline">
+									キャンセル
+								</Button>
 							</div>
 						</div>
 					</CardContent>

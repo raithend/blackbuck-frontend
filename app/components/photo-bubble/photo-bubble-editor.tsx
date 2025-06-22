@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { PhotoBubble } from "./photo-bubble";
 import { PhotoBubbleEditPanel } from "./photo-bubble-edit-panel";
+import { Button } from "@/app/components/ui/button";
 import type { User } from "@/app/types/types";
 
 interface PhotoBubbleData {
@@ -45,20 +46,32 @@ export function PhotoBubbleEditor({
 	}, [photoBubbles.length, onPhotoBubblesChange]);
 
 	const handleHeaderClick = (event: React.MouseEvent<HTMLDivElement>) => {
+		console.log('Header clicked, isEditing:', isEditing); // デバッグ用
+		
 		if (isEditing) {
+			event.preventDefault();
+			event.stopPropagation();
+			
 			const rect = event.currentTarget.getBoundingClientRect();
 			const x = event.clientX - rect.left;
 			const y = event.clientY - rect.top;
+			
+			console.log('Header clicked at:', { x, y }); // デバッグ用
 			setClickedPosition({ x, y });
 			setIsEditPanelOpen(true);
 		}
 	};
 
 	const handleEditButtonClick = () => {
+		console.log('Edit button clicked, current isEditing:', isEditing); // デバッグ用
 		setIsEditing(!isEditing);
 		if (isEditing) {
 			setIsEditPanelOpen(false);
 		}
+	};
+
+	const handleEditPanelClose = () => {
+		setIsEditPanelOpen(false);
 	};
 
 	return (
@@ -110,16 +123,12 @@ export function PhotoBubbleEditor({
 
 			{/* 編集ボタン（ヘッダーの外部の左下に配置） */}
 			<div className="mt-4 ml-4">
-				<button
+				<Button
 					onClick={handleEditButtonClick}
-					className={`px-4 py-2 rounded-lg transition-colors duration-200 shadow-lg ${
-						isEditing 
-							? 'bg-red-500 hover:bg-red-600 text-white' 
-							: 'bg-blue-500 hover:bg-blue-600 text-white'
-					}`}
+					variant={isEditing ? "destructive" : "default"}
 				>
 					{isEditing ? '編集終了' : 'フォトバブルを追加・編集する'}
-				</button>
+				</Button>
 			</div>
 
 			{/* 編集パネル */}
@@ -129,7 +138,7 @@ export function PhotoBubbleEditor({
 					onPhotoBubblesChange={onPhotoBubblesChange}
 					headerImageUrl={user.header_url || undefined}
 					initialPosition={clickedPosition}
-					onClose={() => setIsEditPanelOpen(false)}
+					onClose={handleEditPanelClose}
 				/>
 			)}
 		</>
