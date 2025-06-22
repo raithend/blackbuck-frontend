@@ -19,7 +19,9 @@ export function Header() {
 						<span className="font-bold">BlackBuck</span>
 					</Link>
 				</div>
-				<PostButton />
+				<div className="flex items-center space-x-4">
+					<PostButton />
+				</div>
 				<div className="flex flex-1 items-center justify-end space-x-4">
 					<nav className="flex items-center space-x-2">
 						<UserAuthButton />

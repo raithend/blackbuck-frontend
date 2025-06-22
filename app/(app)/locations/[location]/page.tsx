@@ -7,8 +7,7 @@ import useSWR from "swr";
 import Image from "next/image";
 import { MapPin, Info } from "lucide-react";
 import { LocationEditButton } from "@/app/components/location/location-edit-button";
-
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
+import { fetcher } from "@/app/lib/fetcher";
 
 export default function LocationPage() {
 	const params = useParams();
@@ -18,13 +17,13 @@ export default function LocationPage() {
 	const location = decodeURIComponent(rawLocation);
 
 	// locationの詳細情報を取得
-	const { data: locationData, error: locationError, isLoading: locationLoading } = useSWR(
+	const { data: locationData, error: locationError, isLoading: locationLoading } = useSWR<{ location: Location | null }>(
 		location ? `/api/locations/${encodeURIComponent(location)}` : null,
 		fetcher
 	);
 
 	// locationの投稿を取得
-	const { data: postsData, error: postsError, isLoading: postsLoading } = useSWR(
+	const { data: postsData, error: postsError, isLoading: postsLoading } = useSWR<{ posts: PostWithUser[] }>(
 		location ? `/api/posts?location=${encodeURIComponent(location)}` : null,
 		fetcher
 	);
@@ -56,7 +55,7 @@ export default function LocationPage() {
 		);
 	}
 
-	const locationInfo: Location | null = locationData?.location;
+	const locationInfo: Location | null = locationData?.location || null;
 	const posts: PostWithUser[] = postsData?.posts || [];
 
 	return (
