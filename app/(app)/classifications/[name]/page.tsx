@@ -4,14 +4,13 @@ import { PostCards } from "@/app/components/post/post-cards";
 import type { PostWithUser } from "@/app/types/types";
 import { useParams } from "next/navigation";
 import useSWR from "swr";
-
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
+import { fetcher } from "@/app/lib/fetcher";
 
 export default function ClassificationPage() {
 	const params = useParams();
 	const decodedName = decodeURIComponent(params.name as string);
 
-	const { data, error, isLoading } = useSWR(
+	const { data, error, isLoading } = useSWR<{ posts: PostWithUser[] }>(
 		`/api/classifications?name=${encodeURIComponent(decodedName)}`,
 		fetcher,
 	);
@@ -22,7 +21,7 @@ export default function ClassificationPage() {
 	return (
 		<div className="container mx-auto px-4 py-8">
 			<h1 className="text-2xl font-bold mb-6">{decodedName}の投稿</h1>
-			<PostCards posts={(data?.posts as PostWithUser[]) || []} />
+			<PostCards posts={data?.posts || []} />
 		</div>
 	);
 }

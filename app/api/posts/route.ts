@@ -2,18 +2,38 @@ import { createClient } from "@/app/lib/supabase-server";
 import { NextResponse } from "next/server";
 
 // 投稿一覧取得
-export async function GET() {
+export async function GET(request: Request) {
 	const supabase = await createClient();
-	const { data: posts, error } = await supabase
+	
+	// URLからクエリパラメータを取得
+	const { searchParams } = new URL(request.url);
+	const location = searchParams.get('location');
+
+	// クエリを構築
+	let query = supabase
 		.from("posts")
 		.select("*, users(*), post_images(*)")
 		.order("created_at", { ascending: false });
+
+	// locationフィルターを適用
+	if (location) {
+		query = query.eq("location", location);
+	}
+
+	const { data: posts, error } = await query;
 
 	if (error) {
 		return NextResponse.json({ error: error.message }, { status: 400 });
 	}
 
-	return NextResponse.json({ posts });
+	// 投稿データを整形（userフィールドを設定）
+	const formattedPosts = posts?.map(post => ({
+		...post,
+		user: post.users, // usersフィールドをuserとして設定
+		post_images: post.post_images?.sort((a, b) => a.order_index - b.order_index) || []
+	})) || [];
+
+	return NextResponse.json({ posts: formattedPosts });
 }
 
 // 投稿作成
@@ -94,7 +114,14 @@ export async function POST(request: Request) {
 			return NextResponse.json({ error: fetchError.message }, { status: 400 });
 		}
 
-		return NextResponse.json({ post: createdPost });
+		// 投稿データを整形（userフィールドを設定）
+		const formattedPost = {
+			...createdPost,
+			user: createdPost.users, // usersフィールドをuserとして設定
+			post_images: createdPost.post_images?.sort((a, b) => a.order_index - b.order_index) || []
+		};
+
+		return NextResponse.json({ post: formattedPost });
 	} catch (error) {
 		console.error("投稿エラー:", error);
 		return NextResponse.json(

@@ -14,6 +14,8 @@ export type PostWithUser = Post & {
 	user: User;
 };
 
+export type Location = Database["public"]["Tables"]["locations"]["Row"];
+
 export type Classification = {
 	name: string;
 	count: number;
