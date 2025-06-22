@@ -7,33 +7,38 @@ export type Json =
 	| Json[];
 
 export type Database = {
-	graphql_public: {
-		Tables: {
-			[_ in never]: never;
-		};
-		Views: {
-			[_ in never]: never;
-		};
-		Functions: {
-			graphql: {
-				Args: {
-					operationName?: string;
-					query?: string;
-					variables?: Json;
-					extensions?: Json;
-				};
-				Returns: Json;
-			};
-		};
-		Enums: {
-			[_ in never]: never;
-		};
-		CompositeTypes: {
-			[_ in never]: never;
-		};
-	};
 	public: {
 		Tables: {
+			locations: {
+				Row: {
+					avatar_url: string | null;
+					created_at: string;
+					description: string | null;
+					header_url: string | null;
+					id: string;
+					name: string;
+					updated_at: string;
+				};
+				Insert: {
+					avatar_url?: string | null;
+					created_at?: string;
+					description?: string | null;
+					header_url?: string | null;
+					id?: string;
+					name: string;
+					updated_at?: string;
+				};
+				Update: {
+					avatar_url?: string | null;
+					created_at?: string;
+					description?: string | null;
+					header_url?: string | null;
+					id?: string;
+					name?: string;
+					updated_at?: string;
+				};
+				Relationships: [];
+			};
 			post_images: {
 				Row: {
 					created_at: string;
@@ -262,9 +267,6 @@ export type CompositeTypes<
 		: never;
 
 export const Constants = {
-	graphql_public: {
-		Enums: {},
-	},
 	public: {
 		Enums: {},
 	},
