@@ -15,9 +15,11 @@ import {
 	SelectValue,
 } from "@/app/components/ui/select";
 import { Slider } from "@/app/components/ui/slider";
+import { Button } from "@/app/components/ui/button";
 import geologicalAgesData from "@/app/data/geological-ages.json";
 import { useCallback, useEffect, useState } from "react";
 import { useGeologicalAge } from "./geological-context";
+import { Menu } from "lucide-react";
 
 interface GeologicalAge {
 	id: string;
@@ -69,6 +71,7 @@ export function GeologicalAgeCard() {
 		undefined,
 	);
 	const [selectedAge, setSelectedAge] = useState<GeologicalAge | null>(null);
+	const [isExpanded, setIsExpanded] = useState(false);
 
 	const handleEraChange = (eraId: string) => {
 		if (eraId === "none") {
@@ -233,120 +236,132 @@ export function GeologicalAgeCard() {
 	}
 
 	return (
-		<Card className="w-72">
-			<CardHeader>
+		<Card className={`transition-all duration-300 ${isExpanded ? 'w-72' : 'w-12'}`}>
+			<CardHeader className={isExpanded ? '' : 'p-2'}>
 				<div className="flex items-center justify-between">
-					<CardTitle>地質時代</CardTitle>
+					{isExpanded && <CardTitle>地質時代</CardTitle>}
+					<Button
+						variant="ghost"
+						size="sm"
+						onClick={() => setIsExpanded(!isExpanded)}
+						className="p-1"
+					>
+						<Menu className="w-4 h-4" />
+					</Button>
 				</div>
 			</CardHeader>
-			<CardContent>
-				<div className="space-y-4">
-					<div className="flex flex-col space-y-4">
-						<Select
-							value={selectedEra?.id || "none"}
-							onValueChange={handleEraChange}
-						>
-							<SelectTrigger>
-								<SelectValue placeholder="代を選択" />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value="none">---</SelectItem>
-								{geologicalAgesData.eras.map((era) => (
-									<SelectItem key={era.id} value={era.id}>
-										{era.name}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
+			{isExpanded && (
+				<>
+					<CardContent>
+						<div className="space-y-4">
+							<div className="flex flex-col space-y-4">
+								<Select
+									value={selectedEra?.id || "none"}
+									onValueChange={handleEraChange}
+								>
+									<SelectTrigger>
+										<SelectValue placeholder="代を選択" />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value="none">---</SelectItem>
+										{geologicalAgesData.eras.map((era) => (
+											<SelectItem key={era.id} value={era.id}>
+												{era.name}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
 
-						<Select
-							value={selectedPeriod?.id || "none"}
-							onValueChange={handlePeriodChange}
-							disabled={!selectedEra}
-						>
-							<SelectTrigger>
-								<SelectValue placeholder="紀を選択" />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value="none">---</SelectItem>
-								{selectedEra?.periods.map((period) => (
-									<SelectItem key={period.id} value={period.id}>
-										{period.name}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
+								<Select
+									value={selectedPeriod?.id || "none"}
+									onValueChange={handlePeriodChange}
+									disabled={!selectedEra}
+								>
+									<SelectTrigger>
+										<SelectValue placeholder="紀を選択" />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value="none">---</SelectItem>
+										{selectedEra?.periods.map((period) => (
+											<SelectItem key={period.id} value={period.id}>
+												{period.name}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
 
-						<Select
-							value={selectedEpoch?.id || "none"}
-							onValueChange={handleEpochChange}
-							disabled={!selectedPeriod}
-						>
-							<SelectTrigger>
-								<SelectValue placeholder="世を選択" />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value="none">---</SelectItem>
-								{selectedPeriod?.epochs.map((epoch) => (
-									<SelectItem key={epoch.id} value={epoch.id}>
-										{epoch.name}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
+								<Select
+									value={selectedEpoch?.id || "none"}
+									onValueChange={handleEpochChange}
+									disabled={!selectedPeriod}
+								>
+									<SelectTrigger>
+										<SelectValue placeholder="世を選択" />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value="none">---</SelectItem>
+										{selectedPeriod?.epochs.map((epoch) => (
+											<SelectItem key={epoch.id} value={epoch.id}>
+												{epoch.name}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
 
-						<Select
-							value={selectedAge?.id || "none"}
-							onValueChange={handleAgeChange}
-							disabled={!selectedEpoch || !selectedEpoch.ages}
-						>
-							<SelectTrigger>
-								<SelectValue placeholder="期を選択" />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value="none">---</SelectItem>
-								{selectedEpoch?.ages?.map((age) => (
-									<SelectItem key={age.id} value={age.id}>
-										{age.name}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
-					</div>
+								<Select
+									value={selectedAge?.id || "none"}
+									onValueChange={handleAgeChange}
+									disabled={!selectedEpoch || !selectedEpoch.ages}
+								>
+									<SelectTrigger>
+										<SelectValue placeholder="期を選択" />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value="none">---</SelectItem>
+										{selectedEpoch?.ages?.map((age) => (
+											<SelectItem key={age.id} value={age.id}>
+												{age.name}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+							</div>
 
-					<div className="flex justify-between">
-						<span className="text-sm text-muted-foreground">年代:</span>
-						<span className="text-sm font-medium">
-							{(() => {
-								const start =
-									selectedAge?.startAge ??
-									selectedEpoch?.startAge ??
-									selectedPeriod?.startAge ??
-									selectedEra?.startAge;
-								const end =
-									selectedAge?.endAge ??
-									selectedEpoch?.endAge ??
-									selectedPeriod?.endAge ??
-									selectedEra?.endAge;
-								if (start !== undefined && end !== undefined) {
-									return formatAgeRange(start, end);
-								}
-								return "-";
-							})()}
-						</span>
-					</div>
-				</div>
-			</CardContent>
-			<CardFooter className="flex flex-col space-y-4">
-				<div className="w-full">
-					<Slider
-						defaultValue={[102]}
-						max={102}
-						min={1}
-						onValueChange={handleSliderChange}
-					/>
-				</div>
-			</CardFooter>
+							<div className="flex justify-between">
+								<span className="text-sm text-muted-foreground">年代:</span>
+								<span className="text-sm font-medium">
+									{(() => {
+										const start =
+											selectedAge?.startAge ??
+											selectedEpoch?.startAge ??
+											selectedPeriod?.startAge ??
+											selectedEra?.startAge;
+										const end =
+											selectedAge?.endAge ??
+											selectedEpoch?.endAge ??
+											selectedPeriod?.endAge ??
+											selectedEra?.endAge;
+										if (start !== undefined && end !== undefined) {
+											return formatAgeRange(start, end);
+										}
+										return "-";
+									})()}
+								</span>
+							</div>
+						</div>
+					</CardContent>
+					<CardFooter className="flex flex-col space-y-4">
+						<div className="w-full">
+							<Slider
+								defaultValue={[102]}
+								max={102}
+								min={1}
+								onValueChange={handleSliderChange}
+							/>
+						</div>
+					</CardFooter>
+				</>
+			)}
 		</Card>
 	);
 }
