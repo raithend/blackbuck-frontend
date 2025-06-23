@@ -1,17 +1,14 @@
+import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/app/lib/supabase-server";
-import { cookies } from 'next/headers';
-import { NextRequest, NextResponse } from 'next/server';
-import type { PhotoBubbleCreate, PhotoBubbleUpdate } from '@/app/types/types';
 
 export async function GET(request: NextRequest) {
 	try {
 		const { searchParams } = new URL(request.url);
-		const pageType = searchParams.get('page_type');
-		const pageIdentifier = searchParams.get('page_identifier');
+		const pageUrl = searchParams.get('page_url');
 
-		if (!pageType || !pageIdentifier) {
+		if (!pageUrl) {
 			return NextResponse.json(
-				{ error: 'page_type and page_identifier are required' },
+				{ error: 'page_url parameter is required' },
 				{ status: 400 }
 			);
 		}
@@ -21,8 +18,7 @@ export async function GET(request: NextRequest) {
 		const { data: photoBubbles, error } = await supabase
 			.from('photo_bubbles')
 			.select('*')
-			.eq('page_type', pageType)
-			.eq('page_identifier', pageIdentifier)
+			.eq('page_url', pageUrl)
 			.order('created_at', { ascending: true });
 
 		if (error) {
@@ -33,7 +29,7 @@ export async function GET(request: NextRequest) {
 			);
 		}
 
-		return NextResponse.json(photoBubbles);
+		return NextResponse.json({ photoBubbles: photoBubbles || [] });
 	} catch (error) {
 		console.error('Error in GET /api/photo-bubbles:', error);
 		return NextResponse.json(
@@ -45,30 +41,60 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
 	try {
-		const supabase = await createClient();
+		// Authorizationヘッダーからアクセストークンを取得
+		const authHeader = request.headers.get("authorization");
+		const accessToken = authHeader?.replace("Bearer ", "");
 
-		// 認証チェック
-		const { data: { user }, error: authError } = await supabase.auth.getUser();
-		if (authError || !user) {
+		if (!accessToken) {
 			return NextResponse.json(
 				{ error: 'Unauthorized' },
 				{ status: 401 }
 			);
 		}
 
-		const body: PhotoBubbleCreate = await request.json();
+		// アクセストークンを使ってSupabaseクライアントを作成
+		const supabase = await createClient(accessToken);
+
+		// ユーザー情報を取得
+		const { data: { user }, error: userError } = await supabase.auth.getUser();
+
+		if (userError || !user) {
+			console.error("ユーザー取得エラー:", userError);
+			return NextResponse.json(
+				{ error: 'Unauthorized' },
+				{ status: 401 }
+			);
+		}
+
+		// ユーザーのaccount_idを取得
+		const { data: userProfile, error: profileError } = await supabase
+			.from('users')
+			.select('account_id')
+			.eq('id', user.id)
+			.single();
+
+		if (profileError || !userProfile) {
+			console.error("ユーザープロフィール取得エラー:", profileError);
+			return NextResponse.json(
+				{ error: 'User profile not found' },
+				{ status: 404 }
+			);
+		}
+
+		const body = await request.json();
 
 		// 必須フィールドの検証
-		if (!body.x_coordinate || !body.y_coordinate || !body.page_type || !body.page_identifier) {
+		if (!body.name || !body.page_url || !body.image_url) {
 			return NextResponse.json(
-				{ error: 'Missing required fields' },
+				{ error: 'name, page_url, and image_url are required' },
 				{ status: 400 }
 			);
 		}
 
 		// プロフィールページの場合、本人のみ追加可能
-		if (body.page_type === 'profile') {
-			if (body.page_identifier !== user.id) {
+		if (body.page_url.startsWith('/users/')) {
+			const profileAccountId = body.page_url.split('/')[2];
+			if (profileAccountId !== userProfile.account_id) {
 				return NextResponse.json(
 					{ error: 'You can only add photo bubbles to your own profile' },
 					{ status: 403 }
@@ -79,8 +105,13 @@ export async function POST(request: NextRequest) {
 		const { data: photoBubble, error } = await supabase
 			.from('photo_bubbles')
 			.insert({
-				...body,
-				author_id: user.id,
+				name: body.name,
+				user_id: user.id,
+				page_url: body.page_url,
+				image_url: body.image_url,
+				target_url: body.target_url || null,
+				x_position: body.x_position || 0,
+				y_position: body.y_position || 0,
 			})
 			.select()
 			.single();
@@ -105,11 +136,25 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
 	try {
-		const supabase = await createClient();
+		// Authorizationヘッダーからアクセストークンを取得
+		const authHeader = request.headers.get("authorization");
+		const accessToken = authHeader?.replace("Bearer ", "");
 
-		// 認証チェック
-		const { data: { user }, error: authError } = await supabase.auth.getUser();
-		if (authError || !user) {
+		if (!accessToken) {
+			return NextResponse.json(
+				{ error: 'Unauthorized' },
+				{ status: 401 }
+			);
+		}
+
+		// アクセストークンを使ってSupabaseクライアントを作成
+		const supabase = await createClient(accessToken);
+
+		// ユーザー情報を取得
+		const { data: { user }, error: userError } = await supabase.auth.getUser();
+
+		if (userError || !user) {
+			console.error("ユーザー取得エラー:", userError);
 			return NextResponse.json(
 				{ error: 'Unauthorized' },
 				{ status: 401 }
@@ -126,12 +171,12 @@ export async function PUT(request: NextRequest) {
 			);
 		}
 
-		const body: PhotoBubbleUpdate = await request.json();
+		const body = await request.json();
 
-		// 投稿者のみ更新可能
+		// 作成者のみ更新可能
 		const { data: existingBubble, error: fetchError } = await supabase
 			.from('photo_bubbles')
-			.select('author_id')
+			.select('user_id')
 			.eq('id', id)
 			.single();
 
@@ -142,16 +187,23 @@ export async function PUT(request: NextRequest) {
 			);
 		}
 
-		if (existingBubble.author_id !== user.id) {
+		if (existingBubble.user_id !== user.id) {
 			return NextResponse.json(
 				{ error: 'You can only update your own photo bubbles' },
 				{ status: 403 }
 			);
 		}
 
+		const updateData: any = {};
+		if (body.name !== undefined) updateData.name = body.name;
+		if (body.image_url !== undefined) updateData.image_url = body.image_url;
+		if (body.target_url !== undefined) updateData.target_url = body.target_url;
+		if (body.x_position !== undefined) updateData.x_position = body.x_position;
+		if (body.y_position !== undefined) updateData.y_position = body.y_position;
+
 		const { data: photoBubble, error } = await supabase
 			.from('photo_bubbles')
-			.update(body)
+			.update(updateData)
 			.eq('id', id)
 			.select()
 			.single();
@@ -176,11 +228,25 @@ export async function PUT(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
 	try {
-		const supabase = await createClient();
+		// Authorizationヘッダーからアクセストークンを取得
+		const authHeader = request.headers.get("authorization");
+		const accessToken = authHeader?.replace("Bearer ", "");
 
-		// 認証チェック
-		const { data: { user }, error: authError } = await supabase.auth.getUser();
-		if (authError || !user) {
+		if (!accessToken) {
+			return NextResponse.json(
+				{ error: 'Unauthorized' },
+				{ status: 401 }
+			);
+		}
+
+		// アクセストークンを使ってSupabaseクライアントを作成
+		const supabase = await createClient(accessToken);
+
+		// ユーザー情報を取得
+		const { data: { user }, error: userError } = await supabase.auth.getUser();
+
+		if (userError || !user) {
+			console.error("ユーザー取得エラー:", userError);
 			return NextResponse.json(
 				{ error: 'Unauthorized' },
 				{ status: 401 }
@@ -197,10 +263,10 @@ export async function DELETE(request: NextRequest) {
 			);
 		}
 
-		// 投稿者のみ削除可能
+		// 作成者のみ削除可能
 		const { data: existingBubble, error: fetchError } = await supabase
 			.from('photo_bubbles')
-			.select('author_id')
+			.select('user_id')
 			.eq('id', id)
 			.single();
 
@@ -211,7 +277,7 @@ export async function DELETE(request: NextRequest) {
 			);
 		}
 
-		if (existingBubble.author_id !== user.id) {
+		if (existingBubble.user_id !== user.id) {
 			return NextResponse.json(
 				{ error: 'You can only delete your own photo bubbles' },
 				{ status: 403 }

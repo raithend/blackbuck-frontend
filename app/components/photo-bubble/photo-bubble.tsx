@@ -5,6 +5,7 @@ import { X } from "lucide-react";
 import { Button } from "@/app/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/app/components/ui/avatar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/app/components/ui/tooltip";
+import { createClient } from "@/app/lib/supabase-browser";
 
 interface PhotoBubbleProps {
 	id: string;
@@ -99,6 +100,41 @@ export function PhotoBubble({
 	// 拡大率の計算
 	const scale = isDragging ? 1.1 : isHovered ? 2.0 : 1.0;
 
+	const handleDelete = async (e: React.MouseEvent) => {
+		e.stopPropagation();
+		
+		if (!confirm('このフォトバブルを削除しますか？')) {
+			return;
+		}
+		
+		try {
+			// 認証情報を取得
+			const supabase = createClient();
+			const { data: { session } } = await supabase.auth.getSession();
+			
+			if (!session) {
+				throw new Error('認証が必要です');
+			}
+			
+			const response = await fetch(`/api/photo-bubbles?id=${id}`, {
+				method: 'DELETE',
+				headers: {
+					'Authorization': `Bearer ${session.access_token}`,
+				},
+			});
+			
+			if (!response.ok) {
+				const errorData = await response.json();
+				throw new Error(errorData.error || 'フォトバブルの削除に失敗しました');
+			}
+			
+			onDelete(id);
+		} catch (error) {
+			console.error('Error deleting photo bubble:', error);
+			alert(error instanceof Error ? error.message : '削除に失敗しました');
+		}
+	};
+
 	return (
 		<TooltipProvider>
 			<Tooltip>
@@ -143,10 +179,7 @@ export function PhotoBubble({
 									variant="destructive"
 									size="sm"
 									className="absolute -top-2 -right-2 w-6 h-6 p-0 rounded-full"
-									onClick={(e) => {
-										e.stopPropagation();
-										onDelete(id);
-									}}
+									onClick={handleDelete}
 								>
 									<X className="w-3 h-3" />
 								</Button>

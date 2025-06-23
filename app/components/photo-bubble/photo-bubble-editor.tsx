@@ -31,20 +31,31 @@ export function PhotoBubbleEditor({
 	const [clickedPosition, setClickedPosition] = useState({ x: 0, y: 0 });
 	const [showClickMarker, setShowClickMarker] = useState(false);
 	
-	// PoC用のハードコードされたデータ
+	// 初期データをAPIから読み込み
 	useEffect(() => {
-		if (photoBubbles.length === 0) {
-			const pocBubble: PhotoBubbleData = {
-				id: 'poc-bubble-1',
-				x: 100,
-				y: 150,
-				description: 'INFINITI VISION Qe',
-				imageUrl: 'https://blackbuck-bucket.s3.ap-northeast-1.amazonaws.com/headers/1750343160488-PXL_20231216_082802471.jpg',
-				targetUrl: 'https://ja.infiniti.com/stories/electric-car-vision-qe.html'
-			};
-			onPhotoBubblesChange([pocBubble]);
-		}
-	}, [photoBubbles.length, onPhotoBubblesChange]);
+		const loadPhotoBubbles = async () => {
+			try {
+				const response = await fetch(`/api/photo-bubbles?page_url=${window.location.pathname}`);
+				if (response.ok) {
+					const data = await response.json();
+					// APIのデータ形式をローカル形式に変換
+					const convertedBubbles = data.map((bubble: any) => ({
+						id: bubble.id,
+						x: bubble.x_position,
+						y: bubble.y_position,
+						description: bubble.name,
+						imageUrl: bubble.image_url,
+						targetUrl: bubble.target_url,
+					}));
+					onPhotoBubblesChange(convertedBubbles);
+				}
+			} catch (error) {
+				console.error('Error loading photo bubbles:', error);
+			}
+		};
+
+		loadPhotoBubbles();
+	}, [onPhotoBubblesChange]);
 
 	const handleHeaderClick = (event: React.MouseEvent<HTMLDivElement>) => {
 		console.log('Header clicked, isEditing:', isEditing); // デバッグ用

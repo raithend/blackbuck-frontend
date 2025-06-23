@@ -9,6 +9,7 @@ import { Textarea } from "@/app/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card";
 import { X, Move, Plus, Upload } from "lucide-react";
 import { useDropzone } from "react-dropzone";
+import { createClient } from "@/app/lib/supabase-browser";
 
 interface PhotoBubbleData {
 	id: string;
@@ -52,11 +53,42 @@ export function PhotoBubbleEditPanel({
 		}
 	}, [initialPosition]);
 
-	const onDrop = useCallback((acceptedFiles: File[]) => {
+	const onDrop = useCallback(async (acceptedFiles: File[]) => {
 		if (acceptedFiles.length > 0) {
-			const file = acceptedFiles[0];
-			const imageUrl = URL.createObjectURL(file);
-			setFormData(prev => ({ ...prev, imageUrl }));
+			try {
+				const file = acceptedFiles[0];
+				
+				// 認証情報を取得
+				const supabase = createClient();
+				const { data: { session } } = await supabase.auth.getSession();
+				
+				if (!session) {
+					throw new Error('認証が必要です');
+				}
+				
+				// フォトバブル専用のアップロードAPIを使用
+				const formData = new FormData();
+				formData.append('file', file);
+				
+				const response = await fetch('/api/upload/photo-bubble', {
+					method: 'POST',
+					headers: {
+						'Authorization': `Bearer ${session.access_token}`,
+					},
+					body: formData,
+				});
+				
+				if (!response.ok) {
+					const errorData = await response.json();
+					throw new Error(errorData.error || '画像のアップロードに失敗しました');
+				}
+				
+				const result = await response.json();
+				setFormData(prev => ({ ...prev, imageUrl: result.url }));
+			} catch (error) {
+				console.error('Error uploading image:', error);
+				alert(error instanceof Error ? error.message : '画像のアップロードに失敗しました');
+			}
 		}
 	}, []);
 
@@ -67,39 +99,6 @@ export function PhotoBubbleEditPanel({
 		},
 		multiple: false
 	});
-
-	const handleAddBubble = () => {
-		const newBubble: PhotoBubbleData = {
-			id: `bubble-${Date.now()}`,
-			x: formData.x,
-			y: formData.y,
-			description: formData.description || undefined,
-			imageUrl: formData.imageUrl || undefined,
-			targetUrl: formData.targetUrl || undefined,
-		};
-		onPhotoBubblesChange([...photoBubbles, newBubble]);
-		setIsAdding(false);
-		setFormData({ description: '', imageUrl: '', targetUrl: '', x: 100, y: 100 });
-		onClose();
-	};
-
-	const handleEditBubble = () => {
-		if (!selectedBubble) return;
-		
-		const updatedBubbles = photoBubbles.map(bubble => 
-			bubble.id === selectedBubble.id 
-				? { ...bubble, ...formData }
-				: bubble
-		);
-		onPhotoBubblesChange(updatedBubbles);
-		setSelectedBubble(null);
-		setFormData({ description: '', imageUrl: '', targetUrl: '', x: 100, y: 100 });
-		onClose();
-	};
-
-	const handleDeleteBubble = (id: string) => {
-		onPhotoBubblesChange(photoBubbles.filter(bubble => bubble.id !== id));
-	};
 
 	const handleBubbleClick = (bubble: PhotoBubbleData) => {
 		setSelectedBubble(bubble);
@@ -113,36 +112,88 @@ export function PhotoBubbleEditPanel({
 		setClickedPosition({ x: bubble.x, y: bubble.y });
 	};
 
-	const handleHeaderClick = (e: React.MouseEvent<HTMLDivElement>) => {
-		const rect = e.currentTarget.getBoundingClientRect();
-		const x = e.clientX - rect.left;
-		const y = e.clientY - rect.top;
-		
-		setClickedPosition({ x, y });
-		setFormData(prev => ({ ...prev, x, y }));
-		
-		if (isAdding) {
-			// 追加モードの場合は自動的にフォームに反映
-		} else {
-			// 編集モードの場合は選択されたバブルを更新
-			if (selectedBubble) {
-				setFormData(prev => ({ ...prev, x, y }));
+	const handleSave = async () => {
+		try {
+			// 認証情報を取得
+			const supabase = createClient();
+			const { data: { session } } = await supabase.auth.getSession();
+			
+			if (!session) {
+				throw new Error('認証が必要です');
 			}
-		}
-	};
+			
+			if (selectedBubble) {
+				// 更新処理
+				const response = await fetch(`/api/photo-bubbles?id=${selectedBubble.id}`, {
+					method: 'PUT',
+					headers: {
+						'Content-Type': 'application/json',
+						'Authorization': `Bearer ${session.access_token}`,
+					},
+					body: JSON.stringify({
+						name: formData.description || '',
+						image_url: formData.imageUrl || '',
+						target_url: formData.targetUrl || '',
+						x_position: formData.x,
+						y_position: formData.y,
+					}),
+				});
 
-	const handleSave = () => {
-		if (selectedBubble) {
-			handleEditBubble();
-		} else if (isAdding) {
-			handleAddBubble();
-		}
+				if (!response.ok) {
+					const errorData = await response.json();
+					throw new Error(errorData.error || 'フォトバブルの更新に失敗しました');
+				}
 
-		// フォームをリセット
-		setSelectedBubble(null);
-		setIsAdding(false);
-		setFormData({ description: '', imageUrl: '', targetUrl: '', x: 100, y: 100 });
-		onClose();
+				const updatedBubble = await response.json();
+				const updatedBubbles = photoBubbles.map(bubble => 
+					bubble.id === selectedBubble.id 
+						? { ...bubble, ...updatedBubble }
+						: bubble
+				);
+				onPhotoBubblesChange(updatedBubbles);
+			} else {
+				// 新規作成処理
+				const response = await fetch('/api/photo-bubbles', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+						'Authorization': `Bearer ${session.access_token}`,
+					},
+					body: JSON.stringify({
+						name: formData.description || '',
+						page_url: window.location.pathname, // 現在のページURL
+						image_url: formData.imageUrl || '',
+						target_url: formData.targetUrl || '',
+						x_position: formData.x,
+						y_position: formData.y,
+					}),
+				});
+
+				if (!response.ok) {
+					const errorData = await response.json();
+					throw new Error(errorData.error || 'フォトバブルの作成に失敗しました');
+				}
+
+				const newBubble = await response.json();
+				onPhotoBubblesChange([...photoBubbles, {
+					id: newBubble.id,
+					x: newBubble.x_position,
+					y: newBubble.y_position,
+					description: newBubble.name,
+					imageUrl: newBubble.image_url,
+					targetUrl: newBubble.target_url,
+				}]);
+			}
+
+			// フォームをリセット
+			setSelectedBubble(null);
+			setIsAdding(false);
+			setFormData({ description: '', imageUrl: '', targetUrl: '', x: 100, y: 100 });
+			onClose();
+		} catch (error) {
+			console.error('Error saving photo bubble:', error);
+			alert(error instanceof Error ? error.message : 'エラーが発生しました');
+		}
 	};
 
 	const handleCancel = () => {
