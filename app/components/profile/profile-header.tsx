@@ -11,6 +11,7 @@ import type { User } from "@/app/types/types";
 import { EditProfileButton } from "./edit-profile-button";
 import { PhotoBubbleEditor } from "../photo-bubble/photo-bubble-editor";
 import { useState } from "react";
+import { useUser } from "@/app/contexts/user-context";
 
 interface ProfileHeaderProps {
 	user: User;
@@ -27,6 +28,10 @@ interface PhotoBubbleData {
 
 export function ProfileHeader({ user }: ProfileHeaderProps) {
 	const [photoBubbles, setPhotoBubbles] = useState<PhotoBubbleData[]>([]);
+	const { user: currentUser } = useUser();
+
+	// 現在のユーザーがこのページのユーザーと一致するかチェック
+	const isOwnProfile = currentUser?.account_id === user.account_id;
 
 	return (
 		<div className="relative mb-6">
@@ -35,6 +40,7 @@ export function ProfileHeader({ user }: ProfileHeaderProps) {
 				user={user}
 				photoBubbles={photoBubbles}
 				onPhotoBubblesChange={setPhotoBubbles}
+				isEditable={isOwnProfile}
 			/>
 
 			{/* アバター（ヘッダー画像と重ねて表示） */}

@@ -19,12 +19,14 @@ interface PhotoBubbleEditorProps {
 	user: User;
 	photoBubbles: PhotoBubbleData[];
 	onPhotoBubblesChange: (bubbles: PhotoBubbleData[]) => void;
+	isEditable?: boolean;
 }
 
 export function PhotoBubbleEditor({ 
 	user, 
 	photoBubbles, 
-	onPhotoBubblesChange
+	onPhotoBubblesChange,
+	isEditable = true
 }: PhotoBubbleEditorProps) {
 	const [isEditPanelOpen, setIsEditPanelOpen] = useState(false);
 	const [isEditing, setIsEditing] = useState(false);
@@ -39,14 +41,14 @@ export function PhotoBubbleEditor({
 				if (response.ok) {
 					const data = await response.json();
 					// APIのデータ形式をローカル形式に変換
-					const convertedBubbles = data.map((bubble: any) => ({
+					const convertedBubbles = data.photoBubbles?.map((bubble: any) => ({
 						id: bubble.id,
 						x: bubble.x_position,
 						y: bubble.y_position,
 						description: bubble.name,
 						imageUrl: bubble.image_url,
 						targetUrl: bubble.target_url,
-					}));
+					})) || [];
 					onPhotoBubblesChange(convertedBubbles);
 				}
 			} catch (error) {
@@ -60,7 +62,7 @@ export function PhotoBubbleEditor({
 	const handleHeaderClick = (event: React.MouseEvent<HTMLDivElement>) => {
 		console.log('Header clicked, isEditing:', isEditing); // デバッグ用
 		
-		if (isEditing) {
+		if (isEditing && isEditable) {
 			event.preventDefault();
 			event.stopPropagation();
 			
@@ -76,6 +78,8 @@ export function PhotoBubbleEditor({
 	};
 
 	const handleEditButtonClick = () => {
+		if (!isEditable) return;
+		
 		console.log('Edit button clicked, current isEditing:', isEditing); // デバッグ用
 		setIsEditing(!isEditing);
 		if (isEditing) {
@@ -94,7 +98,7 @@ export function PhotoBubbleEditor({
 			{/* ヘッダー画像 */}
 			<div className="relative w-full h-96 bg-gray-200 rounded-lg overflow-hidden">
 				<div 
-					className={`w-full h-full ${isEditing ? 'cursor-crosshair' : ''}`}
+					className={`w-full h-full ${isEditing && isEditable ? 'cursor-crosshair' : ''}`}
 					onClick={handleHeaderClick}
 				>
 					{user.header_url ? (
@@ -143,7 +147,7 @@ export function PhotoBubbleEditor({
 						}
 						userAvatarUrl={user.avatar_url || undefined}
 						username={user.username}
-						isEditing={isEditing}
+						isEditing={isEditing && isEditable}
 						description={bubble.description}
 						imageUrl={bubble.imageUrl}
 						targetUrl={bubble.targetUrl}
@@ -152,14 +156,16 @@ export function PhotoBubbleEditor({
 			</div>
 
 			{/* 編集ボタン（ヘッダーの外部の左下に配置） */}
-			<div className="mt-4 ml-4">
-				<Button
-					onClick={handleEditButtonClick}
-					variant={isEditing ? "destructive" : "default"}
-				>
-					{isEditing ? '編集終了' : 'フォトバブルを追加・編集する'}
-				</Button>
-			</div>
+			{isEditable && (
+				<div className="mt-4 ml-4">
+					<Button
+						onClick={handleEditButtonClick}
+						variant={isEditing ? "destructive" : "default"}
+					>
+						{isEditing ? '編集終了' : 'フォトバブルを追加・編集する'}
+					</Button>
+				</div>
+			)}
 
 			{/* 編集パネル */}
 			{isEditPanelOpen && (
