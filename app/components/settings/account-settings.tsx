@@ -19,6 +19,8 @@ export function AccountSettings() {
 	const [headerUrl, setHeaderUrl] = useState("");
 	const [avatarUrl, setAvatarUrl] = useState("");
 	const [isSaving, setIsSaving] = useState(false);
+	const [isHeaderSaving, setIsHeaderSaving] = useState(false);
+	const [isAvatarSaving, setIsAvatarSaving] = useState(false);
 
 	// ユーザー情報が取得されたらフォームに設定
 	useEffect(() => {
@@ -30,7 +32,67 @@ export function AccountSettings() {
 		}
 	}, [user]);
 
-	// プロフィールを保存
+	// ヘッダー画像保存
+	const handleHeaderSave = async (url: string) => {
+		if (!session) {
+			toast.error("ログインが必要です");
+			return;
+		}
+		setIsHeaderSaving(true);
+		try {
+			const response = await fetch("/api/users/me", {
+				method: "PUT",
+				headers: {
+					"Content-Type": "application/json",
+					Authorization: `Bearer ${session.access_token}`,
+				},
+				body: JSON.stringify({ header_url: url || null }),
+			});
+			if (!response.ok) {
+				const errorData = await response.json();
+				throw new Error(errorData.error || "ヘッダー画像の保存に失敗しました");
+			}
+			await refreshUser();
+			toast.success("ヘッダー画像を更新しました");
+		} catch (error) {
+			console.error("ヘッダー画像更新エラー:", error);
+			toast.error(error instanceof Error ? error.message : "ヘッダー画像の保存に失敗しました");
+		} finally {
+			setIsHeaderSaving(false);
+		}
+	};
+
+	// アバター画像保存
+	const handleAvatarSave = async (url: string) => {
+		if (!session) {
+			toast.error("ログインが必要です");
+			return;
+		}
+		setIsAvatarSaving(true);
+		try {
+			const response = await fetch("/api/users/me", {
+				method: "PUT",
+				headers: {
+					"Content-Type": "application/json",
+					Authorization: `Bearer ${session.access_token}`,
+				},
+				body: JSON.stringify({ avatar_url: url || null }),
+			});
+			if (!response.ok) {
+				const errorData = await response.json();
+				throw new Error(errorData.error || "アバター画像の保存に失敗しました");
+			}
+			await refreshUser();
+			toast.success("アバター画像を更新しました");
+		} catch (error) {
+			console.error("アバター画像更新エラー:", error);
+			toast.error(error instanceof Error ? error.message : "アバター画像の保存に失敗しました");
+		} finally {
+			setIsAvatarSaving(false);
+		}
+	};
+
+	// プロフィール（ユーザー名・自己紹介）を保存
 	const handleSave = async () => {
 		if (!session) {
 			toast.error("ログインが必要です");
@@ -47,9 +109,7 @@ export function AccountSettings() {
 				},
 				body: JSON.stringify({ 
 					username, 
-					bio, 
-					header_url: headerUrl || null,
-					avatar_url: avatarUrl || null
+					bio
 				}),
 			});
 
@@ -60,7 +120,6 @@ export function AccountSettings() {
 
 			// ユーザー情報を再取得してコンテキストを更新
 			await refreshUser();
-			
 			toast.success("プロフィールを更新しました");
 		} catch (error) {
 			console.error("プロフィール更新エラー:", error);
@@ -123,7 +182,10 @@ export function AccountSettings() {
 				<ProfileImageUpload
 					type="header"
 					currentUrl={headerUrl}
-					onUploadComplete={setHeaderUrl}
+					onUploadComplete={(url) => {
+						setHeaderUrl(url);
+						handleHeaderSave(url);
+					}}
 				>
 					<div className="w-32 h-20 bg-gray-200 rounded-lg overflow-hidden">
 						{headerUrl ? (
@@ -147,7 +209,10 @@ export function AccountSettings() {
 				<ProfileImageUpload
 					type="avatar"
 					currentUrl={avatarUrl}
-					onUploadComplete={setAvatarUrl}
+					onUploadComplete={(url) => {
+						setAvatarUrl(url);
+						handleAvatarSave(url);
+					}}
 				>
 					<Avatar className="w-16 h-16">
 						<AvatarImage src={avatarUrl || undefined} alt="アバター" />

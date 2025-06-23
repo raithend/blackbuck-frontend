@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/ca
 import { X, Move, Plus, Upload } from "lucide-react";
 import { useDropzone } from "react-dropzone";
 import { createClient } from "@/app/lib/supabase-browser";
+import { ImageUploadCropper } from "@/app/components/ui/image-upload-cropper";
 
 interface PhotoBubbleData {
 	id: string;
@@ -53,52 +54,41 @@ export function PhotoBubbleEditPanel({
 		}
 	}, [initialPosition]);
 
-	const onDrop = useCallback(async (acceptedFiles: File[]) => {
-		if (acceptedFiles.length > 0) {
-			try {
-				const file = acceptedFiles[0];
-				
-				// 認証情報を取得
-				const supabase = createClient();
-				const { data: { session } } = await supabase.auth.getSession();
-				
-				if (!session) {
-					throw new Error('認証が必要です');
-				}
-				
-				// フォトバブル専用のアップロードAPIを使用
-				const formData = new FormData();
-				formData.append('file', file);
-				
-				const response = await fetch('/api/upload/photo-bubble', {
-					method: 'POST',
-					headers: {
-						'Authorization': `Bearer ${session.access_token}`,
-					},
-					body: formData,
-				});
-				
-				if (!response.ok) {
-					const errorData = await response.json();
-					throw new Error(errorData.error || '画像のアップロードに失敗しました');
-				}
-				
-				const result = await response.json();
-				setFormData(prev => ({ ...prev, imageUrl: result.url }));
-			} catch (error) {
-				console.error('Error uploading image:', error);
-				alert(error instanceof Error ? error.message : '画像のアップロードに失敗しました');
+	// 画像アップロード処理
+	const handleImageSelected = useCallback(async (file: File, croppedImageUrl: string) => {
+		try {
+			// 認証情報を取得
+			const supabase = createClient();
+			const { data: { session } } = await supabase.auth.getSession();
+			
+			if (!session) {
+				throw new Error('認証が必要です');
 			}
+			
+			// フォトバブル専用のアップロードAPIを使用
+			const formData = new FormData();
+			formData.append('file', file);
+			
+			const response = await fetch('/api/upload/photo-bubble', {
+				method: 'POST',
+				headers: {
+					'Authorization': `Bearer ${session.access_token}`,
+				},
+				body: formData,
+			});
+			
+			if (!response.ok) {
+				const errorData = await response.json();
+				throw new Error(errorData.error || '画像のアップロードに失敗しました');
+			}
+			
+			const result = await response.json();
+			setFormData(prev => ({ ...prev, imageUrl: result.url }));
+		} catch (error) {
+			console.error('Error uploading image:', error);
+			alert(error instanceof Error ? error.message : '画像のアップロードに失敗しました');
 		}
 	}, []);
-
-	const { getRootProps, getInputProps, isDragActive } = useDropzone({
-		onDrop,
-		accept: {
-			'image/*': ['.jpeg', '.jpg', '.png', '.gif', '.webp']
-		},
-		multiple: false
-	});
 
 	const handleBubbleClick = (bubble: PhotoBubbleData) => {
 		setSelectedBubble(bubble);
@@ -273,32 +263,11 @@ export function PhotoBubbleEditPanel({
 							{/* 画像アップロード */}
 							<div>
 								<Label>画像</Label>
-								<div
-									{...getRootProps()}
-									className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
-										isDragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'
-									}`}
-								>
-									<input {...getInputProps()} />
-									<Upload className="w-8 h-8 mx-auto mb-2 text-gray-400" />
-									{isDragActive ? (
-										<p className="text-blue-500">ファイルをドロップしてください</p>
-									) : (
-										<div>
-											<p className="text-gray-600">クリックまたはドラッグ&ドロップで画像をアップロード</p>
-											<p className="text-sm text-gray-500">PNG, JPG, GIF, WebP</p>
-										</div>
-									)}
-								</div>
-								{formData.imageUrl && (
-									<div className="mt-2">
-										<img
-											src={formData.imageUrl}
-											alt="プレビュー"
-											className="w-16 h-16 object-cover rounded border"
-										/>
-									</div>
-								)}
+								<ImageUploadCropper
+									onImageSelected={handleImageSelected}
+									currentImageUrl={formData.imageUrl}
+									placeholder="フォトバブル用の画像をアップロード"
+								/>
 							</div>
 							
 							{/* ボタン */}

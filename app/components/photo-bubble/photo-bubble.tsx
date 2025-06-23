@@ -154,7 +154,7 @@ export function PhotoBubble({
 					>
 						<div className="relative">
 							{imageUrl ? (
-								<div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white shadow-lg bg-white">
+								<div className="w-24 h-24 rounded-full overflow-hidden border-2 border-white shadow-lg bg-white">
 									<img 
 										src={imageUrl} 
 										alt={description || "フォトバブル"} 
@@ -162,14 +162,14 @@ export function PhotoBubble({
 										onError={(e) => {
 											// 画像読み込みエラー時のフォールバック
 											e.currentTarget.style.display = 'none';
-											e.currentTarget.parentElement!.innerHTML = '<div class="w-full h-full bg-blue-500 rounded-full flex items-center justify-center"><span class="text-white text-xs">IMG</span></div>';
+											e.currentTarget.parentElement!.innerHTML = '<div class="w-full h-full bg-blue-500 rounded-full flex items-center justify-center"><span class="text-white text-sm">IMG</span></div>';
 										}}
 									/>
 								</div>
 							) : (
-								<Avatar className="w-12 h-12 border-2 border-white shadow-lg">
+								<Avatar className="w-24 h-24 border-2 border-white shadow-lg">
 									<AvatarImage src={userAvatarUrl} alt="ユーザーアバター" />
-									<AvatarFallback className="text-sm font-semibold">
+									<AvatarFallback className="text-lg font-semibold">
 										{username ? username.charAt(0).toUpperCase() : "U"}
 									</AvatarFallback>
 								</Avatar>
