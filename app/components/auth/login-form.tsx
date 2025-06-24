@@ -12,6 +12,7 @@ import {
 import { Input } from "@/app/components/ui/input";
 import { Label } from "@/app/components/ui/label";
 import { createClient } from "@/app/lib/supabase-browser";
+import { useUser } from "@/app/contexts/user-context";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -23,6 +24,7 @@ type SignInParams = {
 
 export function LoginForm() {
 	const router = useRouter();
+	const { refreshUser } = useUser();
 	const [error, setError] = useState<string | null>(null);
 	const [isLoading, setIsLoading] = useState(false);
 
@@ -55,8 +57,17 @@ export function LoginForm() {
 
 		try {
 			await signIn({ email, password });
-			router.push("/");
-			router.refresh();
+			
+			// ユーザーコンテキストを更新
+			await refreshUser();
+			
+			// 成功メッセージを表示
+			toast.success("ログインに成功しました");
+			
+			// 少し遅延を入れてからホーム画面に遷移（ユーザーコンテキストの更新完了を待つ）
+			setTimeout(() => {
+				router.push("/");
+			}, 100);
 		} catch (error: any) {
 			let errorMessage = "ログインに失敗しました";
 			

@@ -68,6 +68,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 		const {
 			data: { subscription },
 		} = supabase.auth.onAuthStateChange((_event, session) => {
+			console.log("Auth state changed:", { event: _event, session: !!session });
 			setSession(session);
 			setIsSessionLoading(false);
 		});
@@ -92,6 +93,17 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 	const user = data?.user ?? null;
 	const loading = isSessionLoading;
 
+	// セッション変更時にユーザーデータを強制的に更新
+	useEffect(() => {
+		if (session?.user && !isSessionLoading) {
+			console.log("Session updated, refreshing user data");
+			mutate();
+		} else if (!session && !isSessionLoading) {
+			console.log("Session cleared, clearing user data");
+			mutate({ user: null }, false);
+		}
+	}, [session, isSessionLoading, mutate]);
+
 	// ネットワークエラーの監視
 	useEffect(() => {
 		if (error) {
@@ -110,7 +122,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 		user,
 		loading,
 		error,
-		session,
+		session: !!session,
 		isSessionLoading,
 		shouldFetch,
 		hasNetworkError,
