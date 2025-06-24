@@ -1,5 +1,17 @@
 import { z } from "zod";
 
+// パスワードバリデーションスキーマ
+export const passwordSchema = z
+	.string()
+	.min(8, "パスワードは8文字以上で入力してください")
+	.max(128, "パスワードは128文字以下で入力してください");
+
+// パスワード変更用スキーマ
+export const changePasswordSchema = z.object({
+	currentPassword: z.string().min(1, "現在のパスワードを入力してください"),
+	newPassword: passwordSchema,
+});
+
 // ユーザー関連のバリデーションスキーマ
 export const userSchema = z.object({
 	id: z.string().uuid(),
@@ -48,9 +60,9 @@ export const postImageSchema = z.object({
 });
 
 export const createPostSchema = z.object({
-	content: z.string().min(1),
-	location: z.string().nullable(),
-	classification: z.string().nullable(),
+	content: z.string().min(1, "投稿内容を入力してください"),
+	location: z.string().nullable().optional(),
+	classification: z.string().nullable().optional(),
 	images: z.array(z.string().url()).optional(),
 });
 

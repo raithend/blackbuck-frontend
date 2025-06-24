@@ -26,6 +26,8 @@ export function SignUpForm() {
 	const router = useRouter();
 	const [error, setError] = useState<string | null>(null);
 	const [isLoading, setIsLoading] = useState(false);
+	const [password, setPassword] = useState("");
+	const [confirmPassword, setConfirmPassword] = useState("");
 
 	const signUp = async ({ email, password, name }: SignUpParams) => {
 		const supabase = createClient();
@@ -74,6 +76,25 @@ export function SignUpForm() {
 		const email = formData.get("email") as string;
 		const password = formData.get("password") as string;
 		const name = formData.get("name") as string;
+
+		// パスワードバリデーション
+		if (password.length < 8) {
+			setError("パスワードは8文字以上で入力してください");
+			setIsLoading(false);
+			return;
+		}
+
+		if (password.length > 128) {
+			setError("パスワードは128文字以下で入力してください");
+			setIsLoading(false);
+			return;
+		}
+
+		if (password !== confirmPassword) {
+			setError("パスワードが一致しません");
+			setIsLoading(false);
+			return;
+		}
 
 		try {
 			const { session } = await signUp({ email, password, name });
@@ -125,14 +146,78 @@ export function SignUpForm() {
 					</div>
 					<div className="space-y-2">
 						<Label htmlFor="password">パスワード</Label>
-						<Input id="password" name="password" type="password" required />
+						<Input 
+							id="password" 
+							name="password" 
+							type="password" 
+							value={password}
+							onChange={(e) => setPassword(e.target.value)}
+							placeholder="パスワードを入力（8文字以上）"
+							required 
+						/>
+						<p className="text-xs text-gray-500">
+							パスワードは8文字以上で入力してください
+						</p>
 					</div>
+					<div className="space-y-2">
+						<Label htmlFor="confirm-password">パスワード（確認）</Label>
+						<Input 
+							id="confirm-password" 
+							type="password" 
+							value={confirmPassword}
+							onChange={(e) => setConfirmPassword(e.target.value)}
+							placeholder="パスワードを再入力"
+							required 
+						/>
+					</div>
+
+					{/* パスワード一致チェック */}
+					{password && confirmPassword && password !== confirmPassword && (
+						<p className="text-sm text-red-500">
+							パスワードが一致しません
+						</p>
+					)}
+
+					{/* パスワード強度チェック */}
+					{password && (
+						<div className="space-y-1">
+							<p className="text-xs text-gray-500">パスワード強度:</p>
+							<div className="flex space-x-1">
+								<div 
+									className={`h-1 flex-1 rounded ${
+										password.length >= 8 ? 'bg-green-500' : 'bg-gray-300'
+									}`}
+								/>
+								<div 
+									className={`h-1 flex-1 rounded ${
+										password.length >= 12 ? 'bg-green-500' : 'bg-gray-300'
+									}`}
+								/>
+								<div 
+									className={`h-1 flex-1 rounded ${
+										password.length >= 16 ? 'bg-green-500' : 'bg-gray-300'
+									}`}
+								/>
+							</div>
+							<p className="text-xs text-gray-500">
+								{password.length < 8 && "8文字以上で入力してください"}
+								{password.length >= 8 && password.length < 12 && "弱い"}
+								{password.length >= 12 && password.length < 16 && "普通"}
+								{password.length >= 16 && "強い"}
+							</p>
+						</div>
+					)}
+
 					{error && (
 						<Alert variant="destructive">
 							<AlertDescription>{error}</AlertDescription>
 						</Alert>
 					)}
-					<Button type="submit" className="w-full" disabled={isLoading}>
+					<Button 
+						type="submit" 
+						className="w-full" 
+						disabled={isLoading || !password || !confirmPassword || password !== confirmPassword || password.length < 8}
+					>
 						{isLoading ? "登録中..." : "新規登録"}
 					</Button>
 				</form>
