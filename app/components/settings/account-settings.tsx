@@ -21,6 +21,7 @@ export function AccountSettings() {
 	const [isSaving, setIsSaving] = useState(false);
 	const [isHeaderSaving, setIsHeaderSaving] = useState(false);
 	const [isAvatarSaving, setIsAvatarSaving] = useState(false);
+	const [hasNetworkError, setHasNetworkError] = useState(false);
 
 	// ユーザー情報が取得されたらフォームに設定
 	useEffect(() => {
@@ -31,6 +32,18 @@ export function AccountSettings() {
 			setAvatarUrl(user.avatar_url || "");
 		}
 	}, [user]);
+
+	// エラー状態の監視
+	useEffect(() => {
+		if (error) {
+			// ネットワークエラーの場合は既存データを保持
+			if (error.message.includes('fetch') || error.message.includes('network')) {
+				setHasNetworkError(true);
+			}
+		} else {
+			setHasNetworkError(false);
+		}
+	}, [error]);
 
 	// ヘッダー画像保存
 	const handleHeaderSave = async (url: string) => {
@@ -129,6 +142,16 @@ export function AccountSettings() {
 		}
 	};
 
+	// 再試行処理
+	const handleRetry = async () => {
+		try {
+			await refreshUser();
+			setHasNetworkError(false);
+		} catch (error) {
+			console.error("再試行エラー:", error);
+		}
+	};
+
 	if (loading) {
 		return (
 			<div className="space-y-6">
@@ -147,13 +170,121 @@ export function AccountSettings() {
 		);
 	}
 
-	if (error) {
+	// ネットワークエラーがあるが、ユーザーデータがある場合は表示を継続
+	if (hasNetworkError && user) {
+		return (
+			<div className="space-y-6">
+				{/* ネットワークエラー警告 */}
+				<div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+					<div className="flex items-center justify-between">
+						<div>
+							<p className="text-yellow-800 text-sm">
+								サーバーとの接続が不安定です。表示されている内容は最新ではない可能性があります。
+							</p>
+						</div>
+						<button 
+							onClick={handleRetry}
+							className="ml-4 px-3 py-1 bg-yellow-500 text-white text-sm rounded hover:bg-yellow-600 transition-colors"
+						>
+							更新
+						</button>
+					</div>
+				</div>
+
+				{/* 既存のユーザー情報を表示 */}
+				<div className="space-y-4">
+					<h2 className="text-xl font-semibold">プロフィール情報</h2>
+					
+					{/* ヘッダー画像 */}
+					<ProfileImageUpload
+						type="header"
+						currentUrl={headerUrl}
+						onUploadComplete={(url) => {
+							setHeaderUrl(url);
+							handleHeaderSave(url);
+						}}
+					>
+						<div className="w-32 h-20 bg-gray-200 rounded-lg overflow-hidden">
+							{headerUrl ? (
+								<img 
+									src={headerUrl} 
+									alt="ヘッダー画像" 
+									className="w-full h-full object-cover"
+									onError={(e) => {
+										e.currentTarget.style.display = 'none';
+									}}
+								/>
+							) : (
+								<div className="w-full h-full bg-gray-300 flex items-center justify-center text-gray-500 text-xs">
+									プレビュー
+								</div>
+							)}
+						</div>
+					</ProfileImageUpload>
+
+					{/* アバター画像 */}
+					<ProfileImageUpload
+						type="avatar"
+						currentUrl={avatarUrl}
+						onUploadComplete={(url) => {
+							setAvatarUrl(url);
+							handleAvatarSave(url);
+						}}
+					>
+						<Avatar className="w-16 h-16">
+							<AvatarImage src={avatarUrl || undefined} alt="アバター" />
+							<AvatarFallback>
+								{username ? username.charAt(0).toUpperCase() : "U"}
+							</AvatarFallback>
+						</Avatar>
+					</ProfileImageUpload>
+
+					{/* ユーザー名 */}
+					<div className="space-y-2">
+						<Label htmlFor="username">ユーザー名</Label>
+						<Input
+							id="username"
+							value={username}
+							onChange={(e) => setUsername(e.target.value)}
+							placeholder="ユーザー名を入力"
+						/>
+					</div>
+
+					{/* 自己紹介 */}
+					<div className="space-y-2">
+						<Label htmlFor="bio">自己紹介</Label>
+						<Textarea
+							id="bio"
+							value={bio}
+							onChange={(e) => setBio(e.target.value)}
+							placeholder="自己紹介を入力"
+							rows={4}
+						/>
+					</div>
+
+					{/* 保存ボタン */}
+					<Button onClick={handleSave} disabled={isSaving}>
+						{isSaving ? "保存中..." : "保存"}
+					</Button>
+				</div>
+			</div>
+		);
+	}
+
+	// 完全なエラー状態（データがない場合）
+	if (error && !user) {
 		return (
 			<div className="space-y-6">
 				<div className="space-y-4">
 					<h2 className="text-xl font-semibold">プロフィール情報</h2>
-					<div className="text-center text-red-500">
-						プロフィールの読み込みに失敗しました
+					<div className="text-center">
+						<p className="text-red-500 mb-4">プロフィールの読み込みに失敗しました</p>
+						<button 
+							onClick={handleRetry}
+							className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+						>
+							再試行
+						</button>
 					</div>
 				</div>
 			</div>
@@ -227,14 +358,10 @@ export function AccountSettings() {
 					<Label htmlFor="username">ユーザー名</Label>
 					<Input
 						id="username"
-						placeholder="ユーザー名を入力"
-						value={username || ""}
+						value={username}
 						onChange={(e) => setUsername(e.target.value)}
-						maxLength={50}
+						placeholder="ユーザー名を入力"
 					/>
-					<p className="text-xs text-muted-foreground">
-						{username.length}/50文字
-					</p>
 				</div>
 
 				{/* 自己紹介 */}
@@ -242,22 +369,15 @@ export function AccountSettings() {
 					<Label htmlFor="bio">自己紹介</Label>
 					<Textarea
 						id="bio"
-						placeholder="自己紹介を入力"
-						value={bio || ""}
+						value={bio}
 						onChange={(e) => setBio(e.target.value)}
-						maxLength={500}
+						placeholder="自己紹介を入力"
 						rows={4}
 					/>
-					<p className="text-xs text-muted-foreground">
-						{bio.length}/500文字
-					</p>
 				</div>
 
-				<Button
-					onClick={handleSave}
-					disabled={isSaving}
-					className="w-full"
-				>
+				{/* 保存ボタン */}
+				<Button onClick={handleSave} disabled={isSaving}>
 					{isSaving ? "保存中..." : "保存"}
 				</Button>
 			</div>

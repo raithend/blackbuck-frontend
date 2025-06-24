@@ -12,6 +12,7 @@ interface UserContextType {
 	error: Error | null;
 	refreshUser: () => Promise<void>;
 	session: Session | null;
+	hasNetworkError: boolean;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -26,23 +27,33 @@ const fetcher = async (url: string) => {
 		return { user: null };
 	}
 
-	const response = await fetch(url, {
-		headers: {
-			Authorization: `Bearer ${session.access_token}`,
-		},
-	});
+	try {
+		const response = await fetch(url, {
+			headers: {
+				Authorization: `Bearer ${session.access_token}`,
+			},
+		});
 
-	if (!response.ok) {
-		const error = await response.json();
-		throw new Error(error.message);
+		if (!response.ok) {
+			const error = await response.json();
+			throw new Error(error.message);
+		}
+
+		return response.json();
+	} catch (error) {
+		// ネットワークエラーの場合は既存データを保持するため、エラーを投げない
+		if (error instanceof TypeError && error.message.includes('fetch')) {
+			console.warn('ネットワークエラーが発生しましたが、既存のユーザーデータを保持します:', error);
+			return null; // nullを返すことで、既存のデータを保持
+		}
+		throw error;
 	}
-
-	return response.json();
 };
 
 export function UserProvider({ children }: { children: React.ReactNode }) {
 	const [session, setSession] = useState<Session | null>(null);
 	const [isSessionLoading, setIsSessionLoading] = useState(true);
+	const [hasNetworkError, setHasNetworkError] = useState(false);
 
 	useEffect(() => {
 		const supabase = createClient();
@@ -70,15 +81,30 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 		shouldFetch ? "/api/users/me" : null,
 		fetcher,
 		{
-			revalidateOnFocus: true,
-			revalidateOnReconnect: true,
-			shouldRetryOnError: true,
-			errorRetryCount: 3,
+			revalidateOnFocus: false, // フォーカス時の再検証を無効化
+			revalidateOnReconnect: true, // 再接続時は再検証
+			shouldRetryOnError: false, // エラー時の再試行を無効化（既存データを保持するため）
+			dedupingInterval: 30000, // 30秒間の重複リクエストを防ぐ
+			keepPreviousData: true, // 前のデータを保持
 		},
 	);
 
 	const user = data?.user ?? null;
 	const loading = isSessionLoading;
+
+	// ネットワークエラーの監視
+	useEffect(() => {
+		if (error) {
+			// ネットワークエラーの場合は既存データを保持
+			if (error.message.includes('fetch') || error.message.includes('network')) {
+				setHasNetworkError(true);
+			} else {
+				setHasNetworkError(false);
+			}
+		} else {
+			setHasNetworkError(false);
+		}
+	}, [error]);
 
 	console.log("UserProvider state:", {
 		user,
@@ -87,6 +113,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 		session,
 		isSessionLoading,
 		shouldFetch,
+		hasNetworkError,
 	});
 
 	const value = {
@@ -95,6 +122,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 		error,
 		refreshUser: mutate,
 		session,
+		hasNetworkError,
 	};
 
 	return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
