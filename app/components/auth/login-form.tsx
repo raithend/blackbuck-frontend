@@ -57,9 +57,23 @@ export function LoginForm() {
 			await signIn({ email, password });
 			router.push("/");
 			router.refresh();
-		} catch (error) {
-			setError("ログインに失敗しました");
-			toast.error("ログインに失敗しました");
+		} catch (error: any) {
+			let errorMessage = "ログインに失敗しました";
+			
+			if (error?.message) {
+				if (error.message.includes("Invalid login credentials")) {
+					errorMessage = "メールアドレスまたはパスワードが正しくありません";
+				} else if (error.message.includes("Email not confirmed")) {
+					errorMessage = "メールアドレスの確認が完了していません";
+				} else if (error.message.includes("User not found")) {
+					errorMessage = "アカウントが見つかりません";
+				} else {
+					errorMessage = error.message;
+				}
+			}
+			
+			setError(errorMessage);
+			toast.error(errorMessage);
 		} finally {
 			setIsLoading(false);
 		}
@@ -87,7 +101,16 @@ export function LoginForm() {
 						<Label htmlFor="password">パスワード</Label>
 						<Input id="password" name="password" type="password" required />
 					</div>
-					{error && <p className="text-sm text-red-500">{error}</p>}
+					{error && (
+						<div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+							<p className="text-sm text-red-600">{error}</p>
+							{error.includes("アカウントが見つかりません") && (
+								<p className="text-xs text-red-500 mt-1">
+									新規アカウント作成は下のボタンからお進みください
+								</p>
+							)}
+						</div>
+					)}
 				</CardContent>
 				<CardFooter>
 					<Button type="submit" className="w-full" disabled={isLoading}>
