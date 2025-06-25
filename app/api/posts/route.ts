@@ -1,132 +1,122 @@
 import { createClient } from "@/app/lib/supabase-server";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 // 投稿一覧取得
-export async function GET(request: Request) {
-	const supabase = await createClient();
-	
-	// URLからクエリパラメータを取得
-	const { searchParams } = new URL(request.url);
-	const location = searchParams.get('location');
+export async function GET(request: NextRequest) {
+	try {
+		const supabase = await createClient();
+		
+		// クエリパラメータを取得
+		const { searchParams } = new URL(request.url);
+		const limit = parseInt(searchParams.get('limit') || '20');
+		const offset = parseInt(searchParams.get('offset') || '0');
 
-	// クエリを構築
-	let query = supabase
-		.from("posts")
-		.select("*, users(*), post_images(*)")
-		.order("created_at", { ascending: false });
+		// 投稿を取得（いいね数も含める）
+		const { data: posts, error: postsError } = await supabase
+			.from("post_like_counts")
+			.select("*")
+			.order("created_at", { ascending: false })
+			.range(offset, offset + limit - 1);
 
-	// locationフィルターを適用
-	if (location) {
-		query = query.eq("location", location);
+		if (postsError) {
+			console.error("投稿取得エラー:", postsError);
+			return NextResponse.json(
+				{ error: "投稿の取得に失敗しました" },
+				{ status: 500 }
+			);
+		}
+
+		// 認証済みユーザーの場合、いいね状態も取得
+		const { data: { user } } = await supabase.auth.getUser();
+		let userLikes: string[] = [];
+
+		if (user) {
+			const { data: likes, error: likesError } = await supabase
+				.from("likes")
+				.select("post_id")
+				.eq("user_id", user.id);
+
+			if (!likesError) {
+				userLikes = likes?.map(like => like.post_id) || [];
+			}
+		}
+
+		// 投稿データを整形
+		const formattedPosts = posts?.map(post => ({
+			id: post.post_id,
+			content: post.content,
+			locationName: post.location,
+			createdAt: post.created_at,
+			likeCount: post.like_count,
+			isLiked: userLikes.includes(post.post_id || ''),
+			user: {
+				id: post.user_id,
+				accountId: post.account_id,
+				username: post.username,
+				avatarUrl: post.avatar_url,
+			},
+		})) || [];
+
+		return NextResponse.json({ posts: formattedPosts });
+	} catch (error) {
+		console.error("投稿取得エラー:", error);
+		return NextResponse.json(
+			{ error: "サーバーエラーが発生しました" },
+			{ status: 500 }
+		);
 	}
-
-	const { data: posts, error } = await query;
-
-	if (error) {
-		return NextResponse.json({ error: error.message }, { status: 400 });
-	}
-
-	// 投稿データを整形（userフィールドを設定）
-	const formattedPosts = posts?.map(post => ({
-		...post,
-		user: post.users, // usersフィールドをuserとして設定
-		post_images: post.post_images?.sort((a, b) => a.order_index - b.order_index) || []
-	})) || [];
-
-	return NextResponse.json({ posts: formattedPosts });
 }
 
 // 投稿作成
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
 	try {
 		const supabase = await createClient();
-
-		// 認証トークンの取得
-		const authHeader = request.headers.get("Authorization");
-		if (!authHeader?.startsWith("Bearer ")) {
-			return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
-		}
-
-		const token = authHeader.split(" ")[1];
-
-		// トークンの検証
-		const {
-			data: { user },
-			error: authError,
-		} = await supabase.auth.getUser(token);
+		
+		// 認証チェック
+		const { data: { user }, error: authError } = await supabase.auth.getUser();
 		if (authError || !user) {
-			return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
+			return NextResponse.json(
+				{ error: "認証が必要です" },
+				{ status: 401 }
+			);
 		}
 
-		const post = await request.json();
+		const body = await request.json();
+		const { content, classification, location } = body;
 
-		// バリデーション
-		if (!post.image_urls || post.image_urls.length === 0) {
-			return NextResponse.json({ error: "画像が必須です" }, { status: 400 });
+		if (!content) {
+			return NextResponse.json(
+				{ error: "投稿内容は必須です" },
+				{ status: 400 }
+			);
 		}
 
-		// トランザクション開始
-		const { data: postData, error: postError } = await supabase
+		// 投稿を作成
+		const { data: post, error: postError } = await supabase
 			.from("posts")
 			.insert({
 				user_id: user.id,
-				content: post.content || "",
-				location: post.location || "",
-				classification: post.classification || "",
-				created_at: new Date().toISOString(),
-				updated_at: new Date().toISOString(),
+				content,
+				classification,
+				location,
 			})
 			.select()
 			.single();
 
 		if (postError) {
-			return NextResponse.json({ error: postError.message }, { status: 400 });
+			console.error("投稿作成エラー:", postError);
+			return NextResponse.json(
+				{ error: "投稿の作成に失敗しました" },
+				{ status: 500 }
+			);
 		}
 
-		// 画像の登録
-		const postImages = post.image_urls.map((url: string, index: number) => ({
-			post_id: postData.id,
-			image_url: url,
-			order_index: index,
-			created_at: new Date().toISOString(),
-			updated_at: new Date().toISOString(),
-		}));
-
-		const { error: imagesError } = await supabase
-			.from("post_images")
-			.insert(postImages);
-
-		if (imagesError) {
-			// 投稿を削除（ロールバック）
-			await supabase.from("posts").delete().eq("id", postData.id);
-
-			return NextResponse.json({ error: imagesError.message }, { status: 400 });
-		}
-
-		// 作成した投稿を取得（画像情報を含む）
-		const { data: createdPost, error: fetchError } = await supabase
-			.from("posts")
-			.select("*, users(*), post_images(*)")
-			.eq("id", postData.id)
-			.single();
-
-		if (fetchError) {
-			return NextResponse.json({ error: fetchError.message }, { status: 400 });
-		}
-
-		// 投稿データを整形（userフィールドを設定）
-		const formattedPost = {
-			...createdPost,
-			user: createdPost.users, // usersフィールドをuserとして設定
-			post_images: createdPost.post_images?.sort((a, b) => a.order_index - b.order_index) || []
-		};
-
-		return NextResponse.json({ post: formattedPost });
+		return NextResponse.json({ success: true, post });
 	} catch (error) {
-		console.error("投稿エラー:", error);
+		console.error("投稿作成エラー:", error);
 		return NextResponse.json(
-			{ error: "投稿の作成に失敗しました" },
-			{ status: 500 },
+			{ error: "サーバーエラーが発生しました" },
+			{ status: 500 }
 		);
 	}
 }

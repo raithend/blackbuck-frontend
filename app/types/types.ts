@@ -12,6 +12,8 @@ export type Post = Database["public"]["Tables"]["posts"]["Row"] & {
 
 export type PostWithUser = Post & {
 	user: User;
+	likeCount?: number;
+	isLiked?: boolean;
 };
 
 export type Location = Database["public"]["Tables"]["locations"]["Row"];

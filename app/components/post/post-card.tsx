@@ -26,9 +26,14 @@ import { HeartButton } from "./heart-button";
 
 interface PostCardProps {
 	post: PostWithUser;
+	onLikeChange?: (postId: string, likeCount: number, isLiked: boolean) => void;
 }
 
-export function PostCard({ post }: PostCardProps) {
+export function PostCard({ post, onLikeChange }: PostCardProps) {
+	const handleLikeChange = (likeCount: number, isLiked: boolean) => {
+		onLikeChange?.(post.id, likeCount, isLiked);
+	};
+
 	return (
 		<Card className="grid gap-2 p-0 md:px-16">
 			<CardHeader className="flex-row items-center p-0 m-4 md:m-0">
@@ -84,7 +89,12 @@ export function PostCard({ post }: PostCardProps) {
 					</div>
 					<div className="flex justify-between items-center">
 						<div className="flex gap-2">
-							<HeartButton />
+							<HeartButton 
+								postId={post.id}
+								initialLikeCount={post.likeCount || 0}
+								initialIsLiked={post.isLiked || false}
+								onLikeChange={handleLikeChange}
+							/>
 							<CommentButton postId={post.id.toString()} />
 						</div>
 						<div className="text-sm text-gray-500 text-right">

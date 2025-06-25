@@ -59,6 +59,56 @@ export type Database = {
 					},
 				];
 			};
+			likes: {
+				Row: {
+					created_at: string;
+					id: string;
+					post_id: string;
+					user_id: string;
+				};
+				Insert: {
+					created_at?: string;
+					id?: string;
+					post_id: string;
+					user_id: string;
+				};
+				Update: {
+					created_at?: string;
+					id?: string;
+					post_id?: string;
+					user_id?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: "likes_post_id_fkey";
+						columns: ["post_id"];
+						isOneToOne: false;
+						referencedRelation: "post_like_counts";
+						referencedColumns: ["post_id"];
+					},
+					{
+						foreignKeyName: "likes_post_id_fkey";
+						columns: ["post_id"];
+						isOneToOne: false;
+						referencedRelation: "posts";
+						referencedColumns: ["id"];
+					},
+					{
+						foreignKeyName: "likes_user_id_fkey";
+						columns: ["user_id"];
+						isOneToOne: false;
+						referencedRelation: "user_follow_counts";
+						referencedColumns: ["id"];
+					},
+					{
+						foreignKeyName: "likes_user_id_fkey";
+						columns: ["user_id"];
+						isOneToOne: false;
+						referencedRelation: "users";
+						referencedColumns: ["id"];
+					},
+				];
+			};
 			locations: {
 				Row: {
 					avatar_url: string | null;
@@ -158,6 +208,13 @@ export type Database = {
 						foreignKeyName: "post_images_post_id_fkey";
 						columns: ["post_id"];
 						isOneToOne: false;
+						referencedRelation: "post_like_counts";
+						referencedColumns: ["post_id"];
+					},
+					{
+						foreignKeyName: "post_images_post_id_fkey";
+						columns: ["post_id"];
+						isOneToOne: false;
 						referencedRelation: "posts";
 						referencedColumns: ["id"];
 					},
@@ -243,6 +300,35 @@ export type Database = {
 			};
 		};
 		Views: {
+			post_like_counts: {
+				Row: {
+					account_id: string | null;
+					avatar_url: string | null;
+					content: string | null;
+					created_at: string | null;
+					like_count: number | null;
+					location: string | null;
+					post_id: string | null;
+					user_id: string | null;
+					username: string | null;
+				};
+				Relationships: [
+					{
+						foreignKeyName: "posts_user_id_fkey";
+						columns: ["user_id"];
+						isOneToOne: false;
+						referencedRelation: "user_follow_counts";
+						referencedColumns: ["id"];
+					},
+					{
+						foreignKeyName: "posts_user_id_fkey";
+						columns: ["user_id"];
+						isOneToOne: false;
+						referencedRelation: "users";
+						referencedColumns: ["id"];
+					},
+				];
+			};
 			profile_photo_bubbles: {
 				Row: {
 					created_at: string | null;
@@ -299,6 +385,64 @@ export type Database = {
 					username: string | null;
 				};
 				Relationships: [];
+			};
+			user_liked_posts: {
+				Row: {
+					content: string | null;
+					liked_at: string | null;
+					location: string | null;
+					post_account_id: string | null;
+					post_avatar_url: string | null;
+					post_created_at: string | null;
+					post_id: string | null;
+					post_user_id: string | null;
+					post_username: string | null;
+					user_id: string | null;
+				};
+				Relationships: [
+					{
+						foreignKeyName: "likes_post_id_fkey";
+						columns: ["post_id"];
+						isOneToOne: false;
+						referencedRelation: "post_like_counts";
+						referencedColumns: ["post_id"];
+					},
+					{
+						foreignKeyName: "likes_post_id_fkey";
+						columns: ["post_id"];
+						isOneToOne: false;
+						referencedRelation: "posts";
+						referencedColumns: ["id"];
+					},
+					{
+						foreignKeyName: "likes_user_id_fkey";
+						columns: ["user_id"];
+						isOneToOne: false;
+						referencedRelation: "user_follow_counts";
+						referencedColumns: ["id"];
+					},
+					{
+						foreignKeyName: "likes_user_id_fkey";
+						columns: ["user_id"];
+						isOneToOne: false;
+						referencedRelation: "users";
+						referencedColumns: ["id"];
+					},
+					{
+						foreignKeyName: "posts_user_id_fkey";
+						columns: ["post_user_id"];
+						isOneToOne: false;
+						referencedRelation: "user_follow_counts";
+						referencedColumns: ["id"];
+					},
+					{
+						foreignKeyName: "posts_user_id_fkey";
+						columns: ["post_user_id"];
+						isOneToOne: false;
+						referencedRelation: "users";
+						referencedColumns: ["id"];
+					},
+				];
 			};
 		};
 		Functions: {
