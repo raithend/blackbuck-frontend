@@ -30,32 +30,27 @@ const fetcher = async (url: string) => {
 // 認証付きフェッチャー関数
 const authFetcher = async (url: string) => {
 	try {
-		const { createClient } = await import("@/app/lib/supabase-browser");
-		const supabase = createClient();
+		const supabase = await import("@/app/lib/supabase-browser").then(m => m.createClient());
 		const { data: { session } } = await supabase.auth.getSession();
 		
-		if (!session?.access_token) {
-			console.error("認証トークンが取得できません");
-			throw new Error("認証トークンが取得できません");
-		}
-
-		const response = await fetch(url, {
-			headers: {
-				"Authorization": `Bearer ${session.access_token}`,
-			},
-		});
+		const headers: HeadersInit = {
+			"Content-Type": "application/json",
+		};
 		
+		if (session?.access_token) {
+			headers.Authorization = `Bearer ${session.access_token}`;
+		}
+		
+		const response = await fetch(url, { headers });
 		if (!response.ok) {
-			const errorText = await response.text();
-			console.error("API呼び出しエラー:", response.status, errorText);
-			throw new Error(`Failed to fetch data: ${response.status} ${errorText}`);
+			throw new Error('Failed to fetch data');
 		}
 		return response.json();
 	} catch (error) {
-		console.error("認証付きフェッチャーエラー:", error);
+		// ネットワークエラーの場合は既存データを保持するため、エラーを投げない
 		if (error instanceof TypeError && error.message.includes('fetch')) {
 			console.warn('ネットワークエラーが発生しましたが、既存のデータを表示し続けます:', error);
-			return null;
+			return null; // nullを返すことで、既存のデータを保持
 		}
 		throw error;
 	}
@@ -93,7 +88,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ accountI
 	// ユーザーの投稿を取得
 	const { data: postsData, error: postsError, isLoading: postsLoading, mutate: mutatePosts } = useSWR<{ posts: PostWithUser[] }>(
 		accountId ? `/api/users/account/${accountId}/posts` : null,
-		fetcher,
+		authFetcher,
 		{
 			revalidateOnFocus: false,
 			revalidateOnReconnect: true,
@@ -142,6 +137,19 @@ export default function UserProfilePage({ params }: { params: Promise<{ accountI
 		}
 	);
 
+	// いいねした投稿を取得
+	const { data: likedPostsData, error: likedPostsError, isLoading: likedPostsLoading, mutate: mutateLikedPosts } = useSWR<{ posts: PostWithUser[] }>(
+		accountId ? `/api/users/account/${accountId}/likes` : null,
+		authFetcher,
+		{
+			revalidateOnFocus: false,
+			revalidateOnReconnect: true,
+			shouldRetryOnError: false,
+			dedupingInterval: 30000,
+			keepPreviousData: true,
+		}
+	);
+
 	// ネットワークエラー時の再試行ボタン
 	const handleRetry = () => {
 		mutateUser();
@@ -151,6 +159,51 @@ export default function UserProfilePage({ params }: { params: Promise<{ accountI
 		}
 		mutateFollowing();
 		mutateFollowers();
+		mutateLikedPosts();
+	};
+
+	// いいね状態変更のハンドラー
+	const handleLikeChange = (postId: string, likeCount: number, isLiked: boolean) => {
+		// 投稿データを更新
+		mutatePosts((currentData) => {
+			if (!currentData) return currentData;
+			return {
+				...currentData,
+				posts: currentData.posts.map(post => 
+					post.id === postId 
+						? { ...post, likeCount, isLiked }
+						: post
+				)
+			};
+		}, false);
+
+		// フィードデータも更新（自分自身のプロフィールの場合）
+		if (isOwnProfile) {
+			mutateFeed((currentData) => {
+				if (!currentData) return currentData;
+				return {
+					...currentData,
+					posts: currentData.posts.map(post => 
+						post.id === postId 
+							? { ...post, likeCount, isLiked }
+							: post
+					)
+				};
+			}, false);
+		}
+
+		// いいね投稿データも更新
+		mutateLikedPosts((currentData) => {
+			if (!currentData) return currentData;
+			return {
+				...currentData,
+				posts: currentData.posts.map(post => 
+					post.id === postId 
+						? { ...post, likeCount, isLiked }
+						: post
+				)
+			};
+		}, false);
 	};
 
 	if (!accountId || userLoading) {
@@ -202,6 +255,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ accountI
 	const feedPosts = feedData?.posts || [];
 	const followingUsers = followingData?.users || [];
 	const followersUsers = followersData?.users || [];
+	const likedPosts = likedPostsData?.posts || [];
 
 	return (
 		<div className="container mx-auto px-4 py-8">
@@ -230,12 +284,13 @@ export default function UserProfilePage({ params }: { params: Promise<{ accountI
 			{/* タブコンテンツ */}
 			<Tabs defaultValue={isOwnProfile ? "feed" : "posts"} className="w-full">
 				<TabsList className="grid w-full" style={{ 
-					gridTemplateColumns: isOwnProfile ? "repeat(4, 1fr)" : "repeat(3, 1fr)" 
+					gridTemplateColumns: isOwnProfile ? "repeat(5, 1fr)" : "repeat(4, 1fr)" 
 				}}>
 					{isOwnProfile && <TabsTrigger value="feed">フィード</TabsTrigger>}
 					<TabsTrigger value="posts">投稿</TabsTrigger>
 					<TabsTrigger value="following">フォロー中</TabsTrigger>
 					<TabsTrigger value="followers">フォロワー</TabsTrigger>
+					<TabsTrigger value="likes">いいね</TabsTrigger>
 				</TabsList>
 
 				{/* フィードタブ（自分自身のプロフィールのみ） */}
@@ -269,7 +324,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ accountI
 								<p className="text-gray-600">フィードに投稿がありません</p>
 							</div>
 						) : (
-							<PostCards posts={feedPosts} />
+							<PostCards posts={feedPosts} onLikeChange={handleLikeChange} />
 						)}
 					</TabsContent>
 				)}
@@ -304,7 +359,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ accountI
 							<p className="text-gray-600">まだ投稿がありません</p>
 						</div>
 					) : (
-						<PostCards posts={posts} />
+						<PostCards posts={posts} onLikeChange={handleLikeChange} />
 					)}
 				</TabsContent>
 
@@ -355,6 +410,35 @@ export default function UserProfilePage({ params }: { params: Promise<{ accountI
 						</div>
 					) : (
 						<UserCards users={followersUsers} type="followers" />
+					)}
+				</TabsContent>
+
+				{/* いいねタブ */}
+				<TabsContent value="likes" className="mt-6">
+					{likedPostsLoading ? (
+						<div className="space-y-4">
+							{Array.from({ length: 3 }).map((_, i) => (
+								<div key={i} className="animate-pulse">
+									<div className="h-48 bg-gray-200 rounded-lg"></div>
+								</div>
+							))}
+						</div>
+					) : likedPostsError ? (
+						<div className="text-center py-8">
+							<p className="text-gray-600 mb-4">いいねした投稿の取得に失敗しました</p>
+							<button 
+								onClick={handleRetry}
+								className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+							>
+								再試行
+							</button>
+						</div>
+					) : likedPosts.length === 0 ? (
+						<div className="text-center py-8">
+							<p className="text-gray-600">いいねした投稿がありません</p>
+						</div>
+					) : (
+						<PostCards posts={likedPosts} showLikedAt={true} onLikeChange={handleLikeChange} />
 					)}
 				</TabsContent>
 			</Tabs>

@@ -137,6 +137,7 @@ export function ImageUploadCropper({
 								width={320}
 								height={320}
 								className="w-full h-full object-cover opacity-50"
+								style={{ width: "auto", height: "auto" }}
 							/>
 						</div>
 						
@@ -149,6 +150,7 @@ export function ImageUploadCropper({
 									width={256}
 									height={256}
 									className="w-full h-full object-cover"
+									style={{ width: "auto", height: "auto" }}
 								/>
 							</div>
 						</div>
@@ -183,6 +185,7 @@ export function ImageUploadCropper({
 						width={64}
 						height={64}
 						className="w-16 h-16 object-cover rounded-full border-2 border-white shadow-lg"
+						style={{ width: "auto", height: "auto" }}
 					/>
 					<Button
 						variant="destructive"

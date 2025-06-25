@@ -51,13 +51,19 @@ export async function GET(request: NextRequest) {
         id,
         content,
         location,
+        classification,
         created_at,
+        updated_at,
         user_id,
         users!posts_user_id_fkey (
           id,
           account_id,
           username,
           avatar_url
+        ),
+        post_images (
+          id,
+          image_url
         )
       `)
       .in("user_id", allUserIds)
@@ -72,18 +78,53 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // 各投稿のいいね数を取得
+    const postIds = postsData?.map(post => post.id) || [];
+    const { data: likeCounts, error: likeCountsError } = await supabase
+      .from("likes")
+      .select("post_id")
+      .in("post_id", postIds);
+
+    if (likeCountsError) {
+      console.error("いいね数取得エラー:", likeCountsError);
+    }
+
+    // いいね数を集計
+    const likeCountMap = new Map<string, number>();
+    likeCounts?.forEach(like => {
+      const count = likeCountMap.get(like.post_id) || 0;
+      likeCountMap.set(like.post_id, count + 1);
+    });
+
+    // ユーザーがいいねした投稿を取得
+    const { data: userLikes, error: userLikesError } = await supabase
+      .from("likes")
+      .select("post_id")
+      .eq("user_id", user.id);
+
+    if (userLikesError) {
+      console.error("ユーザーいいね取得エラー:", userLikesError);
+    }
+
+    const userLikedPostIds = userLikes?.map(like => like.post_id) || [];
+
     // 投稿データを整形
     const formattedPosts = postsData?.map(post => ({
       id: post.id,
       content: post.content,
-      locationName: post.location,
-      createdAt: post.created_at,
+      location: post.location,
+      classification: post.classification,
+      created_at: post.created_at,
+      updated_at: post.updated_at,
+      likeCount: likeCountMap.get(post.id) || 0,
+      isLiked: userLikedPostIds.includes(post.id),
       user: {
         id: post.users.id,
-        accountId: post.users.account_id,
+        account_id: post.users.account_id,
         username: post.users.username,
-        avatarUrl: post.users.avatar_url,
+        avatar_url: post.users.avatar_url,
       },
+      post_images: post.post_images || [],
     })) || [];
 
     return NextResponse.json({ posts: formattedPosts });

@@ -11,10 +11,22 @@ export async function GET(request: NextRequest) {
 		const limit = parseInt(searchParams.get('limit') || '20');
 		const offset = parseInt(searchParams.get('offset') || '0');
 
-		// 投稿を取得（いいね数も含める）
+		// 投稿を取得（ユーザー情報と画像情報を含む）
 		const { data: posts, error: postsError } = await supabase
-			.from("post_like_counts")
-			.select("*")
+			.from("posts")
+			.select(`
+				*,
+				users!posts_user_id_fkey (
+					id,
+					username,
+					account_id,
+					avatar_url
+				),
+				post_images (
+					id,
+					image_url
+				)
+			`)
 			.order("created_at", { ascending: false })
 			.range(offset, offset + limit - 1);
 
@@ -41,20 +53,41 @@ export async function GET(request: NextRequest) {
 			}
 		}
 
+		// 各投稿のいいね数を取得
+		const postIds = posts?.map(post => post.id) || [];
+		const { data: likeCounts, error: likeCountsError } = await supabase
+			.from("likes")
+			.select("post_id")
+			.in("post_id", postIds);
+
+		if (likeCountsError) {
+			console.error("いいね数取得エラー:", likeCountsError);
+		}
+
+		// いいね数を集計
+		const likeCountMap = new Map<string, number>();
+		likeCounts?.forEach(like => {
+			const count = likeCountMap.get(like.post_id) || 0;
+			likeCountMap.set(like.post_id, count + 1);
+		});
+
 		// 投稿データを整形
 		const formattedPosts = posts?.map(post => ({
-			id: post.post_id,
+			id: post.id,
 			content: post.content,
-			locationName: post.location,
-			createdAt: post.created_at,
-			likeCount: post.like_count,
-			isLiked: userLikes.includes(post.post_id || ''),
+			location: post.location,
+			classification: post.classification,
+			created_at: post.created_at,
+			updated_at: post.updated_at,
+			likeCount: likeCountMap.get(post.id) || 0,
+			isLiked: userLikes.includes(post.id),
 			user: {
-				id: post.user_id,
-				accountId: post.account_id,
-				username: post.username,
-				avatarUrl: post.avatar_url,
+				id: post.users.id,
+				account_id: post.users.account_id,
+				username: post.users.username,
+				avatar_url: post.users.avatar_url,
 			},
+			post_images: post.post_images || [],
 		})) || [];
 
 		return NextResponse.json({ posts: formattedPosts });

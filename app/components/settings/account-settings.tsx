@@ -213,6 +213,7 @@ export function AccountSettings() {
 									width={128}
 									height={80}
 									className="w-full h-full object-cover"
+									style={{ width: "auto", height: "auto" }}
 									onError={(e) => {
 										e.currentTarget.style.display = 'none';
 									}}
@@ -329,6 +330,7 @@ export function AccountSettings() {
 								width={128}
 								height={80}
 								className="w-full h-full object-cover"
+								style={{ width: "auto", height: "auto" }}
 								onError={(e) => {
 									e.currentTarget.style.display = 'none';
 								}}

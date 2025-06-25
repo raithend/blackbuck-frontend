@@ -27,12 +27,31 @@ import { HeartButton } from "./heart-button";
 interface PostCardProps {
 	post: PostWithUser;
 	onLikeChange?: (postId: string, likeCount: number, isLiked: boolean) => void;
+	showLikedAt?: boolean;
 }
 
-export function PostCard({ post, onLikeChange }: PostCardProps) {
+// 日付を安全にフォーマットする関数
+const formatDateSafely = (dateString: string | undefined) => {
+	if (!dateString) return "日時不明";
+	
+	try {
+		const date = new Date(dateString);
+		if (isNaN(date.getTime())) {
+			return "日時不明";
+		}
+		return formatDistanceToNow(date, { locale: ja });
+	} catch (error) {
+		return "日時不明";
+	}
+};
+
+export function PostCard({ post, onLikeChange, showLikedAt = false }: PostCardProps) {
 	const handleLikeChange = (likeCount: number, isLiked: boolean) => {
 		onLikeChange?.(post.id, likeCount, isLiked);
 	};
+
+	// デバッグ情報をコンソールに出力
+	console.log(`Post ${post.id}: isLiked = ${post.isLiked}, likeCount = ${post.likeCount}`);
 
 	return (
 		<Card className="grid gap-2 p-0 md:px-16">
@@ -64,6 +83,7 @@ export function PostCard({ post, onLikeChange }: PostCardProps) {
 												alt="species picture"
 												width={1000}
 												height={1000}
+												style={{ width: "auto", height: "auto" }}
 											/>
 										</CardContent>
 									</Card>
@@ -98,8 +118,14 @@ export function PostCard({ post, onLikeChange }: PostCardProps) {
 							<CommentButton postId={post.id.toString()} />
 						</div>
 						<div className="text-sm text-gray-500 text-right">
-							最終更新：
-							{formatDistanceToNow(new Date(post.updated_at), { locale: ja })}
+							{showLikedAt && post.likedAt ? (
+								<div>
+									<div>いいね日時：{formatDateSafely(post.likedAt)}</div>
+									<div>投稿日時：{formatDateSafely(post.updated_at)}</div>
+								</div>
+							) : (
+								<div>最終更新：{formatDateSafely(post.updated_at)}</div>
+							)}
 						</div>
 					</div>
 				</div>
