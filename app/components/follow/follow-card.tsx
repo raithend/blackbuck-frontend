@@ -9,16 +9,10 @@ import { FollowButton } from "./follow-button";
 
 interface FollowCardProps {
 	user: User;
-	isFollowing: boolean;
-	apiUrl: string;
-	onFollowStatusChange: (userId: string, isFollowing: boolean) => void;
 }
 
 export function FollowCard({
 	user,
-	isFollowing,
-	apiUrl,
-	onFollowStatusChange,
 }: FollowCardProps) {
 	return (
 		<Card className="">
@@ -32,10 +26,9 @@ export function FollowCard({
 					<p className="text-sm text-muted-foreground">@{user.account_id}</p>
 				</div>
 				<FollowButton
-					isFollowing={isFollowing}
-					userId={user.id.toString()}
-					apiUrl={apiUrl}
-					onFollowStatusChange={onFollowStatusChange}
+					targetAccountId={user.account_id}
+					size="sm"
+					variant="outline"
 				/>
 			</CardHeader>
 			<CardContent className="py-2">

@@ -26,15 +26,10 @@ export function FollowButton({
 	const [isHovered, setIsHovered] = useState(false);
 	const [isInitialized, setIsInitialized] = useState(false);
 
-	// 自分自身の場合はボタンを表示しない
-	if (user?.account_id === targetAccountId) {
-		return null;
-	}
-
 	// 初期状態でフォロー状態を取得
 	useEffect(() => {
 		const fetchFollowStatus = async () => {
-			if (!user || isInitialized) return;
+			if (!user || isInitialized || user?.account_id === targetAccountId) return;
 
 			try {
 				// 認証トークンを取得
@@ -66,6 +61,11 @@ export function FollowButton({
 
 		fetchFollowStatus();
 	}, [user, targetAccountId, isInitialized]);
+
+	// 自分自身の場合はボタンを表示しない
+	if (user?.account_id === targetAccountId) {
+		return null;
+	}
 
 	const handleFollowToggle = async () => {
 		if (!user) {

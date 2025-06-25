@@ -9,16 +9,32 @@ import Link from "next/link";
 import { useState } from "react";
 import useSWR from "swr";
 import type { Location } from "@/app/types/types";
-import { fetcher } from "@/app/lib/fetcher";
+import { LocationDialog } from "@/app/components/location/location-dialog";
+
+// フェッチャー関数
+const fetcher = async (url: string) => {
+	try {
+		const response = await fetch(url);
+		if (!response.ok) {
+			throw new Error('Failed to fetch data');
+		}
+		return response.json();
+	} catch (error) {
+		// ネットワークエラーの場合は既存データを保持するため、エラーを投げない
+		if (error instanceof TypeError && error.message.includes('fetch')) {
+			console.warn('ネットワークエラーが発生しましたが、既存のデータを表示し続けます:', error);
+			return null; // nullを返すことで、既存のデータを保持
+		}
+		throw error;
+	}
+};
 
 export default function LocationsPage() {
 	const [searchQuery, setSearchQuery] = useState("");
+	const [isDialogOpen, setIsDialogOpen] = useState(false);
+	const { data, error, isLoading, mutate } = useSWR<{ locations: Location[] }>("/api/locations", fetcher);
 
-	const { data: locationsData, error, isLoading } = useSWR<{ locations: Location[] }>(
-		"/api/locations",
-		fetcher
-	);
-	const locations: Location[] = locationsData?.locations || [];
+	const locations: Location[] = data?.locations || [];
 
 	const filteredLocations = locations.filter((location: Location) =>
 		location.name.toLowerCase().includes(searchQuery.toLowerCase())

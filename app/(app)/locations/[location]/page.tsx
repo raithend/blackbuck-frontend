@@ -7,7 +7,24 @@ import useSWR from "swr";
 import Image from "next/image";
 import { MapPin, Info } from "lucide-react";
 import { LocationEditButton } from "@/app/components/location/location-edit-button";
-import { fetcher } from "@/app/lib/fetcher";
+
+// フェッチャー関数
+const fetcher = async (url: string) => {
+	try {
+		const response = await fetch(url);
+		if (!response.ok) {
+			throw new Error('Failed to fetch data');
+		}
+		return response.json();
+	} catch (error) {
+		// ネットワークエラーの場合は既存データを保持するため、エラーを投げない
+		if (error instanceof TypeError && error.message.includes('fetch')) {
+			console.warn('ネットワークエラーが発生しましたが、既存のデータを表示し続けます:', error);
+			return null; // nullを返すことで、既存のデータを保持
+		}
+		throw error;
+	}
+};
 
 export default function LocationPage() {
 	const params = useParams();

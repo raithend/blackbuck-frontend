@@ -2,29 +2,15 @@
 "use client";
 
 import type { User } from "@/app/types/types";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { FollowCard } from "./follow-card";
 
 interface FollowCardsProps {
 	initialUsers: User[];
-	apiUrl: string;
 }
 
-export function FollowCards({ initialUsers = [], apiUrl }: FollowCardsProps) {
+export function FollowCards({ initialUsers = [] }: FollowCardsProps) {
 	const users = useMemo(() => initialUsers, [initialUsers]);
-	const [following, setFollowing] = useState<Set<string>>(new Set());
-
-	const handleFollowStatusChange = (userId: string, isFollowing: boolean) => {
-		setFollowing((prev) => {
-			const newFollowing = new Set(prev);
-			if (isFollowing) {
-				newFollowing.add(userId);
-			} else {
-				newFollowing.delete(userId);
-			}
-			return newFollowing;
-		});
-	};
 
 	if (!users || users.length === 0) {
 		return <div>follow cards</div>;
@@ -36,9 +22,6 @@ export function FollowCards({ initialUsers = [], apiUrl }: FollowCardsProps) {
 				<FollowCard
 					key={user.id}
 					user={user}
-					isFollowing={following.has(user.id.toString())}
-					apiUrl={apiUrl}
-					onFollowStatusChange={handleFollowStatusChange}
 				/>
 			))}
 		</div>
