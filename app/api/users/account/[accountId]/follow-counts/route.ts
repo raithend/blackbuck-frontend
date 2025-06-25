@@ -3,16 +3,19 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { accountId: string } }
+  { params }: { params: Promise<{ accountId: string }> }
 ) {
   try {
     const supabase = await createClient();
+    
+    // paramsをawait
+    const { accountId } = await params;
     
     // 対象ユーザーを取得
     const { data: targetUser, error: targetError } = await supabase
       .from("users")
       .select("id")
-      .eq("account_id", params.accountId)
+      .eq("account_id", accountId)
       .single();
 
     if (targetError || !targetUser) {
