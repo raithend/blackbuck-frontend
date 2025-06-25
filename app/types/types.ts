@@ -35,4 +35,5 @@ export type PhotoBubbleCreate = {
 
 export type PhotoBubbleUpdate = Partial<PhotoBubbleCreate>;
 
-export type ProfilePhotoBubble = Database["public"]["Views"]["profile_photo_bubbles"]["Row"];
+export type ProfilePhotoBubble =
+	Database["public"]["Views"]["profile_photo_bubbles"]["Row"];
