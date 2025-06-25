@@ -9,6 +9,56 @@ export type Json =
 export type Database = {
 	public: {
 		Tables: {
+			follows: {
+				Row: {
+					created_at: string;
+					follower_id: string;
+					following_id: string;
+					id: string;
+				};
+				Insert: {
+					created_at?: string;
+					follower_id: string;
+					following_id: string;
+					id?: string;
+				};
+				Update: {
+					created_at?: string;
+					follower_id?: string;
+					following_id?: string;
+					id?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: "follows_follower_id_fkey";
+						columns: ["follower_id"];
+						isOneToOne: false;
+						referencedRelation: "user_follow_counts";
+						referencedColumns: ["id"];
+					},
+					{
+						foreignKeyName: "follows_follower_id_fkey";
+						columns: ["follower_id"];
+						isOneToOne: false;
+						referencedRelation: "users";
+						referencedColumns: ["id"];
+					},
+					{
+						foreignKeyName: "follows_following_id_fkey";
+						columns: ["following_id"];
+						isOneToOne: false;
+						referencedRelation: "user_follow_counts";
+						referencedColumns: ["id"];
+					},
+					{
+						foreignKeyName: "follows_following_id_fkey";
+						columns: ["following_id"];
+						isOneToOne: false;
+						referencedRelation: "users";
+						referencedColumns: ["id"];
+					},
+				];
+			};
 			locations: {
 				Row: {
 					avatar_url: string | null;
@@ -146,6 +196,13 @@ export type Database = {
 						foreignKeyName: "posts_user_id_fkey";
 						columns: ["user_id"];
 						isOneToOne: false;
+						referencedRelation: "user_follow_counts";
+						referencedColumns: ["id"];
+					},
+					{
+						foreignKeyName: "posts_user_id_fkey";
+						columns: ["user_id"];
+						isOneToOne: false;
 						referencedRelation: "users";
 						referencedColumns: ["id"];
 					},
@@ -225,6 +282,21 @@ export type Database = {
 					user_id?: string | null;
 					x_position?: number | null;
 					y_position?: number | null;
+				};
+				Relationships: [];
+			};
+			user_follow_counts: {
+				Row: {
+					account_id: string | null;
+					avatar_url: string | null;
+					bio: string | null;
+					created_at: string | null;
+					follower_count: number | null;
+					following_count: number | null;
+					header_url: string | null;
+					id: string | null;
+					updated_at: string | null;
+					username: string | null;
 				};
 				Relationships: [];
 			};
