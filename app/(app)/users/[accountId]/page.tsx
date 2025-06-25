@@ -2,8 +2,10 @@
 
 import { PostCards } from "@/app/components/post/post-cards";
 import { ProfileHeader } from "@/app/components/profile/profile-header";
+import { UserCards } from "@/app/components/follow/user-cards";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/components/ui/tabs";
 import { PostWithUser, User } from "@/app/types/types";
+import { useUser } from "@/app/contexts/user-context";
 import useSWR from "swr";
 import { useEffect, useState } from "react";
 
@@ -25,8 +27,45 @@ const fetcher = async (url: string) => {
 	}
 };
 
+// 認証付きフェッチャー関数
+const authFetcher = async (url: string) => {
+	try {
+		const { createClient } = await import("@/app/lib/supabase-browser");
+		const supabase = createClient();
+		const { data: { session } } = await supabase.auth.getSession();
+		
+		if (!session?.access_token) {
+			console.error("認証トークンが取得できません");
+			throw new Error("認証トークンが取得できません");
+		}
+
+		console.log("認証付きAPI呼び出し:", url);
+
+		const response = await fetch(url, {
+			headers: {
+				"Authorization": `Bearer ${session.access_token}`,
+			},
+		});
+		
+		if (!response.ok) {
+			const errorText = await response.text();
+			console.error("API呼び出しエラー:", response.status, errorText);
+			throw new Error(`Failed to fetch data: ${response.status} ${errorText}`);
+		}
+		return response.json();
+	} catch (error) {
+		console.error("認証付きフェッチャーエラー:", error);
+		if (error instanceof TypeError && error.message.includes('fetch')) {
+			console.warn('ネットワークエラーが発生しましたが、既存のデータを表示し続けます:', error);
+			return null;
+		}
+		throw error;
+	}
+};
+
 export default function UserProfilePage({ params }: { params: Promise<{ accountId: string }> }) {
 	const [accountId, setAccountId] = useState<string | null>(null);
+	const { user: currentUser } = useUser();
 
 	// paramsを非同期で取得
 	useEffect(() => {
@@ -37,16 +76,19 @@ export default function UserProfilePage({ params }: { params: Promise<{ accountI
 		getAccountId();
 	}, [params]);
 
+	// 自分自身のプロフィールかどうかを判定
+	const isOwnProfile = currentUser?.account_id === accountId;
+
 	// ユーザー情報を取得
 	const { data: userData, error: userError, isLoading: userLoading, mutate: mutateUser } = useSWR<{ user: User }>(
 		accountId ? `/api/users/account/${accountId}` : null,
 		fetcher,
 		{
-			revalidateOnFocus: false, // フォーカス時の再検証を無効化
-			revalidateOnReconnect: true, // 再接続時は再検証
-			shouldRetryOnError: false, // エラー時の再試行を無効化（既存データを保持するため）
-			dedupingInterval: 30000, // 30秒間の重複リクエストを防ぐ
-			keepPreviousData: true, // 前のデータを保持
+			revalidateOnFocus: false,
+			revalidateOnReconnect: true,
+			shouldRetryOnError: false,
+			dedupingInterval: 30000,
+			keepPreviousData: true,
 		}
 	);
 
@@ -63,10 +105,54 @@ export default function UserProfilePage({ params }: { params: Promise<{ accountI
 		}
 	);
 
+	// フィードを取得（自分自身のプロフィールの場合のみ）
+	const { data: feedData, error: feedError, isLoading: feedLoading, mutate: mutateFeed } = useSWR<{ posts: PostWithUser[] }>(
+		isOwnProfile ? `/api/users/me/feed` : null,
+		authFetcher,
+		{
+			revalidateOnFocus: false,
+			revalidateOnReconnect: true,
+			shouldRetryOnError: false,
+			dedupingInterval: 30000,
+			keepPreviousData: true,
+		}
+	);
+
+	// フォロー中のユーザーを取得
+	const { data: followingData, error: followingError, isLoading: followingLoading, mutate: mutateFollowing } = useSWR<{ users: User[] }>(
+		accountId ? `/api/users/account/${accountId}/follows?type=following` : null,
+		fetcher,
+		{
+			revalidateOnFocus: false,
+			revalidateOnReconnect: true,
+			shouldRetryOnError: false,
+			dedupingInterval: 30000,
+			keepPreviousData: true,
+		}
+	);
+
+	// フォロワーを取得
+	const { data: followersData, error: followersError, isLoading: followersLoading, mutate: mutateFollowers } = useSWR<{ users: User[] }>(
+		accountId ? `/api/users/account/${accountId}/follows?type=followers` : null,
+		fetcher,
+		{
+			revalidateOnFocus: false,
+			revalidateOnReconnect: true,
+			shouldRetryOnError: false,
+			dedupingInterval: 30000,
+			keepPreviousData: true,
+		}
+	);
+
 	// ネットワークエラー時の再試行ボタン
 	const handleRetry = () => {
 		mutateUser();
 		mutatePosts();
+		if (isOwnProfile) {
+			mutateFeed();
+		}
+		mutateFollowing();
+		mutateFollowers();
 	};
 
 	if (!accountId || userLoading) {
@@ -115,6 +201,9 @@ export default function UserProfilePage({ params }: { params: Promise<{ accountI
 
 	const user = userData.user;
 	const posts = postsData?.posts || [];
+	const feedPosts = feedData?.posts || [];
+	const followingUsers = followingData?.users || [];
+	const followersUsers = followersData?.users || [];
 
 	return (
 		<div className="container mx-auto px-4 py-8">
@@ -141,10 +230,53 @@ export default function UserProfilePage({ params }: { params: Promise<{ accountI
 			<ProfileHeader user={user} />
 
 			{/* タブコンテンツ */}
-			<Tabs defaultValue="posts" className="w-full">
-				<TabsList className="grid w-full grid-cols-1">
+			<Tabs defaultValue={isOwnProfile ? "feed" : "posts"} className="w-full">
+				<TabsList className="grid w-full" style={{ 
+					gridTemplateColumns: isOwnProfile ? "repeat(4, 1fr)" : "repeat(3, 1fr)" 
+				}}>
+					{isOwnProfile && <TabsTrigger value="feed">フィード</TabsTrigger>}
 					<TabsTrigger value="posts">投稿</TabsTrigger>
+					<TabsTrigger value="following">フォロー中</TabsTrigger>
+					<TabsTrigger value="followers">フォロワー</TabsTrigger>
 				</TabsList>
+
+				{/* フィードタブ（自分自身のプロフィールのみ） */}
+				{isOwnProfile && (
+					<TabsContent value="feed" className="mt-6">
+						{feedLoading ? (
+							<div className="space-y-4">
+								{Array.from({ length: 3 }).map((_, i) => (
+									<div key={i} className="animate-pulse">
+										<div className="h-48 bg-gray-200 rounded-lg"></div>
+									</div>
+								))}
+							</div>
+						) : feedError ? (
+							<div className="text-center py-8">
+								<p className="text-gray-600 mb-4">フィードの取得に失敗しました</p>
+								{feedPosts.length > 0 && (
+									<p className="text-sm text-gray-500 mb-4">
+										以前に取得した投稿を表示しています
+									</p>
+								)}
+								<button 
+									onClick={handleRetry}
+									className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+								>
+									再試行
+								</button>
+							</div>
+						) : feedPosts.length === 0 ? (
+							<div className="text-center py-8">
+								<p className="text-gray-600">フィードに投稿がありません</p>
+							</div>
+						) : (
+							<PostCards posts={feedPosts} />
+						)}
+					</TabsContent>
+				)}
+
+				{/* 投稿タブ */}
 				<TabsContent value="posts" className="mt-6">
 					{postsLoading ? (
 						<div className="space-y-4">
@@ -175,6 +307,56 @@ export default function UserProfilePage({ params }: { params: Promise<{ accountI
 						</div>
 					) : (
 						<PostCards posts={posts} />
+					)}
+				</TabsContent>
+
+				{/* フォロー中タブ */}
+				<TabsContent value="following" className="mt-6">
+					{followingLoading ? (
+						<div className="space-y-4">
+							{Array.from({ length: 3 }).map((_, i) => (
+								<div key={i} className="animate-pulse">
+									<div className="h-24 bg-gray-200 rounded-lg"></div>
+								</div>
+							))}
+						</div>
+					) : followingError ? (
+						<div className="text-center py-8">
+							<p className="text-gray-600 mb-4">フォロー中のユーザー取得に失敗しました</p>
+							<button 
+								onClick={handleRetry}
+								className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+							>
+								再試行
+							</button>
+						</div>
+					) : (
+						<UserCards users={followingUsers} type="following" />
+					)}
+				</TabsContent>
+
+				{/* フォロワータブ */}
+				<TabsContent value="followers" className="mt-6">
+					{followersLoading ? (
+						<div className="space-y-4">
+							{Array.from({ length: 3 }).map((_, i) => (
+								<div key={i} className="animate-pulse">
+									<div className="h-24 bg-gray-200 rounded-lg"></div>
+								</div>
+							))}
+						</div>
+					) : followersError ? (
+						<div className="text-center py-8">
+							<p className="text-gray-600 mb-4">フォロワー取得に失敗しました</p>
+							<button 
+								onClick={handleRetry}
+								className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+							>
+								再試行
+							</button>
+						</div>
+					) : (
+						<UserCards users={followersUsers} type="followers" />
 					)}
 				</TabsContent>
 			</Tabs>
