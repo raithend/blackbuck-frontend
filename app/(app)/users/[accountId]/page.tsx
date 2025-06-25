@@ -39,8 +39,6 @@ const authFetcher = async (url: string) => {
 			throw new Error("認証トークンが取得できません");
 		}
 
-		console.log("認証付きAPI呼び出し:", url);
-
 		const response = await fetch(url, {
 			headers: {
 				"Authorization": `Bearer ${session.access_token}`,

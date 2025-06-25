@@ -26,62 +26,43 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // 現在のユーザー情報を取得
-    const { data: currentUser, error: currentUserError } = await supabase
-      .from("users")
-      .select("id")
-      .eq("id", user.id)
-      .single();
-
-    if (currentUserError || !currentUser) {
-      console.error("現在のユーザー取得エラー:", currentUserError);
-      return NextResponse.json(
-        { error: "ユーザー情報が見つかりません" },
-        { status: 404 }
-      );
-    }
-
     // フォロー中のユーザーIDを取得
     const { data: followingData, error: followingError } = await supabase
       .from("follows")
       .select("following_id")
-      .eq("follower_id", currentUser.id);
+      .eq("follower_id", user.id);
 
     if (followingError) {
-      console.error("フォロー情報取得エラー:", followingError);
+      console.error("フォロー中ユーザー取得エラー:", followingError);
       return NextResponse.json(
-        { error: "フォロー情報の取得に失敗しました" },
+        { error: "フォロー中ユーザーの取得に失敗しました" },
         { status: 500 }
       );
     }
 
-    const followingIds = followingData?.map(item => item.following_id) || [];
-    
-    // 自分のIDも含める
-    const allUserIds = [currentUser.id, ...followingIds];
+    // 自分自身とフォロー中のユーザーIDを結合
+    const followingIds = followingData?.map(f => f.following_id) || [];
+    const allUserIds = [user.id, ...followingIds];
 
-    console.log("フィード対象ユーザーID:", allUserIds);
-
-    // フィードの投稿を取得（自分の投稿とフォロー中のユーザーの投稿）
-    const { data: posts, error: postsError } = await supabase
+    // 投稿を取得（自分自身とフォロー中のユーザーの投稿）
+    const { data: postsData, error: postsError } = await supabase
       .from("posts")
       .select(`
-        *,
-        users (
+        id,
+        content,
+        location,
+        created_at,
+        user_id,
+        users!posts_user_id_fkey (
           id,
           account_id,
           username,
-          avatar_url,
-          bio
-        ),
-        post_images (
-          id,
-          image_url,
-          order_index
+          avatar_url
         )
       `)
       .in("user_id", allUserIds)
-      .order("created_at", { ascending: false });
+      .order("created_at", { ascending: false })
+      .limit(50);
 
     if (postsError) {
       console.error("投稿取得エラー:", postsError);
@@ -92,17 +73,20 @@ export async function GET(request: NextRequest) {
     }
 
     // 投稿データを整形
-    const formattedPosts = posts?.map(post => ({
-      ...post,
-      user: post.users,
-      post_images: post.post_images?.sort((a, b) => a.order_index - b.order_index) || []
+    const formattedPosts = postsData?.map(post => ({
+      id: post.id,
+      content: post.content,
+      locationName: post.location,
+      createdAt: post.created_at,
+      user: {
+        id: post.users.id,
+        accountId: post.users.account_id,
+        username: post.users.username,
+        avatarUrl: post.users.avatar_url,
+      },
     })) || [];
 
-    console.log("フィード取得結果:", { count: formattedPosts.length });
-
-    return NextResponse.json({
-      posts: formattedPosts
-    });
+    return NextResponse.json({ posts: formattedPosts });
   } catch (error) {
     console.error("フィード取得エラー:", error);
     return NextResponse.json(

@@ -4,6 +4,7 @@ import { useState, useRef, useCallback } from "react";
 import { Upload, X } from "lucide-react";
 import { Button } from "@/app/components/ui/button";
 import { useDropzone } from "react-dropzone";
+import Image from "next/image";
 
 interface ImageUploadCropperProps {
 	onImageSelected: (file: File, croppedImageUrl: string) => void;
@@ -129,10 +130,12 @@ export function ImageUploadCropper({
 					<div className="relative w-80 h-80 mx-auto">
 						{/* 背景画像（グレーアウト） */}
 						<div className="absolute inset-0 bg-gray-300 rounded-lg overflow-hidden">
-							<img
+							<Image
 								ref={imageRef}
 								src={previewUrl || ''}
 								alt="切り抜き対象"
+								width={320}
+								height={320}
 								className="w-full h-full object-cover opacity-50"
 							/>
 						</div>
@@ -140,9 +143,11 @@ export function ImageUploadCropper({
 						{/* 円形マスク */}
 						<div className="absolute inset-0 flex items-center justify-center">
 							<div className="w-64 h-64 rounded-full border-4 border-white shadow-lg overflow-hidden ring-4 ring-blue-500 ring-opacity-50">
-								<img
+								<Image
 									src={previewUrl || ''}
 									alt="切り抜きプレビュー"
+									width={256}
+									height={256}
 									className="w-full h-full object-cover"
 								/>
 							</div>
@@ -172,9 +177,11 @@ export function ImageUploadCropper({
 			{/* プレビュー */}
 			{previewUrl && !selectedFile && !isCropping && (
 				<div className="relative inline-block">
-					<img
+					<Image
 						src={previewUrl}
 						alt="プレビュー"
+						width={64}
+						height={64}
 						className="w-16 h-16 object-cover rounded-full border-2 border-white shadow-lg"
 					/>
 					<Button

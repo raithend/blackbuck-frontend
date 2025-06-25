@@ -5,6 +5,7 @@ import { PhotoBubble } from "./photo-bubble";
 import { PhotoBubbleEditPanel } from "./photo-bubble-edit-panel";
 import { Button } from "@/app/components/ui/button";
 import type { User } from "@/app/types/types";
+import Image from "next/image";
 
 interface PhotoBubbleData {
 	id: string;
@@ -60,8 +61,6 @@ export function PhotoBubbleEditor({
 	}, [onPhotoBubblesChange]);
 
 	const handleHeaderClick = (event: React.MouseEvent<HTMLDivElement>) => {
-		console.log('Header clicked, isEditing:', isEditing); // デバッグ用
-		
 		if (isEditing && isEditable) {
 			event.preventDefault();
 			event.stopPropagation();
@@ -70,7 +69,6 @@ export function PhotoBubbleEditor({
 			const x = event.clientX - rect.left;
 			const y = event.clientY - rect.top;
 			
-			console.log('Header clicked at:', { x, y }); // デバッグ用
 			setClickedPosition({ x, y });
 			setShowClickMarker(true);
 			setIsEditPanelOpen(true);
@@ -80,7 +78,6 @@ export function PhotoBubbleEditor({
 	const handleEditButtonClick = () => {
 		if (!isEditable) return;
 		
-		console.log('Edit button clicked, current isEditing:', isEditing); // デバッグ用
 		setIsEditing(!isEditing);
 		if (isEditing) {
 			setIsEditPanelOpen(false);
@@ -102,9 +99,11 @@ export function PhotoBubbleEditor({
 					onClick={handleHeaderClick}
 				>
 					{user.header_url ? (
-						<img
+						<Image
 							src={user.header_url}
 							alt="ヘッダー画像"
+							width={800}
+							height={384}
 							className="w-full h-full object-cover"
 							onError={(e) => {
 								e.currentTarget.style.display = 'none';

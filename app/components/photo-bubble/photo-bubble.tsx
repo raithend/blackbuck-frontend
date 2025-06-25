@@ -6,6 +6,7 @@ import { Button } from "@/app/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/app/components/ui/avatar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/app/components/ui/tooltip";
 import { createClient } from "@/app/lib/supabase-browser";
+import Image from "next/image";
 
 interface PhotoBubbleProps {
 	id: string;
@@ -155,9 +156,11 @@ export function PhotoBubble({
 						<div className="relative">
 							{imageUrl ? (
 								<div className="w-24 h-24 rounded-full overflow-hidden border-2 border-white shadow-lg bg-white">
-									<img 
+									<Image 
 										src={imageUrl} 
 										alt={description || "フォトバブル"} 
+										width={96}
+										height={96}
 										className="w-full h-full object-cover"
 										onError={(e) => {
 											// 画像読み込みエラー時のフォールバック

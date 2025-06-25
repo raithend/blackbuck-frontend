@@ -11,6 +11,7 @@ import { ProfileImageUpload } from "@/app/components/settings/profile-image-uplo
 import { useUser } from "@/app/contexts/user-context";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import Image from "next/image";
 
 export function AccountSettings() {
 	const { user, loading, error, refreshUser, session } = useUser();
@@ -206,9 +207,11 @@ export function AccountSettings() {
 					>
 						<div className="w-32 h-20 bg-gray-200 rounded-lg overflow-hidden">
 							{headerUrl ? (
-								<img 
+								<Image 
 									src={headerUrl} 
 									alt="ヘッダー画像" 
+									width={128}
+									height={80}
 									className="w-full h-full object-cover"
 									onError={(e) => {
 										e.currentTarget.style.display = 'none';
@@ -320,9 +323,11 @@ export function AccountSettings() {
 				>
 					<div className="w-32 h-20 bg-gray-200 rounded-lg overflow-hidden">
 						{headerUrl ? (
-							<img 
+							<Image 
 								src={headerUrl} 
 								alt="ヘッダー画像" 
+								width={128}
+								height={80}
 								className="w-full h-full object-cover"
 								onError={(e) => {
 									e.currentTarget.style.display = 'none';

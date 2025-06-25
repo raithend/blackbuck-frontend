@@ -91,12 +91,8 @@ export async function GET(
       users = followersData?.map(item => item.users).filter(Boolean) || [];
     }
 
-    console.log(`${type}取得結果:`, { count: users.length, users: users.map(u => ({ id: u.id, account_id: u.account_id })) });
-
-    return NextResponse.json({
-      users,
-      type
-    });
+    // 結果を返す
+    return NextResponse.json({ users, type });
   } catch (error) {
     console.error("フォロー/フォロワー取得エラー:", error);
     return NextResponse.json(

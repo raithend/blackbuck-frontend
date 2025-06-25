@@ -14,8 +14,6 @@ const testClient = createBrowserClient(supabaseUrl, supabaseAnonKey);
 testClient.auth.getSession().then(({ data, error }) => {
 	if (error) {
 		console.error("Supabase接続エラー:", error);
-	} else {
-		console.log("Supabase接続成功:", data);
 	}
 });
 
