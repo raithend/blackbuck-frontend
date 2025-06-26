@@ -9,6 +9,125 @@ export type Json =
 export type Database = {
 	public: {
 		Tables: {
+			comment_images: {
+				Row: {
+					comment_id: string;
+					created_at: string | null;
+					id: string;
+					image_url: string;
+					order_index: number;
+				};
+				Insert: {
+					comment_id: string;
+					created_at?: string | null;
+					id?: string;
+					image_url: string;
+					order_index?: number;
+				};
+				Update: {
+					comment_id?: string;
+					created_at?: string | null;
+					id?: string;
+					image_url?: string;
+					order_index?: number;
+				};
+				Relationships: [
+					{
+						foreignKeyName: "comment_images_comment_id_fkey";
+						columns: ["comment_id"];
+						isOneToOne: false;
+						referencedRelation: "comments";
+						referencedColumns: ["id"];
+					},
+				];
+			};
+			comment_likes: {
+				Row: {
+					comment_id: string;
+					created_at: string | null;
+					id: string;
+					user_id: string;
+				};
+				Insert: {
+					comment_id: string;
+					created_at?: string | null;
+					id?: string;
+					user_id: string;
+				};
+				Update: {
+					comment_id?: string;
+					created_at?: string | null;
+					id?: string;
+					user_id?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: "comment_likes_comment_id_fkey";
+						columns: ["comment_id"];
+						isOneToOne: false;
+						referencedRelation: "comments";
+						referencedColumns: ["id"];
+					},
+				];
+			};
+			comments: {
+				Row: {
+					classification: string | null;
+					content: string;
+					created_at: string | null;
+					id: string;
+					location: string | null;
+					parent_comment_id: string | null;
+					post_id: string;
+					updated_at: string | null;
+					user_id: string;
+				};
+				Insert: {
+					classification?: string | null;
+					content: string;
+					created_at?: string | null;
+					id?: string;
+					location?: string | null;
+					parent_comment_id?: string | null;
+					post_id: string;
+					updated_at?: string | null;
+					user_id: string;
+				};
+				Update: {
+					classification?: string | null;
+					content?: string;
+					created_at?: string | null;
+					id?: string;
+					location?: string | null;
+					parent_comment_id?: string | null;
+					post_id?: string;
+					updated_at?: string | null;
+					user_id?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: "comments_parent_comment_id_fkey";
+						columns: ["parent_comment_id"];
+						isOneToOne: false;
+						referencedRelation: "comments";
+						referencedColumns: ["id"];
+					},
+					{
+						foreignKeyName: "comments_post_id_fkey";
+						columns: ["post_id"];
+						isOneToOne: false;
+						referencedRelation: "post_like_counts";
+						referencedColumns: ["post_id"];
+					},
+					{
+						foreignKeyName: "comments_post_id_fkey";
+						columns: ["post_id"];
+						isOneToOne: false;
+						referencedRelation: "posts";
+						referencedColumns: ["id"];
+					},
+				];
+			};
 			follows: {
 				Row: {
 					created_at: string;
