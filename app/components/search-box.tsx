@@ -1,5 +1,6 @@
 "use client";
 
+import { Avatar, AvatarFallback, AvatarImage } from "@/app/components/ui/avatar";
 import { Button } from "@/app/components/ui/button";
 import {
 	Dialog,
@@ -10,16 +11,98 @@ import {
 } from "@/app/components/ui/dialog";
 import { Input } from "@/app/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/components/ui/tabs";
-import { Search, User, MapPin, Tag } from "lucide-react";
-import { useState } from "react";
+import { Search, User, MapPin, Tag, UserRound } from "lucide-react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import useSWR from "swr";
+
+interface User {
+	id: string;
+	username: string;
+	account_id: string;
+	avatar_url?: string;
+}
+
+interface Location {
+	id: string;
+	name: string;
+	description?: string;
+	avatar_url?: string;
+}
+
+interface SearchResults {
+	users: User[];
+	locations: Location[];
+	classifications: string[];
+}
+
+const fetcher = async (url: string) => {
+	const response = await fetch(url);
+	if (!response.ok) {
+		throw new Error('Failed to fetch data');
+	}
+	return response.json();
+};
 
 export function SearchBox() {
 	const [isOpen, setIsOpen] = useState(false);
 	const [userQuery, setUserQuery] = useState("");
 	const [locationQuery, setLocationQuery] = useState("");
 	const [classificationQuery, setClassificationQuery] = useState("");
+	const [activeTab, setActiveTab] = useState("users");
 	const router = useRouter();
+
+	// リアルタイム検索
+	const { data: userResults } = useSWR<{ users: User[] }>(
+		userQuery.trim() ? `/api/users/search?q=${encodeURIComponent(userQuery.trim())}` : null,
+		fetcher,
+		{ 
+			revalidateOnFocus: false,
+			revalidateOnReconnect: false,
+		}
+	);
+
+	const { data: locationResults } = useSWR<{ locations: Location[] }>(
+		locationQuery.trim() ? `/api/locations/search?q=${encodeURIComponent(locationQuery.trim())}` : null,
+		fetcher,
+		{ 
+			revalidateOnFocus: false,
+			revalidateOnReconnect: false,
+		}
+	);
+
+	const { data: classificationResults } = useSWR<{ classifications: string[] }>(
+		classificationQuery.trim() ? `/api/classifications/search?q=${encodeURIComponent(classificationQuery.trim())}` : null,
+		fetcher,
+		{ 
+			revalidateOnFocus: false,
+			revalidateOnReconnect: false,
+		}
+	);
+
+	const handleUserSelect = (user: User) => {
+		router.push(`/users/${encodeURIComponent(user.account_id)}`);
+		setIsOpen(false);
+		setUserQuery("");
+	};
+
+	const handleLocationSelect = (location: Location) => {
+		router.push(`/locations/${encodeURIComponent(location.name)}`);
+		setIsOpen(false);
+		setLocationQuery("");
+	};
+
+	const handleClassificationSelect = (classification: string) => {
+		router.push(`/classifications/${encodeURIComponent(classification)}`);
+		setIsOpen(false);
+		setClassificationQuery("");
+	};
+
+	const handleKeyPress = (e: React.KeyboardEvent, searchFunction: () => void) => {
+		if (e.key === "Enter") {
+			searchFunction();
+		}
+	};
 
 	const handleUserSearch = () => {
 		if (userQuery.trim()) {
@@ -45,12 +128,6 @@ export function SearchBox() {
 		}
 	};
 
-	const handleKeyPress = (e: React.KeyboardEvent, searchFunction: () => void) => {
-		if (e.key === "Enter") {
-			searchFunction();
-		}
-	};
-
 	return (
 		<Dialog open={isOpen} onOpenChange={setIsOpen}>
 			<DialogTrigger asChild>
@@ -66,7 +143,7 @@ export function SearchBox() {
 				<DialogHeader>
 					<DialogTitle>検索</DialogTitle>
 				</DialogHeader>
-				<Tabs defaultValue="users" className="w-full">
+				<Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
 					<TabsList className="grid w-full grid-cols-3">
 						<TabsTrigger value="users" className="flex items-center gap-2">
 							<User className="h-4 w-4" />
@@ -92,6 +169,38 @@ export function SearchBox() {
 								onKeyPress={(e) => handleKeyPress(e, handleUserSearch)}
 							/>
 						</div>
+						
+						{/* 検索結果 */}
+						{userQuery.trim() && userResults?.users && (
+							<div className="space-y-2">
+								<h4 className="text-sm font-medium">検索結果</h4>
+								<div className="max-h-48 overflow-y-auto space-y-2">
+									{userResults.users.length > 0 ? (
+										userResults.users.map((user) => (
+											<button
+												key={user.id}
+												onClick={() => handleUserSelect(user)}
+												className="w-full flex items-center space-x-3 p-2 hover:bg-gray-100 rounded-lg transition-colors text-left"
+											>
+												<Avatar className="h-8 w-8">
+													<AvatarImage src={user.avatar_url} />
+													<AvatarFallback>
+														<UserRound className="h-4 w-4" />
+													</AvatarFallback>
+												</Avatar>
+												<div>
+													<div className="font-medium">{user.username}</div>
+													<div className="text-sm text-gray-500">{user.account_id}</div>
+												</div>
+											</button>
+										))
+									) : (
+										<div className="text-sm text-gray-500 p-2">ユーザーが見つかりません</div>
+									)}
+								</div>
+							</div>
+						)}
+
 						<Button 
 							onClick={handleUserSearch}
 							disabled={!userQuery.trim()}
@@ -111,6 +220,40 @@ export function SearchBox() {
 								onKeyPress={(e) => handleKeyPress(e, handleLocationSearch)}
 							/>
 						</div>
+
+						{/* 検索結果 */}
+						{locationQuery.trim() && locationResults?.locations && (
+							<div className="space-y-2">
+								<h4 className="text-sm font-medium">検索結果</h4>
+								<div className="max-h-48 overflow-y-auto space-y-2">
+									{locationResults.locations.length > 0 ? (
+										locationResults.locations.map((location) => (
+											<button
+												key={location.id}
+												onClick={() => handleLocationSelect(location)}
+												className="w-full flex items-center space-x-3 p-2 hover:bg-gray-100 rounded-lg transition-colors text-left"
+											>
+												<Avatar className="h-8 w-8">
+													<AvatarImage src={location.avatar_url} />
+													<AvatarFallback>
+														<MapPin className="h-4 w-4" />
+													</AvatarFallback>
+												</Avatar>
+												<div>
+													<div className="font-medium">{location.name}</div>
+													{location.description && (
+														<div className="text-sm text-gray-500">{location.description}</div>
+													)}
+												</div>
+											</button>
+										))
+									) : (
+										<div className="text-sm text-gray-500 p-2">場所が見つかりません</div>
+									)}
+								</div>
+							</div>
+						)}
+
 						<Button 
 							onClick={handleLocationSearch}
 							disabled={!locationQuery.trim()}
@@ -130,6 +273,30 @@ export function SearchBox() {
 								onKeyPress={(e) => handleKeyPress(e, handleClassificationSearch)}
 							/>
 						</div>
+
+						{/* 検索結果 */}
+						{classificationQuery.trim() && classificationResults?.classifications && (
+							<div className="space-y-2">
+								<h4 className="text-sm font-medium">検索結果</h4>
+								<div className="max-h-48 overflow-y-auto space-y-2">
+									{classificationResults.classifications.length > 0 ? (
+										classificationResults.classifications.map((classification, index) => (
+											<button
+												key={index}
+												onClick={() => handleClassificationSelect(classification)}
+												className="w-full flex items-center space-x-3 p-2 hover:bg-gray-100 rounded-lg transition-colors text-left"
+											>
+												<Tag className="h-4 w-4 text-gray-500" />
+												<div className="font-medium">{classification}</div>
+											</button>
+										))
+									) : (
+										<div className="text-sm text-gray-500 p-2">分類が見つかりません</div>
+									)}
+								</div>
+							</div>
+						)}
+
 						<Button 
 							onClick={handleClassificationSearch}
 							disabled={!classificationQuery.trim()}
