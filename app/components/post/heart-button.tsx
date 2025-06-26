@@ -1,7 +1,7 @@
 "use client";
 
 import { HeartIcon } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useOptimistic, useTransition } from "react";
 import { useUser } from "@/app/contexts/user-context";
 import { toast } from "sonner";
 
@@ -18,16 +18,26 @@ export function HeartButton({
 	initialIsLiked = false,
 	onLikeChange 
 }: HeartButtonProps) {
-	const [isLiked, setIsLiked] = useState(initialIsLiked);
-	const [likeCount, setLikeCount] = useState(initialLikeCount);
-	const [isLoading, setIsLoading] = useState(false);
 	const { user } = useUser();
-
-	// 初期状態を更新
-	useEffect(() => {
-		setIsLiked(initialIsLiked);
-		setLikeCount(initialLikeCount);
-	}, [initialIsLiked, initialLikeCount]);
+	const [isPending, startTransition] = useTransition();
+	
+	// useOptimisticを使用して楽観的更新を実装
+	const [optimisticState, addOptimistic] = useOptimistic(
+		{ isLiked: initialIsLiked, likeCount: initialLikeCount },
+		(state, newAction: { action: 'like' | 'unlike' }) => {
+			if (newAction.action === 'like') {
+				return {
+					isLiked: true,
+					likeCount: state.likeCount + 1
+				};
+			} else {
+				return {
+					isLiked: false,
+					likeCount: Math.max(0, state.likeCount - 1)
+				};
+			}
+		}
+	);
 
 	const handleClick = async () => {
 		if (!user) {
@@ -35,50 +45,42 @@ export function HeartButton({
 			return;
 		}
 
-		if (isLoading) return;
+		if (isPending) return;
 
-		setIsLoading(true);
-		const previousIsLiked = isLiked;
-		const previousLikeCount = likeCount;
+		startTransition(async () => {
+			try {
+				// 楽観的更新を即座に適用
+				const action = optimisticState.isLiked ? 'unlike' : 'like';
+				addOptimistic({ action });
 
-		try {
-			// 楽観的更新
-			setIsLiked(!isLiked);
-			setLikeCount(isLiked ? likeCount - 1 : likeCount + 1);
+				// 認証トークンを取得
+				const supabase = await import("@/app/lib/supabase-browser").then(m => m.createClient());
+				const { data: { session } } = await supabase.auth.getSession();
+				
+				if (!session?.access_token) {
+					throw new Error("認証トークンが取得できません");
+				}
 
-			// 認証トークンを取得
-			const supabase = await import("@/app/lib/supabase-browser").then(m => m.createClient());
-			const { data: { session } } = await supabase.auth.getSession();
-			
-			if (!session?.access_token) {
-				throw new Error("認証トークンが取得できません");
+				const response = await fetch(`/api/posts/${postId}/like`, {
+					method: optimisticState.isLiked ? "DELETE" : "POST",
+					headers: {
+						"Content-Type": "application/json",
+						"Authorization": `Bearer ${session.access_token}`,
+					},
+				});
+
+				if (!response.ok) {
+					const errorData = await response.json();
+					throw new Error(errorData.error || "いいねの処理に失敗しました");
+				}
+
+				// 成功時の処理
+				onLikeChange?.(optimisticState.isLiked ? optimisticState.likeCount - 1 : optimisticState.likeCount + 1, !optimisticState.isLiked);
+			} catch (error) {
+				console.error("いいね処理エラー:", error);
+				toast.error(error instanceof Error ? error.message : "いいねの処理に失敗しました");
 			}
-
-			const response = await fetch(`/api/posts/${postId}/like`, {
-				method: isLiked ? "DELETE" : "POST",
-				headers: {
-					"Content-Type": "application/json",
-					"Authorization": `Bearer ${session.access_token}`,
-				},
-			});
-
-			if (!response.ok) {
-				const errorData = await response.json();
-				throw new Error(errorData.error || "いいねの処理に失敗しました");
-			}
-
-			// 成功時の処理
-			onLikeChange?.(isLiked ? likeCount - 1 : likeCount + 1, !isLiked);
-		} catch (error) {
-			// エラー時は元の状態に戻す
-			setIsLiked(previousIsLiked);
-			setLikeCount(previousLikeCount);
-			
-			console.error("いいね処理エラー:", error);
-			toast.error(error instanceof Error ? error.message : "いいねの処理に失敗しました");
-		} finally {
-			setIsLoading(false);
-		}
+		});
 	};
 
 	return (
@@ -86,24 +88,24 @@ export function HeartButton({
 			<button
 				type="button"
 				onClick={handleClick}
-				disabled={isLoading}
+				disabled={isPending}
 				className={`flex items-center gap-1 p-2 rounded-full transition-colors ${
-					isLiked 
+					optimisticState.isLiked 
 						? "text-red-600 hover:bg-red-50" 
 						: "text-gray-500 hover:bg-gray-50"
-				} ${isLoading ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
+				} ${isPending ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
 			>
 				<HeartIcon
 					className={`w-5 h-5 transition-all ${
-						isLiked 
+						optimisticState.isLiked 
 							? "fill-red-600 text-red-600" 
 							: "fill-transparent"
-					} ${isLoading ? "animate-pulse" : ""}`}
+					} ${isPending ? "animate-pulse" : ""}`}
 				/>
 			</button>
-			{likeCount > 0 && (
+			{optimisticState.likeCount > 0 && (
 				<span className="text-sm text-gray-600 min-w-[1rem] text-center">
-					{likeCount}
+					{optimisticState.likeCount}
 				</span>
 			)}
 		</div>
