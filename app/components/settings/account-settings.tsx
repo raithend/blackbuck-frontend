@@ -132,7 +132,10 @@ export function AccountSettings() {
 				throw new Error(errorData.error || "保存に失敗しました");
 			}
 
-			// ユーザー情報を再取得してコンテキストを更新
+			// レスポンスから更新されたユーザー情報を取得
+			const { user: updatedUser } = await response.json();
+			
+			// ユーザー情報を再取得してコンテキストを更新（楽観的更新）
 			await refreshUser();
 			toast.success("プロフィールを更新しました");
 		} catch (error) {

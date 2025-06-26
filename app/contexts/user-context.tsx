@@ -84,8 +84,10 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 			revalidateOnFocus: false, // フォーカス時の再検証を無効化
 			revalidateOnReconnect: true, // 再接続時は再検証
 			shouldRetryOnError: false, // エラー時の再試行を無効化（既存データを保持するため）
-			dedupingInterval: 30000, // 30秒間の重複リクエストを防ぐ
+			dedupingInterval: 60000, // 60秒間の重複リクエストを防ぐ（30秒から延長）
 			keepPreviousData: true, // 前のデータを保持
+			refreshInterval: 0, // 自動更新を無効化
+			revalidateIfStale: false, // 古いデータでも再検証しない
 		},
 	);
 
@@ -95,11 +97,14 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 	// セッション変更時にユーザーデータを強制的に更新
 	useEffect(() => {
 		if (session?.user && !isSessionLoading) {
-			mutate();
+			// セッションが変更された場合のみmutateを呼び出す
+			if (!user || user.id !== session.user.id) {
+				mutate();
+			}
 		} else if (!session && !isSessionLoading) {
 			mutate({ user: null }, false);
 		}
-	}, [session, isSessionLoading, mutate]);
+	}, [session, isSessionLoading, mutate, user]);
 
 	// ネットワークエラーの監視
 	useEffect(() => {
