@@ -6,18 +6,20 @@ import { PostCard } from "./post-card";
 interface PostCardsProps {
 	posts: PostWithUser[];
 	onLikeChange?: (postId: string, likeCount: number, isLiked: boolean) => void;
+	onPostUpdate?: (postId: string) => void;
+	onPostDelete?: (postId: string) => void;
 }
 
-export function PostCards({ posts, onLikeChange }: PostCardsProps) {
-	if (posts.length === 0) return <div>投稿がありません</div>;
-
+export function PostCards({ posts, onLikeChange, onPostUpdate, onPostDelete }: PostCardsProps) {
 	return (
-		<div className="grid gap-4 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3">
+		<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 			{posts.map((post) => (
-				<PostCard 
-					key={post.id} 
-					post={post} 
+				<PostCard
+					key={post.id}
+					post={post}
 					onLikeChange={onLikeChange}
+					onPostUpdate={onPostUpdate}
+					onPostDelete={onPostDelete}
 				/>
 			))}
 		</div>

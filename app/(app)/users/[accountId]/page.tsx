@@ -206,6 +206,48 @@ export default function UserProfilePage({ params }: { params: Promise<{ accountI
 		}, false);
 	};
 
+	// 投稿更新のハンドラー
+	const handlePostUpdate = (postId: string) => {
+		// 投稿データを再取得
+		mutatePosts();
+		if (isOwnProfile) {
+			mutateFeed();
+		}
+		mutateLikedPosts();
+	};
+
+	// 投稿削除のハンドラー
+	const handlePostDelete = (postId: string) => {
+		// 投稿データから削除
+		mutatePosts((currentData) => {
+			if (!currentData) return currentData;
+			return {
+				...currentData,
+				posts: currentData.posts.filter(post => post.id !== postId)
+			};
+		}, false);
+
+		// フィードデータからも削除（自分自身のプロフィールの場合）
+		if (isOwnProfile) {
+			mutateFeed((currentData) => {
+				if (!currentData) return currentData;
+				return {
+					...currentData,
+					posts: currentData.posts.filter(post => post.id !== postId)
+				};
+			}, false);
+		}
+
+		// いいね投稿データからも削除
+		mutateLikedPosts((currentData) => {
+			if (!currentData) return currentData;
+			return {
+				...currentData,
+				posts: currentData.posts.filter(post => post.id !== postId)
+			};
+		}, false);
+	};
+
 	if (!accountId || userLoading) {
 		return (
 			<div className="container mx-auto px-4 py-8">
@@ -324,7 +366,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ accountI
 								<p className="text-gray-600">フィードに投稿がありません</p>
 							</div>
 						) : (
-							<PostCards posts={feedPosts} onLikeChange={handleLikeChange} />
+							<PostCards posts={feedPosts} onLikeChange={handleLikeChange} onPostUpdate={handlePostUpdate} onPostDelete={handlePostDelete} />
 						)}
 					</TabsContent>
 				)}
@@ -359,7 +401,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ accountI
 							<p className="text-gray-600">まだ投稿がありません</p>
 						</div>
 					) : (
-						<PostCards posts={posts} onLikeChange={handleLikeChange} />
+						<PostCards posts={posts} onLikeChange={handleLikeChange} onPostUpdate={handlePostUpdate} onPostDelete={handlePostDelete} />
 					)}
 				</TabsContent>
 
@@ -438,7 +480,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ accountI
 							<p className="text-gray-600">いいねした投稿がありません</p>
 						</div>
 					) : (
-						<PostCards posts={likedPosts} onLikeChange={handleLikeChange} />
+						<PostCards posts={likedPosts} onLikeChange={handleLikeChange} onPostUpdate={handlePostUpdate} onPostDelete={handlePostDelete} />
 					)}
 				</TabsContent>
 			</Tabs>

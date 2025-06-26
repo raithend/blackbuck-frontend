@@ -27,10 +27,42 @@ export default function ClassificationPage() {
 	const params = useParams();
 	const decodedName = decodeURIComponent(params.name as string);
 
-	const { data, error, isLoading } = useSWR<{ posts: PostWithUser[] }>(
+	const { data, error, isLoading, mutate } = useSWR<{ posts: PostWithUser[] }>(
 		`/api/classifications?name=${encodeURIComponent(decodedName)}`,
 		fetcher,
 	);
+
+	// いいね状態変更のハンドラー
+	const handleLikeChange = (postId: string, likeCount: number, isLiked: boolean) => {
+		mutate((currentData) => {
+			if (!currentData) return currentData;
+			return {
+				...currentData,
+				posts: currentData.posts.map(post => 
+					post.id === postId 
+						? { ...post, likeCount, isLiked }
+						: post
+				)
+			};
+		}, false);
+	};
+
+	// 投稿更新のハンドラー
+	const handlePostUpdate = (postId: string) => {
+		// 投稿データを再取得
+		mutate();
+	};
+
+	// 投稿削除のハンドラー
+	const handlePostDelete = (postId: string) => {
+		mutate((currentData) => {
+			if (!currentData) return currentData;
+			return {
+				...currentData,
+				posts: currentData.posts.filter(post => post.id !== postId)
+			};
+		}, false);
+	};
 
 	if (isLoading) return <div>読み込み中...</div>;
 	if (error) return <div>エラーが発生しました</div>;
@@ -38,7 +70,12 @@ export default function ClassificationPage() {
 	return (
 		<div className="container mx-auto px-4 py-8">
 			<h1 className="text-2xl font-bold mb-6">{decodedName}の投稿</h1>
-			<PostCards posts={data?.posts || []} />
+			<PostCards 
+				posts={data?.posts || []} 
+				onLikeChange={handleLikeChange}
+				onPostUpdate={handlePostUpdate}
+				onPostDelete={handlePostDelete}
+			/>
 		</div>
 	);
 }

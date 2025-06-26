@@ -40,10 +40,42 @@ export default function LocationPage() {
 	);
 
 	// locationの投稿を取得
-	const { data: postsData, error: postsError, isLoading: postsLoading } = useSWR<{ posts: PostWithUser[] }>(
+	const { data: postsData, error: postsError, isLoading: postsLoading, mutate: mutatePosts } = useSWR<{ posts: PostWithUser[] }>(
 		location ? `/api/posts?location=${encodeURIComponent(location)}` : null,
 		fetcher
 	);
+
+	// いいね状態変更のハンドラー
+	const handleLikeChange = (postId: string, likeCount: number, isLiked: boolean) => {
+		mutatePosts((currentData) => {
+			if (!currentData) return currentData;
+			return {
+				...currentData,
+				posts: currentData.posts.map(post => 
+					post.id === postId 
+						? { ...post, likeCount, isLiked }
+						: post
+				)
+			};
+		}, false);
+	};
+
+	// 投稿更新のハンドラー
+	const handlePostUpdate = (postId: string) => {
+		// 投稿データを再取得
+		mutatePosts();
+	};
+
+	// 投稿削除のハンドラー
+	const handlePostDelete = (postId: string) => {
+		mutatePosts((currentData) => {
+			if (!currentData) return currentData;
+			return {
+				...currentData,
+				posts: currentData.posts.filter(post => post.id !== postId)
+			};
+		}, false);
+	};
 
 	if (locationLoading) {
 		return (
@@ -153,7 +185,12 @@ export default function LocationPage() {
 						<p className="text-gray-600 mb-4">
 							{posts.length}件の投稿が見つかりました
 						</p>
-						<PostCards posts={posts} />
+						<PostCards 
+							posts={posts} 
+							onLikeChange={handleLikeChange}
+							onPostUpdate={handlePostUpdate}
+							onPostDelete={handlePostDelete}
+						/>
 					</>
 				)}
 			</div>
