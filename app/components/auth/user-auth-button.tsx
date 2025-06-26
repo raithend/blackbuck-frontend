@@ -10,6 +10,7 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/app/components/ui/dropdown-menu";
+import { Skeleton } from "@/app/components/ui/skeleton";
 import { LogoutButton } from "@/app/components/auth/logout-button";
 import { useUser } from "@/app/contexts/user-context";
 import { Settings, User } from "lucide-react";
@@ -22,9 +23,7 @@ export function UserAuthButton() {
 	if (loading) {
 		return (
 			<Button variant="ghost" size="sm" disabled>
-				<Avatar className="h-8 w-8">
-					<AvatarFallback>...</AvatarFallback>
-				</Avatar>
+				<Skeleton className="h-8 w-8 rounded-full" />
 			</Button>
 		);
 	}
