@@ -2,6 +2,7 @@
 
 import { UserAuthButton } from "@/app/components/auth/user-auth-button";
 import { PostButton } from "@/app/components/post/post-button";
+import { SearchBox } from "@/app/components/search-box";
 import {
 	Avatar,
 	AvatarFallback,
@@ -18,6 +19,9 @@ export function Header() {
 					<Link href="/" className="mr-6 flex items-center space-x-2">
 						<span className="font-bold">BlackBuck</span>
 					</Link>
+				</div>
+				<div className="flex flex-1 items-center justify-center">
+					<SearchBox />
 				</div>
 				<div className="flex items-center space-x-4">
 					<PostButton />
