@@ -17,7 +17,6 @@ export async function GET(
 
 		// Authorizationヘッダーを確認
 		const authHeader = request.headers.get("Authorization");
-		console.log(`API: Authorization header = ${authHeader ? 'present' : 'missing'}`);
 
 		// まずユーザー情報を取得
 		const { data: user, error: userError } = await supabase
@@ -71,8 +70,6 @@ export async function GET(
 			likeCountMap.set(like.post_id, count + 1);
 		});
 
-		console.log(`API: Like counts for posts:`, Object.fromEntries(likeCountMap));
-
 		// 認証済みユーザーの場合、いいね状態も取得
 		let currentUser = null;
 		let userLikes: string[] = [];
@@ -81,9 +78,6 @@ export async function GET(
 		if (authHeader?.startsWith("Bearer ")) {
 			const token = authHeader.split(" ")[1];
 			const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-			
-			console.log(`API: Auth error = ${authError?.message || 'none'}`);
-			console.log(`API: Current user = ${user?.id || 'null'}`);
 			
 			if (user && !authError) {
 				currentUser = user;
@@ -95,7 +89,6 @@ export async function GET(
 
 				if (!likesError) {
 					userLikes = likes?.map(like => like.post_id) || [];
-					console.log(`API: User likes = [${userLikes.join(', ')}]`);
 				} else {
 					console.error("いいね取得エラー:", likesError);
 				}
@@ -108,9 +101,6 @@ export async function GET(
 		const formattedPosts = posts?.map(post => {
 			const isLiked = userLikes.includes(post.id);
 			const likeCount = likeCountMap.get(post.id) || 0;
-			
-			// デバッグ情報をコンソールに出力
-			console.log(`API: Post ${post.id}: isLiked = ${isLiked}, likeCount = ${likeCount}, userLikes = [${userLikes.join(', ')}]`);
 			
 			return {
 				...post,

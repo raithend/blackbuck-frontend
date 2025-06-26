@@ -438,7 +438,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ accountI
 							<p className="text-gray-600">いいねした投稿がありません</p>
 						</div>
 					) : (
-						<PostCards posts={likedPosts} showLikedAt={true} onLikeChange={handleLikeChange} />
+						<PostCards posts={likedPosts} onLikeChange={handleLikeChange} />
 					)}
 				</TabsContent>
 			</Tabs>

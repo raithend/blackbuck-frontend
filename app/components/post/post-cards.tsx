@@ -5,11 +5,10 @@ import { PostCard } from "./post-card";
 
 interface PostCardsProps {
 	posts: PostWithUser[];
-	showLikedAt?: boolean;
 	onLikeChange?: (postId: string, likeCount: number, isLiked: boolean) => void;
 }
 
-export function PostCards({ posts, showLikedAt = false, onLikeChange }: PostCardsProps) {
+export function PostCards({ posts, onLikeChange }: PostCardsProps) {
 	if (posts.length === 0) return <div>投稿がありません</div>;
 
 	return (
@@ -18,7 +17,6 @@ export function PostCards({ posts, showLikedAt = false, onLikeChange }: PostCard
 				<PostCard 
 					key={post.id} 
 					post={post} 
-					showLikedAt={showLikedAt}
 					onLikeChange={onLikeChange}
 				/>
 			))}
