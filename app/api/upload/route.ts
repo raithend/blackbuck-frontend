@@ -1,6 +1,7 @@
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@/app/lib/supabase-server";
 
 if (
 	!process.env.AWS_ACCESS_KEY_ID ||
@@ -20,6 +21,29 @@ const s3Client = new S3Client({
 
 export async function POST(request: NextRequest) {
 	try {
+		// Authorizationヘッダーからアクセストークンを取得
+		const authHeader = request.headers.get("authorization");
+		const accessToken = authHeader?.replace("Bearer ", "");
+
+		if (!accessToken) {
+			return NextResponse.json(
+				{ error: "認証が必要です" },
+				{ status: 401 }
+			);
+		}
+
+		// アクセストークンを使ってSupabaseクライアントを作成
+		const supabase = await createClient(accessToken);
+
+		// ユーザー情報を取得
+		const { data: { user }, error: authError } = await supabase.auth.getUser();
+		if (authError || !user) {
+			return NextResponse.json(
+				{ error: "認証が必要です" },
+				{ status: 401 }
+			);
+		}
+
 		const formData = await request.formData();
 		const file = formData.get("file") as File;
 		if (!file) {
@@ -55,13 +79,8 @@ export async function POST(request: NextRequest) {
 		return NextResponse.json({ url });
 	} catch (error) {
 		return NextResponse.json(
-			{
-				error:
-					error instanceof Error
-						? error.message
-						: "ファイルのアップロードに失敗しました",
-			},
-			{ status: 500 },
+			{ error: "ファイルのアップロードに失敗しました" },
+			{ status: 500 }
 		);
 	}
 }

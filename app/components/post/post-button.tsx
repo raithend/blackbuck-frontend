@@ -18,8 +18,9 @@ export function PostButton() {
 		imageUrls: string[];
 	}) => {
 		try {
-			if (!data.imageUrls || data.imageUrls.length === 0) {
-				toast.error("画像を1枚以上アップロードしてください");
+			// 投稿内容または画像のいずれかが必要
+			if ((!data.content || data.content.trim() === "") && (!data.imageUrls || data.imageUrls.length === 0)) {
+				toast.error("投稿内容または画像のいずれかが必要です");
 				return;
 			}
 

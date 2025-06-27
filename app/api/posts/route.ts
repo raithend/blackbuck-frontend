@@ -105,8 +105,22 @@ export async function POST(request: NextRequest) {
 	try {
 		const supabase = await createClient();
 		
-		// 認証チェック
-		const { data: { user }, error: authError } = await supabase.auth.getUser();
+		// Authorizationヘッダーからアクセストークンを取得
+		const authHeader = request.headers.get("authorization");
+		const accessToken = authHeader?.replace("Bearer ", "");
+
+		if (!accessToken) {
+			return NextResponse.json(
+				{ error: "認証が必要です" },
+				{ status: 401 }
+			);
+		}
+
+		// アクセストークンを使ってSupabaseクライアントを作成
+		const supabaseWithAuth = await createClient(accessToken);
+
+		// ユーザー情報を取得
+		const { data: { user }, error: authError } = await supabaseWithAuth.auth.getUser();
 		if (authError || !user) {
 			return NextResponse.json(
 				{ error: "認証が必要です" },
@@ -115,21 +129,22 @@ export async function POST(request: NextRequest) {
 		}
 
 		const body = await request.json();
-		const { content, classification, location } = body;
+		const { content, classification, location, image_urls } = body;
 
-		if (!content) {
+		// 投稿内容または画像のいずれかが必要
+		if (!content && (!image_urls || image_urls.length === 0)) {
 			return NextResponse.json(
-				{ error: "投稿内容は必須です" },
+				{ error: "投稿内容または画像のいずれかが必要です" },
 				{ status: 400 }
 			);
 		}
 
 		// 投稿を作成
-		const { data: post, error: postError } = await supabase
+		const { data: post, error: postError } = await supabaseWithAuth
 			.from("posts")
 			.insert({
 				user_id: user.id,
-				content,
+				content: content || "",
 				classification,
 				location,
 			})
@@ -137,16 +152,34 @@ export async function POST(request: NextRequest) {
 			.single();
 
 		if (postError) {
-			console.error("投稿作成エラー:", postError);
 			return NextResponse.json(
 				{ error: "投稿の作成に失敗しました" },
 				{ status: 500 }
 			);
 		}
 
+		// 画像がある場合はpost_imagesテーブルに挿入
+		if (image_urls && image_urls.length > 0) {
+			const imageData = image_urls.map((url: string, index: number) => ({
+				post_id: post.id,
+				image_url: url,
+				order_index: index,
+			}));
+
+			const { error: imageError } = await supabaseWithAuth
+				.from("post_images")
+				.insert(imageData);
+
+			if (imageError) {
+				return NextResponse.json(
+					{ error: "画像の保存に失敗しました" },
+					{ status: 500 }
+				);
+			}
+		}
+
 		return NextResponse.json({ success: true, post });
 	} catch (error) {
-		console.error("投稿作成エラー:", error);
 		return NextResponse.json(
 			{ error: "サーバーエラーが発生しました" },
 			{ status: 500 }

@@ -10,6 +10,7 @@ import {
 } from "@/app/components/ui/dialog";
 import { Input } from "@/app/components/ui/input";
 import { Textarea } from "@/app/components/ui/textarea";
+import { useUser } from "@/app/contexts/user-context";
 import { useState } from "react";
 
 interface PostDialogProps {
@@ -27,13 +28,20 @@ export function PostDialog({ onPost }: PostDialogProps) {
 	const [classification, setClassification] = useState("");
 	const [imageFiles, setImageFiles] = useState<File[]>([]);
 	const [isSubmitting, setIsSubmitting] = useState(false);
+	const { session } = useUser();
 
 	const uploadToS3 = async (file: File): Promise<string> => {
 		const formData = new FormData();
 		formData.append("file", file);
 
+		const headers: HeadersInit = {};
+		if (session?.access_token) {
+			headers.Authorization = `Bearer ${session.access_token}`;
+		}
+
 		const response = await fetch("/api/upload", {
 			method: "POST",
+			headers,
 			body: formData,
 		});
 
@@ -89,7 +97,7 @@ export function PostDialog({ onPost }: PostDialogProps) {
 				<ImageUpload value={imageFiles} onChange={setImageFiles} />
 				<Button
 					onClick={handleSubmit}
-					disabled={isSubmitting || imageFiles.length === 0}
+					disabled={isSubmitting || ((!content || content.trim() === "") && imageFiles.length === 0)}
 					className="w-full"
 				>
 					{isSubmitting ? "投稿中..." : "投稿する"}

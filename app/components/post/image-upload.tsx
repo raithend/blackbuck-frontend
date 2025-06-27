@@ -56,7 +56,6 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
 							alt={`アップロード画像 ${index + 1}`}
 							fill
 							className="object-cover rounded-lg"
-							style={{ width: "auto", height: "auto" }}
 						/>
 						<Button
 							variant="destructive"
