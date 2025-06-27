@@ -30,6 +30,12 @@ export default function ClassificationPage() {
 	const { data, error, isLoading, mutate } = useSWR<{ posts: PostWithUser[] }>(
 		`/api/classifications?name=${encodeURIComponent(decodedName)}`,
 		fetcher,
+		{
+			revalidateOnFocus: false, // フォーカス時の自動リフェッチを無効
+			revalidateOnReconnect: false, // ネットワーク復旧時の自動リフェッチを無効
+			dedupingInterval: 30000, // 30秒間は重複リクエストを防ぐ
+			refreshInterval: 0, // 自動更新を無効
+		}
 	);
 
 	// いいね状態変更のハンドラー

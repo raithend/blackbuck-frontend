@@ -104,7 +104,11 @@ ${JSON.stringify(classifications)}`,
 			throw postsError;
 		}
 
-		return NextResponse.json({ posts });
+		return NextResponse.json({ posts }, {
+			headers: {
+				'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600', // 5分間キャッシュ
+			},
+		});
 	} catch (error) {
 		console.error("Error processing classifications:", error);
 		return NextResponse.json(
