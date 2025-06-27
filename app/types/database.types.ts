@@ -9,6 +9,54 @@ export type Json =
 export type Database = {
 	public: {
 		Tables: {
+			classifications: {
+				Row: {
+					created_at: string;
+					description: string | null;
+					english_name: string | null;
+					era_end: string | null;
+					era_start: string | null;
+					geographic_data_creator: string | null;
+					geographic_data_file: string | null;
+					id: string;
+					name: string;
+					phylogenetic_tree_creator: string | null;
+					phylogenetic_tree_file: string | null;
+					scientific_name: string | null;
+					updated_at: string;
+				};
+				Insert: {
+					created_at?: string;
+					description?: string | null;
+					english_name?: string | null;
+					era_end?: string | null;
+					era_start?: string | null;
+					geographic_data_creator?: string | null;
+					geographic_data_file?: string | null;
+					id?: string;
+					name: string;
+					phylogenetic_tree_creator?: string | null;
+					phylogenetic_tree_file?: string | null;
+					scientific_name?: string | null;
+					updated_at?: string;
+				};
+				Update: {
+					created_at?: string;
+					description?: string | null;
+					english_name?: string | null;
+					era_end?: string | null;
+					era_start?: string | null;
+					geographic_data_creator?: string | null;
+					geographic_data_file?: string | null;
+					id?: string;
+					name?: string;
+					phylogenetic_tree_creator?: string | null;
+					phylogenetic_tree_file?: string | null;
+					scientific_name?: string | null;
+					updated_at?: string;
+				};
+				Relationships: [];
+			};
 			comment_images: {
 				Row: {
 					comment_id: string;
