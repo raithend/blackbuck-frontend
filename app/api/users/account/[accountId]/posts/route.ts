@@ -1,9 +1,9 @@
 import { createClient } from "@/app/lib/supabase-server";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
-	request: Request,
-	{ params }: { params: Promise<{ accountId: string }> }
+	request: NextRequest,
+	{ params }: { params: { accountId: string } }
 ) {
 	try {
 		const { accountId } = await params;
@@ -18,6 +18,13 @@ export async function GET(
 		// Authorizationヘッダーを確認
 		const authHeader = request.headers.get("Authorization");
 
+		if (!authHeader) {
+			return NextResponse.json(
+				{ error: "認証が必要です" },
+				{ status: 401 }
+			);
+		}
+
 		// まずユーザー情報を取得
 		const { data: user, error: userError } = await supabase
 			.from("users")
@@ -26,7 +33,6 @@ export async function GET(
 			.single();
 
 		if (userError || !user) {
-			console.error("ユーザー取得エラー:", userError);
 			return NextResponse.json({ error: "User not found" }, { status: 404 });
 		}
 
@@ -45,7 +51,6 @@ export async function GET(
 			.order("created_at", { ascending: false });
 
 		if (postsError) {
-			console.error("投稿取得エラー:", postsError);
 			return NextResponse.json(
 				{ error: postsError.message },
 				{ status: 500 },
@@ -58,10 +63,6 @@ export async function GET(
 			.from("likes")
 			.select("post_id")
 			.in("post_id", postIds);
-
-		if (likeCountsError) {
-			console.error("いいね数取得エラー:", likeCountsError);
-		}
 
 		// いいね数を集計
 		const likeCountMap = new Map<string, number>();
@@ -89,12 +90,8 @@ export async function GET(
 
 				if (!likesError) {
 					userLikes = likes?.map(like => like.post_id) || [];
-				} else {
-					console.error("いいね取得エラー:", likesError);
 				}
 			}
-		} else {
-			console.log("API: No Authorization header found");
 		}
 
 		// 投稿データを整形（ユーザー情報といいね情報を含める）
@@ -113,7 +110,6 @@ export async function GET(
 
 		return NextResponse.json({ posts: formattedPosts });
 	} catch (error) {
-		console.error("エラー:", error);
 		return NextResponse.json(
 			{ error: "Internal Server Error" },
 			{ status: 500 },

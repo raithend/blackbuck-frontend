@@ -1,9 +1,9 @@
 import { createClient } from "@/app/lib/supabase-server";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
-	request: Request,
-	{ params }: { params: Promise<{ accountId: string }> }
+	request: NextRequest,
+	{ params }: { params: { accountId: string } }
 ) {
 	try {
 		const { accountId } = await params;

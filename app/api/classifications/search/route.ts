@@ -34,9 +34,8 @@ export async function GET(request: NextRequest) {
 
 		return NextResponse.json({ classifications: uniqueClassifications });
 	} catch (error) {
-		console.error("分類検索エラー:", error);
 		return NextResponse.json(
-			{ error: "サーバーエラーが発生しました" },
+			{ error: "Internal Server Error" },
 			{ status: 500 }
 		);
 	}

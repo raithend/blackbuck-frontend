@@ -1,7 +1,7 @@
 import { createClient } from "@/app/lib/supabase-server";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
 	try {
 		// Authorizationヘッダーからアクセストークンを取得
 		const authHeader = request.headers.get("authorization");
@@ -54,7 +54,7 @@ export async function GET(request: Request) {
 	}
 }
 
-export async function PUT(request: Request) {
+export async function PUT(request: NextRequest) {
 	try {
 		// Authorizationヘッダーからアクセストークンを取得
 		const authHeader = request.headers.get("authorization");

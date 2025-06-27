@@ -1,9 +1,9 @@
 import { createClient } from "@/app/lib/supabase-server";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
-	request: Request,
-	{ params }: { params: Promise<{ location: string }> }
+	request: NextRequest,
+	{ params }: { params: { location: string } }
 ) {
 	try {
 		const { location } = await params;
@@ -37,78 +37,77 @@ export async function GET(
 
 		return NextResponse.json({ location: locationData });
 	} catch (error) {
-		console.error("エラー:", error);
 		return NextResponse.json(
 			{ error: "Internal Server Error" },
-			{ status: 500 },
+			{ status: 500 }
 		);
 	}
 }
 
 export async function PUT(
-	request: Request,
-	{ params }: { params: Promise<{ location: string }> }
+	request: NextRequest,
+	{ params }: { params: { location: string } }
 ) {
 	try {
-		const { location } = await params;
+		const { location: locationName } = await params;
 
-		if (!location) {
-			return NextResponse.json({ error: "Location is required" }, { status: 400 });
+		if (!locationName) {
+			return NextResponse.json(
+				{ error: "Location name is required" },
+				{ status: 400 }
+			);
 		}
 
 		const supabase = await createClient();
 
-		// 認証トークンの取得
+		// Authorizationヘッダーからアクセストークンを取得
 		const authHeader = request.headers.get("Authorization");
-		if (!authHeader?.startsWith("Bearer ")) {
-			return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
+		const accessToken = authHeader?.replace("Bearer ", "");
+
+		if (!accessToken) {
+			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 		}
 
-		const token = authHeader.split(" ")[1];
+		// アクセストークンを使ってSupabaseクライアントを作成
+		const supabaseWithAuth = await createClient(accessToken);
 
-		// トークンの検証
-		const {
-			data: { user },
-			error: authError,
-		} = await supabase.auth.getUser(token);
+		// ユーザー情報を取得
+		const { data: { user }, error: authError } = await supabaseWithAuth.auth.getUser();
 		if (authError || !user) {
-			return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
+			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 		}
 
-		// URLデコードしてlocationを取得
-		const decodedLocation = decodeURIComponent(location);
-
+		// リクエストボディから更新データを取得
 		const updateData = await request.json();
+		const { name, description, address, latitude, longitude } = updateData;
 
-		// バリデーション
-		if (updateData.name !== undefined && (updateData.name.trim() === "")) {
-			return NextResponse.json({ error: "場所名は空にできません" }, { status: 400 });
-		}
-
-		// locationを更新
-		const { data: updatedLocation, error } = await supabase
+		// locationsテーブルを更新
+		const { data: updatedLocation, error: updateError } = await supabaseWithAuth
 			.from("locations")
 			.update({
-				name: updateData.name?.trim(),
-				description: updateData.description?.trim() || null,
-				avatar_url: updateData.avatar_url || null,
-				header_url: updateData.header_url || null,
+				name,
+				description,
+				address,
+				latitude,
+				longitude,
 			})
-			.eq("name", decodedLocation)
+			.eq("name", locationName)
+			.eq("created_by", user.id)
 			.select()
 			.single();
 
-		if (error) {
-			console.error("location更新エラー:", error);
-			return NextResponse.json({ error: error.message }, { status: 400 });
+		if (updateError) {
+			return NextResponse.json(
+				{ error: updateError.message },
+				{ status: 500 }
+			);
 		}
 
 		return NextResponse.json({ location: updatedLocation });
 	} catch (error) {
-		console.error("エラー:", error);
 		return NextResponse.json(
 			{ error: "Internal Server Error" },
-			{ status: 500 },
+			{ status: 500 }
 		);
 	}
 } 

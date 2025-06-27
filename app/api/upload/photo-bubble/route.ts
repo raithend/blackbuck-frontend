@@ -73,15 +73,9 @@ export async function POST(request: NextRequest) {
 		const url = `https://${process.env.AWS_S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
 		return NextResponse.json({ url });
 	} catch (error) {
-		console.error('Error uploading photo bubble image:', error);
 		return NextResponse.json(
-			{
-				error:
-					error instanceof Error
-						? error.message
-						: "ファイルのアップロードに失敗しました",
-			},
-			{ status: 500 },
+			{ error: "Failed to upload photo bubble image" },
+			{ status: 500 }
 		);
 	}
 } 

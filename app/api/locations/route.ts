@@ -1,5 +1,5 @@
 import { createClient } from "@/app/lib/supabase-server";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function GET() {
 	try {
@@ -18,65 +18,71 @@ export async function GET() {
 
 		return NextResponse.json({ locations: locations || [] });
 	} catch (error) {
-		console.error("エラー:", error);
 		return NextResponse.json(
 			{ error: "Internal Server Error" },
-			{ status: 500 },
+			{ status: 500 }
 		);
 	}
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
 	try {
 		const supabase = await createClient();
-
-		// 認証トークンの取得
+		
+		// Authorizationヘッダーからアクセストークンを取得
 		const authHeader = request.headers.get("Authorization");
-		if (!authHeader?.startsWith("Bearer ")) {
-			return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
+		const accessToken = authHeader?.replace("Bearer ", "");
+
+		if (!accessToken) {
+			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 		}
 
-		const token = authHeader.split(" ")[1];
+		// アクセストークンを使ってSupabaseクライアントを作成
+		const supabaseWithAuth = await createClient(accessToken);
 
-		// トークンの検証
-		const {
-			data: { user },
-			error: authError,
-		} = await supabase.auth.getUser(token);
+		// ユーザー情報を取得
+		const { data: { user }, error: authError } = await supabaseWithAuth.auth.getUser();
 		if (authError || !user) {
-			return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
+			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 		}
 
+		// リクエストボディからデータを取得
 		const locationData = await request.json();
+		const { name, description, address, latitude, longitude } = locationData;
 
-		// バリデーション
-		if (!locationData.name || locationData.name.trim() === "") {
-			return NextResponse.json({ error: "場所名は必須です" }, { status: 400 });
+		if (!name) {
+			return NextResponse.json(
+				{ error: "Location name is required" },
+				{ status: 400 }
+			);
 		}
 
-		// locationを作成
-		const { data: createdLocation, error } = await supabase
+		// locationsテーブルにデータを挿入
+		const { data: location, error: insertError } = await supabaseWithAuth
 			.from("locations")
 			.insert({
-				name: locationData.name.trim(),
-				description: locationData.description?.trim() || null,
-				avatar_url: locationData.avatar_url || null,
-				header_url: locationData.header_url || null,
+				name,
+				description,
+				address,
+				latitude,
+				longitude,
+				created_by: user.id,
 			})
 			.select()
 			.single();
 
-		if (error) {
-			console.error("location作成エラー:", error);
-			return NextResponse.json({ error: error.message }, { status: 400 });
+		if (insertError) {
+			return NextResponse.json(
+				{ error: insertError.message },
+				{ status: 500 }
+			);
 		}
 
-		return NextResponse.json({ location: createdLocation });
+		return NextResponse.json({ location });
 	} catch (error) {
-		console.error("エラー:", error);
 		return NextResponse.json(
 			{ error: "Internal Server Error" },
-			{ status: 500 },
+			{ status: 500 }
 		);
 	}
 } 

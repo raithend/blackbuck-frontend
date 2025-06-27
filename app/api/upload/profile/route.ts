@@ -1,6 +1,6 @@
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 if (
 	!process.env.AWS_ACCESS_KEY_ID ||
@@ -18,7 +18,7 @@ const s3Client = new S3Client({
 	},
 });
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
 	try {
 		const formData = await request.formData();
 		const file = formData.get("file") as File;
@@ -85,15 +85,9 @@ export async function POST(request: Request) {
 		const url = `https://${process.env.AWS_S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
 		return NextResponse.json({ url, type });
 	} catch (error) {
-		console.error("プロフィール画像アップロードエラー:", error);
 		return NextResponse.json(
-			{
-				error:
-					error instanceof Error
-						? error.message
-						: "ファイルのアップロードに失敗しました",
-			},
-			{ status: 500 },
+			{ error: "プロフィール画像のアップロードに失敗しました" },
+			{ status: 500 }
 		);
 	}
 } 

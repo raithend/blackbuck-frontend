@@ -35,9 +35,8 @@ export async function GET(request: NextRequest) {
 
 		return NextResponse.json({ locations: locations || [] });
 	} catch (error) {
-		console.error("場所検索エラー:", error);
 		return NextResponse.json(
-			{ error: "サーバーエラーが発生しました" },
+			{ error: "Internal Server Error" },
 			{ status: 500 }
 		);
 	}

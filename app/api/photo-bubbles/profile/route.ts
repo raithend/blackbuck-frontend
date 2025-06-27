@@ -32,9 +32,8 @@ export async function GET(request: NextRequest) {
 
 		return NextResponse.json(photoBubbles);
 	} catch (error) {
-		console.error('Error in GET /api/photo-bubbles/profile:', error);
 		return NextResponse.json(
-			{ error: 'Internal server error' },
+			{ error: "Internal server error" },
 			{ status: 500 }
 		);
 	}
