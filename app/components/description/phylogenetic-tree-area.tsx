@@ -1,9 +1,14 @@
 import { PhylogeneticTree } from "./phylogenetic-tree";
 
-export default function PhylogeneticTreeArea() {
+interface PhylogeneticTreeAreaProps {
+	customTreeFile?: string;
+	customTreeContent?: string;
+}
+
+export default function PhylogeneticTreeArea({ customTreeFile, customTreeContent }: PhylogeneticTreeAreaProps) {
 	return (
 		<div className="h-[calc(100vh-4rem)]">
-			<PhylogeneticTree />
+			<PhylogeneticTree customTreeFile={customTreeFile} customTreeContent={customTreeContent} />
 		</div>
 	);
 }

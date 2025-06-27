@@ -1,14 +1,19 @@
 "use client";
 
 import type React from "react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { useGeologicalAge } from "./geological-context";
 
-const Globe: React.FC = () => {
+interface GlobeProps {
+	customGeographicFile?: string;
+}
+
+const Globe: React.FC<GlobeProps> = ({ customGeographicFile }) => {
 	const containerRef = useRef<HTMLDivElement>(null);
 	const { selectedMap } = useGeologicalAge();
+	const [isLoading, setIsLoading] = useState(false);
 	
 	// シーン関連のrefs
 	const sceneRef = useRef<THREE.Scene | null>(null);
@@ -117,7 +122,7 @@ const Globe: React.FC = () => {
 	const updateTexture = (mapName: string) => {
 		if (!globeRef.current) return;
 
-		const texturePath = `/PALEOMAP_PaleoAtlas_Rasters_v3/${mapName}.jpg`;
+		const texturePath = customGeographicFile || `/PALEOMAP_PaleoAtlas_Rasters_v3/${mapName}.jpg`;
 		
 		// キャッシュからテクスチャを取得
 		let texture = textureCache.current.get(texturePath);
@@ -128,6 +133,7 @@ const Globe: React.FC = () => {
 			(globeRef.current.material as THREE.MeshPhongMaterial).needsUpdate = true;
 		} else {
 			// 新しいテクスチャをロード
+			setIsLoading(true);
 			const textureLoader = new THREE.TextureLoader();
 			textureLoader.load(
 				texturePath,
@@ -140,10 +146,12 @@ const Globe: React.FC = () => {
 						(globeRef.current.material as THREE.MeshPhongMaterial).map = loadedTexture;
 						(globeRef.current.material as THREE.MeshPhongMaterial).needsUpdate = true;
 					}
+					setIsLoading(false);
 				},
 				undefined,
 				(error) => {
 					console.error("テクスチャのロードに失敗しました:", error);
+					setIsLoading(false);
 				}
 			);
 		}
@@ -167,10 +175,10 @@ const Globe: React.FC = () => {
 			};
 		}
 
-		// デフォルトの地図名を設定
-		const mapName = selectedMap || "Map1a_PALEOMAP_PaleoAtlas_000";
+		// カスタム地理データファイルがある場合はそれを使用、なければデフォルトの地図名を設定
+		const mapName = customGeographicFile ? "custom" : (selectedMap || "Map1a_PALEOMAP_PaleoAtlas_000");
 		updateTexture(mapName);
-	}, [selectedMap]);
+	}, [selectedMap, customGeographicFile]);
 
 	// クリーンアップ処理
 	useEffect(() => {
@@ -201,16 +209,20 @@ const Globe: React.FC = () => {
 				rendererRef.current.dispose();
 			}
 
-			if (controlsRef.current) {
-				controlsRef.current.dispose();
-			}
-
-			// リサイズイベントリスナーの削除
+			// イベントリスナーのクリーンアップ
 			window.removeEventListener("resize", () => {});
 		};
 	}, []);
 
-	return <div ref={containerRef} style={{ width: "100%", height: "100%" }} />;
+	if (isLoading) {
+		return (
+			<div className="flex items-center justify-center h-full">
+				<div className="text-lg">地球儀を読み込み中...</div>
+			</div>
+		);
+	}
+
+	return <div ref={containerRef} className="w-full h-full" />;
 };
 
 export default Globe;

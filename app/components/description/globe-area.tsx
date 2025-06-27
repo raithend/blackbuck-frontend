@@ -1,9 +1,13 @@
 import Globe from "./globe";
 
-export default function GlobeArea() {
+interface GlobeAreaProps {
+	customGeographicFile?: string;
+}
+
+export default function GlobeArea({ customGeographicFile }: GlobeAreaProps) {
 	return (
 		<div className="h-[calc(100vh-4rem)]">
-			<Globe />
+			<Globe customGeographicFile={customGeographicFile} />
 		</div>
 	);
 }

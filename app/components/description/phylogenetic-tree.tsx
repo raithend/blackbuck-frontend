@@ -1,9 +1,10 @@
 "use client";
 
 import * as d3 from "d3";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useGeologicalAge } from "./geological-context";
 import { processTreeData } from "./tree-data-processor";
+import yaml from "js-yaml";
 
 // ツリーデータの型定義
 export interface TreeNode {
@@ -19,15 +20,68 @@ interface ExtendedHierarchyNode extends d3.HierarchyNode<TreeNode> {
 	y: number;
 }
 
-export function PhylogeneticTree() {
+interface PhylogeneticTreeProps {
+	customTreeFile?: string;
+	customTreeContent?: string;
+}
+
+export function PhylogeneticTree({ customTreeFile, customTreeContent }: PhylogeneticTreeProps) {
 	const svgRef = useRef<SVGSVGElement>(null);
 	const { selectedAgeIds } = useGeologicalAge();
+	const [customTreeData, setCustomTreeData] = useState<TreeNode | null>(null);
+	const [isLoading, setIsLoading] = useState(false);
+
+	// カスタムツリーファイルまたはコンテンツの読み込み
+	useEffect(() => {
+		if (!customTreeFile && !customTreeContent) {
+			setCustomTreeData(null);
+			return;
+		}
+
+		const loadCustomTreeData = async () => {
+			setIsLoading(true);
+			try {
+				let data;
+				
+				if (customTreeContent) {
+					// データベースから直接コンテンツを読み込み（YAML形式）
+					data = yaml.load(customTreeContent) as any;
+				} else if (customTreeFile) {
+					// ファイルURLから読み込み（YAML形式）
+					const response = await fetch(customTreeFile);
+					if (!response.ok) {
+						throw new Error('Failed to load custom tree data');
+					}
+					const text = await response.text();
+					data = yaml.load(text) as any;
+				}
+				
+				setCustomTreeData(data);
+			} catch (error) {
+				console.error('カスタムツリーデータの読み込みに失敗しました:', error);
+				setCustomTreeData(null);
+			} finally {
+				setIsLoading(false);
+			}
+		};
+
+		loadCustomTreeData();
+	}, [customTreeFile, customTreeContent]);
 
 	useEffect(() => {
-		if (!svgRef.current) return;
+		if (!svgRef.current || isLoading) return;
 
 		// データの処理
-		const processedData = processTreeData(selectedAgeIds);
+		let processedData: TreeNode | null;
+		
+		if (customTreeData) {
+			// カスタムツリーデータを使用
+			processedData = customTreeData;
+		} else {
+			// デフォルトのツリーデータを使用
+			processedData = processTreeData(selectedAgeIds);
+		}
+
 		if (!processedData) {
 			return;
 		}
@@ -182,7 +236,15 @@ export function PhylogeneticTree() {
 				// すべてのパスを元の状態に戻す
 				links.attr("stroke-opacity", 0.4).attr("stroke-width", 2.5);
 			});
-	}, [selectedAgeIds]);
+	}, [selectedAgeIds, customTreeData, isLoading]);
+
+	if (isLoading) {
+		return (
+			<div className="flex items-center justify-center h-full">
+				<div className="text-lg">系統樹を読み込み中...</div>
+			</div>
+		);
+	}
 
 	return <svg ref={svgRef} className="w-full h-full" />;
 }

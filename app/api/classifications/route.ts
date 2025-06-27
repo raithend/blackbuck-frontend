@@ -6,6 +6,14 @@ const anthropic = new Anthropic({
 	apiKey: process.env.ANTHROPIC_API_KEY,
 });
 
+/**
+ * 分類検索API
+ * 用途: 検索機能で分類名の部分一致検索を行う
+ * パラメータ: name (検索したい分類名)
+ * 戻り値: マッチした分類の投稿一覧
+ * 
+ * 注意: 詳細情報が必要な場合は /api/classifications/[name] を使用してください
+ */
 export async function GET(request: NextRequest) {
 	try {
 		const { searchParams } = new URL(request.url);
@@ -118,4 +126,77 @@ ${JSON.stringify(classifications)}`,
 	}
 }
 
-// POSTリクエストのハンドラは一旦削除（別途開発予定）
+/**
+ * 分類情報作成API
+ * 用途: 新しい分類情報を作成する
+ */
+export async function POST(request: NextRequest) {
+	try {
+		const body = await request.json();
+		const { name, ...classificationData } = body;
+
+		if (!name) {
+			return NextResponse.json(
+				{ error: "Classification name is required" },
+				{ status: 400 }
+			);
+		}
+
+		// Authorizationヘッダーからアクセストークンを取得
+		const authHeader = request.headers.get("authorization");
+		const accessToken = authHeader?.replace("Bearer ", "");
+
+		if (!accessToken) {
+			return NextResponse.json(
+				{ error: "認証が必要です" },
+				{ status: 401 }
+			);
+		}
+
+		// アクセストークンを使ってSupabaseクライアントを作成
+		const supabase = await createClient(accessToken);
+
+		// ユーザー情報を取得
+		const { data: { user }, error: authError } = await supabase.auth.getUser();
+		if (authError || !user) {
+			return NextResponse.json(
+				{ error: "認証が必要です" },
+				{ status: 401 }
+			);
+		}
+
+		// 分類情報を作成
+		const { data: classification, error: createError } = await supabase
+			.from("classifications")
+			.insert({
+				name,
+				english_name: classificationData.english_name,
+				scientific_name: classificationData.scientific_name,
+				description: classificationData.description,
+				era_start: classificationData.era_start,
+				era_end: classificationData.era_end,
+				phylogenetic_tree_file: classificationData.phylogenetic_tree_file,
+				geographic_data_file: classificationData.geographic_data_file,
+				phylogenetic_tree_creator: classificationData.phylogenetic_tree_creator || user.id,
+				geographic_data_creator: classificationData.geographic_data_creator || user.id,
+			})
+			.select()
+			.single();
+
+		if (createError) {
+			console.error("Classification creation error:", createError);
+			return NextResponse.json(
+				{ error: "Failed to create classification" },
+				{ status: 500 }
+			);
+		}
+
+		return NextResponse.json({ classification });
+	} catch (error) {
+		console.error("Classification API error:", error);
+		return NextResponse.json(
+			{ error: "Internal Server Error" },
+			{ status: 500 }
+		);
+	}
+}
