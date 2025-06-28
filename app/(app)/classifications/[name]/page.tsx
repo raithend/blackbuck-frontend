@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { PostCards } from "@/app/components/post/post-cards";
 import PhylogeneticTreeArea from "@/app/components/description/phylogenetic-tree-area";
 import GlobeArea from "@/app/components/description/globe-area";
@@ -9,6 +10,9 @@ import type { PostWithUser } from "@/app/types/types";
 import { useParams } from "next/navigation";
 import useSWR from "swr";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/components/ui/tabs";
+import { Button } from "@/app/components/ui/button";
+import { Edit } from "lucide-react";
+import Link from "next/link";
 
 // 分類情報の型定義
 interface Classification {
@@ -68,6 +72,17 @@ export default function ClassificationPage() {
 	const classification = data?.classification;
 	const posts = data?.posts || [];
 
+	// 生息地データをメモ化して不要な再レンダリングを防ぐ
+	const habitatData = useMemo(() => {
+		if (!classification?.geographic_data_file) return [];
+		try {
+			return JSON.parse(classification.geographic_data_file);
+		} catch (error) {
+			console.error('生息地データのパースに失敗しました:', error);
+			return [];
+		}
+	}, [classification?.geographic_data_file]);
+
 	// いいね状態変更のハンドラー
 	const handleLikeChange = (postId: string, likeCount: number, isLiked: boolean) => {
 		mutate((currentData) => {
@@ -103,38 +118,12 @@ export default function ClassificationPage() {
 	if (isLoading) return <div>読み込み中...</div>;
 	if (error) return <div>エラーが発生しました</div>;
 
-	// 分類情報が存在しない場合、または系統樹と地理データの両方が存在しない場合
+	// 各要素の存在チェック
+	const hasOverview = classification?.description || classification?.english_name || classification?.scientific_name || classification?.era_start || classification?.era_end;
+	const hasPosts = posts.length > 0;
 	const hasPhylogeneticTree = classification?.phylogenetic_tree_file;
 	const hasGeographicData = classification?.geographic_data_file;
-	const hasClassificationData = classification && (hasPhylogeneticTree || hasGeographicData);
 
-	// 投稿のみの場合
-	if (!hasClassificationData) {
-		return (
-			<div className="container mx-auto px-4 py-8">
-				<div className="flex items-center justify-between mb-6">
-					<h1 className="text-2xl font-bold">{decodedName}の投稿</h1>
-					<ClassificationEditButton 
-						classification={classification || null} 
-						onUpdate={mutate}
-					/>
-				</div>
-				{classification?.description && (
-					<div className="mb-6 p-4 bg-gray-50 rounded-lg">
-						<p className="text-gray-700">{classification.description}</p>
-					</div>
-				)}
-				<PostCards 
-					posts={posts} 
-					onLikeChange={handleLikeChange}
-					onPostUpdate={handlePostUpdate}
-					onPostDelete={handlePostDelete}
-				/>
-			</div>
-		);
-	}
-
-	// 系統樹または地理データがある場合
 	return (
 		<GeologicalAgeProvider>
 			<div className="container mx-auto px-4 py-8">
@@ -145,41 +134,106 @@ export default function ClassificationPage() {
 						onUpdate={mutate}
 					/>
 				</div>
-				{classification?.description && (
-					<div className="mb-6 p-4 bg-gray-50 rounded-lg">
-						<p className="text-gray-700">{classification.description}</p>
-					</div>
-				)}
 				
-				<Tabs defaultValue="posts" className="w-full">
-					<TabsList className="grid w-full grid-cols-3">
+				<Tabs defaultValue="overview" className="w-full">
+					<TabsList className="grid w-full grid-cols-4">
+						<TabsTrigger value="overview">概要</TabsTrigger>
 						<TabsTrigger value="posts">投稿</TabsTrigger>
-						{hasPhylogeneticTree && <TabsTrigger value="tree">系統樹</TabsTrigger>}
-						{hasGeographicData && <TabsTrigger value="globe">地球儀</TabsTrigger>}
+						<TabsTrigger value="tree">系統樹</TabsTrigger>
+						<TabsTrigger value="globe">生息地</TabsTrigger>
 					</TabsList>
 					
-					<TabsContent value="posts" className="mt-6">
-						<PostCards 
-							posts={posts} 
-							onLikeChange={handleLikeChange}
-							onPostUpdate={handlePostUpdate}
-							onPostDelete={handlePostDelete}
-						/>
+					<TabsContent value="overview" className="mt-6">
+						{hasOverview ? (
+							<div className="space-y-4">
+								{classification?.description && (
+									<div className="p-4 bg-gray-50 rounded-lg">
+										<h3 className="font-semibold mb-2">説明</h3>
+										<p className="text-gray-700">{classification.description}</p>
+									</div>
+								)}
+								{(classification?.english_name || classification?.scientific_name) && (
+									<div className="p-4 bg-gray-50 rounded-lg">
+										<h3 className="font-semibold mb-2">分類情報</h3>
+										<div className="space-y-2">
+											{classification?.english_name && (
+												<p><span className="font-medium">英語名:</span> {classification.english_name}</p>
+											)}
+											{classification?.scientific_name && (
+												<p><span className="font-medium">学名:</span> <em>{classification.scientific_name}</em></p>
+											)}
+										</div>
+									</div>
+								)}
+								{(classification?.era_start || classification?.era_end) && (
+									<div className="p-4 bg-gray-50 rounded-lg">
+										<h3 className="font-semibold mb-2">生息年代</h3>
+										<div className="space-y-2">
+											{classification?.era_start && (
+												<p><span className="font-medium">開始:</span> {classification.era_start}</p>
+											)}
+											{classification?.era_end && (
+												<p><span className="font-medium">終了:</span> {classification.era_end}</p>
+											)}
+										</div>
+									</div>
+								)}
+							</div>
+						) : (
+							<div className="flex items-center justify-center h-64 text-gray-500">
+								<p>概要が設定されていません</p>
+							</div>
+						)}
 					</TabsContent>
 					
-					{hasPhylogeneticTree && (
-						<TabsContent value="tree" className="mt-6">
+					<TabsContent value="posts" className="mt-6">
+						{hasPosts ? (
+							<PostCards 
+								posts={posts} 
+								onLikeChange={handleLikeChange}
+								onPostUpdate={handlePostUpdate}
+								onPostDelete={handlePostDelete}
+							/>
+						) : (
+							<div className="flex items-center justify-center h-64 text-gray-500">
+								<p>投稿がありません</p>
+							</div>
+						)}
+					</TabsContent>
+					
+					<TabsContent value="tree" className="mt-6">
+						{hasPhylogeneticTree ? (
 							<PhylogeneticTreeArea 
 								customTreeContent={classification.phylogenetic_tree_file}
 							/>
-						</TabsContent>
-					)}
+						) : (
+							<div className="flex items-center justify-center h-64 text-gray-500">
+								<p>系統樹が設定されていません</p>
+							</div>
+						)}
+					</TabsContent>
 					
-					{hasGeographicData && (
-						<TabsContent value="globe" className="mt-6">
-							<GlobeArea customGeographicFile={classification.geographic_data_file} />
-						</TabsContent>
-					)}
+					<TabsContent value="globe" className="mt-6">
+						<div className="flex items-center justify-between mb-4">
+							<h3 className="text-lg font-semibold">生息地</h3>
+							<Link href={`/classifications/${encodeURIComponent(decodedName)}/habitat/edit`}>
+								<Button variant="outline" size="sm" className="flex items-center gap-2">
+									<Edit className="h-4 w-4" />
+									生息地を編集
+								</Button>
+							</Link>
+						</div>
+						{hasGeographicData ? (
+							<GlobeArea 
+								habitatData={habitatData}
+								showMapSelector={true}
+							/>
+						) : (
+							<div className="flex items-center justify-center h-64 text-gray-500">
+								<p>生息地が設定されていません</p>
+							</div>
+						)}
+					</TabsContent>
 				</Tabs>
 			</div>
 		</GeologicalAgeProvider>

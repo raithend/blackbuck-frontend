@@ -4,15 +4,15 @@ import type React from "react";
 import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-import { useGeologicalAge } from "./geological-context";
 
 interface GlobeProps {
-	customGeographicFile?: string;
+	customTexture?: string; // カスタムテクスチャのURL（生息地データ付きの地図画像）
 }
 
-const Globe: React.FC<GlobeProps> = ({ customGeographicFile }) => {
+const GlobeComponent: React.FC<GlobeProps> = ({ 
+	customTexture
+}) => {
 	const containerRef = useRef<HTMLDivElement>(null);
-	const { selectedMap } = useGeologicalAge();
 	const [isLoading, setIsLoading] = useState(false);
 	
 	// シーン関連のrefs
@@ -38,6 +38,17 @@ const Globe: React.FC<GlobeProps> = ({ customGeographicFile }) => {
 		cameraRotation: new THREE.Euler(0, 0, 0),
 		target: new THREE.Vector3(0, 0, 0),
 	});
+
+	// リサイズハンドラ
+	const handleResize = () => {
+		if (!cameraRef.current || !rendererRef.current) return;
+		
+		const width = window.innerWidth;
+		const height = window.innerHeight;
+		cameraRef.current.aspect = width / height;
+		cameraRef.current.updateProjectionMatrix();
+		rendererRef.current.setSize(width, height);
+	};
 
 	// 初期化処理（一度だけ実行）
 	const initializeScene = () => {
@@ -104,56 +115,52 @@ const Globe: React.FC<GlobeProps> = ({ customGeographicFile }) => {
 		animate();
 
 		// リサイズハンドラ
-		const handleResize = () => {
-			if (!cameraRef.current || !rendererRef.current) return;
-			
-			const width = window.innerWidth;
-			const height = window.innerHeight;
-			cameraRef.current.aspect = width / height;
-			cameraRef.current.updateProjectionMatrix();
-			rendererRef.current.setSize(width, height);
-		};
 		window.addEventListener("resize", handleResize);
 
 		isInitialized.current = true;
 	};
 
 	// テクスチャの更新処理
-	const updateTexture = (mapName: string) => {
+	const updateTexture = async (textureUrl: string) => {
 		if (!globeRef.current) return;
 
-		const texturePath = customGeographicFile || `/PALEOMAP_PaleoAtlas_Rasters_v3/${mapName}.jpg`;
-		
-		// キャッシュからテクスチャを取得
-		let texture = textureCache.current.get(texturePath);
-		
-		if (texture) {
-			// キャッシュされたテクスチャを使用
-			(globeRef.current.material as THREE.MeshPhongMaterial).map = texture;
-			(globeRef.current.material as THREE.MeshPhongMaterial).needsUpdate = true;
-		} else {
-			// 新しいテクスチャをロード
+		try {
 			setIsLoading(true);
-			const textureLoader = new THREE.TextureLoader();
-			textureLoader.load(
-				texturePath,
-				(loadedTexture) => {
-					// テクスチャをキャッシュに保存
-					textureCache.current.set(texturePath, loadedTexture);
-					
-					// 地球儀にテクスチャを適用
-					if (globeRef.current) {
-						(globeRef.current.material as THREE.MeshPhongMaterial).map = loadedTexture;
-						(globeRef.current.material as THREE.MeshPhongMaterial).needsUpdate = true;
+			
+			// キャッシュからテクスチャを取得
+			let texture = textureCache.current.get(textureUrl);
+			
+			if (texture) {
+				// キャッシュされたテクスチャを使用
+				(globeRef.current.material as THREE.MeshPhongMaterial).map = texture;
+				(globeRef.current.material as THREE.MeshPhongMaterial).needsUpdate = true;
+				setIsLoading(false);
+			} else {
+				// 新しいテクスチャをロード
+				const textureLoader = new THREE.TextureLoader();
+				textureLoader.load(
+					textureUrl,
+					(loadedTexture) => {
+						// テクスチャをキャッシュに保存
+						textureCache.current.set(textureUrl, loadedTexture);
+						
+						// 地球儀にテクスチャを適用
+						if (globeRef.current) {
+							(globeRef.current.material as THREE.MeshPhongMaterial).map = loadedTexture;
+							(globeRef.current.material as THREE.MeshPhongMaterial).needsUpdate = true;
+						}
+						setIsLoading(false);
+					},
+					undefined,
+					(error) => {
+						console.error("テクスチャのロードに失敗しました:", error);
+						setIsLoading(false);
 					}
-					setIsLoading(false);
-				},
-				undefined,
-				(error) => {
-					console.error("テクスチャのロードに失敗しました:", error);
-					setIsLoading(false);
-				}
-			);
+				);
+			}
+		} catch (error) {
+			console.error("テクスチャの更新に失敗しました:", error);
+			setIsLoading(false);
 		}
 	};
 
@@ -162,7 +169,7 @@ const Globe: React.FC<GlobeProps> = ({ customGeographicFile }) => {
 		initializeScene();
 	}, []);
 
-	// 地図の切り替え処理
+	// カスタムテクスチャの更新処理
 	useEffect(() => {
 		if (!isInitialized.current) return;
 
@@ -175,10 +182,10 @@ const Globe: React.FC<GlobeProps> = ({ customGeographicFile }) => {
 			};
 		}
 
-		// カスタム地理データファイルがある場合はそれを使用、なければデフォルトの地図名を設定
-		const mapName = customGeographicFile ? "custom" : (selectedMap || "Map1a_PALEOMAP_PaleoAtlas_000");
-		updateTexture(mapName);
-	}, [selectedMap, customGeographicFile]);
+		if (customTexture) {
+			updateTexture(customTexture);
+		}
+	}, [customTexture]);
 
 	// クリーンアップ処理
 	useEffect(() => {
@@ -205,24 +212,26 @@ const Globe: React.FC<GlobeProps> = ({ customGeographicFile }) => {
 				}
 			}
 
+			// レンダラーのクリーンアップ
 			if (rendererRef.current) {
 				rendererRef.current.dispose();
 			}
 
-			// イベントリスナーのクリーンアップ
-			window.removeEventListener("resize", () => {});
+			// イベントリスナーの削除
+			window.removeEventListener("resize", handleResize);
 		};
 	}, []);
 
-	if (isLoading) {
-		return (
-			<div className="flex items-center justify-center h-full">
-				<div className="text-lg">地球儀を読み込み中...</div>
-			</div>
-		);
-	}
-
-	return <div ref={containerRef} className="w-full h-full" />;
+	return (
+		<div className="relative w-full h-full">
+			{isLoading && (
+				<div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 z-10">
+					<div className="text-white">読み込み中...</div>
+				</div>
+			)}
+			<div ref={containerRef} className="w-full h-full" />
+		</div>
+	);
 };
 
-export default Globe;
+export default GlobeComponent;

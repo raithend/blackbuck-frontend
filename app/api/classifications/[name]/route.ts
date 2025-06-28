@@ -73,6 +73,10 @@ export async function GET(
 		return NextResponse.json({ 
 			classification: classification || null,
 			posts: formattedPosts
+		}, {
+			headers: {
+				'Cache-Control': 'public, max-age=300, s-maxage=300', // 5分間キャッシュ
+			}
 		});
 	} catch (error) {
 		console.error("Classification API error:", error);
@@ -122,27 +126,72 @@ export async function PUT(
 			);
 		}
 
-		// 分類情報を更新
-		const { data: classification, error: updateError } = await supabase
+		// 分類が存在するかチェック
+		const { data: existingClassification, error: checkError } = await supabase
 			.from("classifications")
-			.update({
-				english_name: body.english_name,
-				scientific_name: body.scientific_name,
-				description: body.description,
-				era_start: body.era_start,
-				era_end: body.era_end,
-				phylogenetic_tree_file: body.phylogenetic_tree_file,
-				geographic_data_file: body.geographic_data_file,
-				phylogenetic_tree_creator: body.phylogenetic_tree_creator,
-				geographic_data_creator: body.geographic_data_creator,
-				updated_at: new Date().toISOString(),
-			})
+			.select("id")
 			.eq("name", decodedName)
-			.select()
 			.single();
 
-		if (updateError) {
-			console.error("Classification update error:", updateError);
+		let classification;
+		let operationError;
+
+		if (checkError && checkError.code === "PGRST116") {
+			// 分類が存在しない場合は作成
+			const { data: newClassification, error: createError } = await supabase
+				.from("classifications")
+				.insert({
+					name: decodedName,
+					english_name: body.english_name || decodedName,
+					scientific_name: body.scientific_name || "",
+					description: body.description || "",
+					era_start: body.era_start || null,
+					era_end: body.era_end || null,
+					phylogenetic_tree_file: body.phylogenetic_tree_file || null,
+					geographic_data_file: body.geographic_data_file || null,
+					phylogenetic_tree_creator: body.phylogenetic_tree_creator || user.id,
+					geographic_data_creator: body.geographic_data_creator || user.id,
+					created_at: new Date().toISOString(),
+					updated_at: new Date().toISOString(),
+				})
+				.select()
+				.single();
+
+			classification = newClassification;
+			operationError = createError;
+		} else if (checkError) {
+			// その他のエラーの場合
+			console.error("Classification check error:", checkError);
+			return NextResponse.json(
+				{ error: "Failed to check classification" },
+				{ status: 500 }
+			);
+		} else {
+			// 分類が存在する場合は更新
+			const { data: updatedClassification, error: updateError } = await supabase
+				.from("classifications")
+				.update({
+					english_name: body.english_name,
+					scientific_name: body.scientific_name,
+					description: body.description,
+					era_start: body.era_start,
+					era_end: body.era_end,
+					phylogenetic_tree_file: body.phylogenetic_tree_file,
+					geographic_data_file: body.geographic_data_file,
+					phylogenetic_tree_creator: body.phylogenetic_tree_creator,
+					geographic_data_creator: body.geographic_data_creator,
+					updated_at: new Date().toISOString(),
+				})
+				.eq("name", decodedName)
+				.select()
+				.single();
+
+			classification = updatedClassification;
+			operationError = updateError;
+		}
+
+		if (operationError) {
+			console.error("Classification update error:", operationError);
 			return NextResponse.json(
 				{ error: "Failed to update classification" },
 				{ status: 500 }
