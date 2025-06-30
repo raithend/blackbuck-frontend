@@ -8,6 +8,9 @@ import { ArrowLeft, Save, Download, Upload } from "lucide-react";
 import { createClient } from "@/app/lib/supabase-browser";
 import { toast } from "sonner";
 import dynamic from "next/dynamic";
+import { GeologicalAgeProvider } from "@/app/components/description/geological-context";
+import { GeologicalAgeCard } from "@/app/components/description/geological-age-card";
+import { PhylogeneticTree } from "@/app/components/description/phylogenetic-tree";
 
 // Monaco Editorを動的インポート（SSRを避けるため）
 const MonacoEditor = dynamic(
@@ -119,99 +122,133 @@ export default function PhylogeneticTreeEditPage() {
 	}
 
 	return (
-		<div className="container mx-auto px-4 py-8">
-			<div className="flex items-center gap-4 mb-6">
-				<Button
-					variant="outline"
-					onClick={() => router.push(`/classifications/${encodeURIComponent(decodedName)}`)}
-				>
-					<ArrowLeft className="h-4 w-4 mr-2" />
-					戻る
-				</Button>
-				<h1 className="text-2xl font-bold">系統樹編集: {decodedName}</h1>
-				<div className="ml-auto flex items-center gap-2">
+		<GeologicalAgeProvider>
+			<div className="container mx-auto px-4 py-8">
+				<div className="flex items-center gap-4 mb-6">
 					<Button
 						variant="outline"
-						size="sm"
-						onClick={handleDownload}
-						disabled={!treeContent}
+						onClick={() => router.push(`/classifications/${encodeURIComponent(decodedName)}`)}
 					>
-						<Download className="h-4 w-4 mr-2" />
-						ダウンロード
+						<ArrowLeft className="h-4 w-4 mr-2" />
+						戻る
 					</Button>
-					<Button
-						variant="outline"
-						size="sm"
-						onClick={() => document.getElementById('file-upload')?.click()}
-					>
-						<Upload className="h-4 w-4 mr-2" />
-						アップロード
-					</Button>
-					<Button
-						onClick={handleSave}
-						disabled={isSaving || !hasChanges}
-						size="sm"
-					>
-						<Save className="h-4 w-4 mr-2" />
-						{isSaving ? "保存中..." : "保存"}
-					</Button>
-					<input
-						id="file-upload"
-						type="file"
-						accept=".txt,.newick,.nexus"
-						onChange={handleFileUpload}
-						className="hidden"
-					/>
+					<h1 className="text-2xl font-bold">系統樹編集: {decodedName}</h1>
+					<div className="ml-auto flex items-center gap-2">
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={handleDownload}
+							disabled={!treeContent}
+						>
+							<Download className="h-4 w-4 mr-2" />
+							ダウンロード
+						</Button>
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={() => document.getElementById('file-upload')?.click()}
+						>
+							<Upload className="h-4 w-4 mr-2" />
+							アップロード
+						</Button>
+						<Button
+							onClick={handleSave}
+							disabled={isSaving || !hasChanges}
+							size="sm"
+						>
+							<Save className="h-4 w-4 mr-2" />
+							{isSaving ? "保存中..." : "保存"}
+						</Button>
+						<input
+							id="file-upload"
+							type="file"
+							accept=".txt,.newick,.nexus"
+							onChange={handleFileUpload}
+							className="hidden"
+						/>
+					</div>
+				</div>
+
+				{hasChanges && (
+					<div className="mb-4 text-sm text-amber-600 bg-amber-50 p-3 rounded-lg border border-amber-200">
+						⚠️ 未保存の変更があります
+					</div>
+				)}
+
+				<div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[calc(100vh-12rem)]">
+					{/* 左側: エディター */}
+					<div className="flex flex-col">
+						<Card className="flex-1">
+							<CardContent className="flex-1 p-0 h-full">
+								<MonacoEditor
+									height="100%"
+									defaultLanguage="yaml"
+									value={treeContent}
+									onChange={(value) => setTreeContent(value || "")}
+									options={{
+										minimap: { enabled: true },
+										scrollBeyondLastLine: false,
+										fontSize: 14,
+										wordWrap: 'on',
+										automaticLayout: true,
+										theme: 'vs-dark',
+										lineNumbers: 'on',
+										glyphMargin: true,
+										folding: true,
+										lineDecorationsWidth: 10,
+										lineNumbersMinChars: 3,
+										renderLineHighlight: 'all',
+										selectOnLineNumbers: true,
+										roundedSelection: false,
+										readOnly: false,
+										cursorStyle: 'line',
+										contextmenu: true,
+										mouseWheelZoom: true,
+										quickSuggestions: false,
+										wordBasedSuggestions: 'off',
+										parameterHints: {
+											enabled: false
+										},
+										tabCompletion: 'off',
+										wrappingIndent: 'indent',
+										scrollbar: {
+											vertical: 'visible',
+											horizontal: 'visible',
+											verticalScrollbarSize: 14,
+											horizontalScrollbarSize: 14
+										}
+									}}
+								/>
+							</CardContent>
+						</Card>
+					</div>
+
+					{/* 右側: プレビュー */}
+					<div className="flex flex-col space-y-4">
+						{/* 地質時代カード */}
+						<Card>
+							<CardContent>
+								<GeologicalAgeCard />
+							</CardContent>
+						</Card>
+
+						{/* 系統樹プレビュー */}
+						<Card className="flex-1">
+							<CardContent className="flex-1 p-0 h-full">
+								<div className="h-full min-h-[400px]">
+									{treeContent ? (
+										<PhylogeneticTree customTreeContent={treeContent} />
+									) : (
+										<div className="flex items-center justify-center h-full text-gray-500">
+											<p>YAMLを入力して系統樹をプレビュー</p>
+										</div>
+									)}
+								</div>
+							</CardContent>
+						</Card>
+					</div>
 				</div>
 			</div>
-
-			{hasChanges && (
-				<div className="mb-4 text-sm text-amber-600 bg-amber-50 p-3 rounded-lg border border-amber-200">
-					⚠️ 未保存の変更があります
-				</div>
-			)}
-
-			<div className="border rounded-lg overflow-hidden" style={{ height: 'calc(100vh - 200px)' }}>
-				<MonacoEditor
-					height="100%"
-					defaultLanguage="plaintext"
-					value={treeContent}
-					onChange={(value) => setTreeContent(value || "")}
-					options={{
-						minimap: { enabled: true },
-						scrollBeyondLastLine: false,
-						fontSize: 14,
-						wordWrap: 'on',
-						automaticLayout: true,
-						theme: 'vs-dark',
-						lineNumbers: 'on',
-						glyphMargin: true,
-						folding: true,
-						lineDecorationsWidth: 10,
-						lineNumbersMinChars: 3,
-						renderLineHighlight: 'all',
-						selectOnLineNumbers: true,
-						roundedSelection: false,
-						readOnly: false,
-						cursorStyle: 'line',
-						contextmenu: true,
-						mouseWheelZoom: true,
-						quickSuggestions: false,
-						wordBasedSuggestions: 'off',
-						parameterHints: {
-							enabled: false
-						},
-						tabCompletion: 'off',
-						wrappingIndent: 'indent',
-						scrollbar: {
-							vertical: 'visible',
-							horizontal: 'visible',
-							verticalScrollbarSize: 14,
-							horizontalScrollbarSize: 14
-						}
-					}}
-				/>
-			</div>
-		</div>
+		</GeologicalAgeProvider>
 	);
 } 
