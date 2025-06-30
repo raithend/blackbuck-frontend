@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { PostCards } from "@/app/components/post/post-cards";
 import PhylogeneticTreeArea from "@/app/components/description/phylogenetic-tree-area";
 import GlobeArea from "@/app/components/description/globe-area";
@@ -56,6 +56,7 @@ const fetcher = async (url: string) => {
 export default function ClassificationPage() {
 	const params = useParams();
 	const decodedName = decodeURIComponent(params.name as string);
+	const [activeTab, setActiveTab] = useState("overview");
 
 	// 分類データと投稿データを一度に取得
 	const { data, error, isLoading, mutate } = useSWR<ClassificationResponse>(
@@ -126,7 +127,7 @@ export default function ClassificationPage() {
 
 	return (
 		<GeologicalAgeProvider>
-			<div className="container mx-auto px-4 py-8">
+		<div className="container mx-auto px-4 py-8">
 				<div className="flex items-center justify-between mb-6">
 					<h1 className="text-2xl font-bold">{decodedName}</h1>
 					<ClassificationEditButton 
@@ -135,7 +136,7 @@ export default function ClassificationPage() {
 					/>
 				</div>
 				
-				<Tabs defaultValue="overview" className="w-full">
+				<Tabs defaultValue="overview" className="w-full" value={activeTab} onValueChange={setActiveTab}>
 					<TabsList className="grid w-full grid-cols-4">
 						<TabsTrigger value="overview">概要</TabsTrigger>
 						<TabsTrigger value="posts">投稿</TabsTrigger>
@@ -214,28 +215,32 @@ export default function ClassificationPage() {
 					</TabsContent>
 					
 					<TabsContent value="globe" className="mt-6">
-						<div className="flex items-center justify-between mb-4">
-							<h3 className="text-lg font-semibold">生息地</h3>
-							<Link href={`/classifications/${encodeURIComponent(decodedName)}/habitat/edit`}>
-								<Button variant="outline" size="sm" className="flex items-center gap-2">
-									<Edit className="h-4 w-4" />
-									生息地を編集
-								</Button>
-							</Link>
-						</div>
-						{hasGeographicData ? (
-							<GlobeArea 
-								habitatData={habitatData}
-								showMapSelector={true}
-							/>
-						) : (
-							<div className="flex items-center justify-center h-64 text-gray-500">
-								<p>生息地が設定されていません</p>
-							</div>
+						{activeTab === "globe" && (
+							<>
+								<div className="flex items-center justify-between mb-4">
+									<h3 className="text-lg font-semibold">生息地</h3>
+									<Link href={`/classifications/${encodeURIComponent(decodedName)}/habitat/edit`}>
+										<Button variant="outline" size="sm" className="flex items-center gap-2">
+											<Edit className="h-4 w-4" />
+											生息地を編集
+										</Button>
+									</Link>
+								</div>
+								{hasGeographicData ? (
+									<GlobeArea 
+										habitatData={habitatData}
+										showMapSelector={true}
+									/>
+								) : (
+									<div className="flex items-center justify-center h-64 text-gray-500">
+										<p>生息地が設定されていません</p>
+									</div>
+								)}
+							</>
 						)}
 					</TabsContent>
 				</Tabs>
-			</div>
+		</div>
 		</GeologicalAgeProvider>
 	);
 }

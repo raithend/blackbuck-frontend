@@ -50,18 +50,41 @@ const generateMapWithHabitat = (mapName: string, habitatData: HabitatData[]) => 
 			return;
 		}
 
-		// キャンバスサイズを設定
-		canvas.width = 800;
-		canvas.height = 400;
-
 		const img = new Image();
 		img.crossOrigin = 'anonymous';
 		img.onload = () => {
 			console.log('地図画像の読み込み成功:', mapName);
 			console.log('画像サイズ:', img.width, 'x', img.height);
 			
-			// 地図をキャンバスに描画
-			ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+			// 元画像の解像度を保持しつつ、メモリ使用量を最適化
+			// 最大サイズを制限（2048px x 1024px）
+			const maxWidth = 2048;
+			const maxHeight = 1024;
+			
+			let targetWidth = img.width;
+			let targetHeight = img.height;
+			
+			// アスペクト比を保持しながらサイズを調整
+			if (targetWidth > maxWidth || targetHeight > maxHeight) {
+				const aspectRatio = targetWidth / targetHeight;
+				if (aspectRatio > maxWidth / maxHeight) {
+					targetWidth = maxWidth;
+					targetHeight = maxWidth / aspectRatio;
+				} else {
+					targetHeight = maxHeight;
+					targetWidth = maxHeight * aspectRatio;
+				}
+			}
+			
+			canvas.width = targetWidth;
+			canvas.height = targetHeight;
+			
+			// 高品質な描画設定
+			ctx.imageSmoothingEnabled = true;
+			ctx.imageSmoothingQuality = 'high';
+			
+			// 地図をキャンバスに描画（サイズ調整済み）
+			ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
 
 			console.log('生息地データ:', habitatData);
 
@@ -83,19 +106,23 @@ const generateMapWithHabitat = (mapName: string, habitatData: HabitatData[]) => 
 
 					// 座標がキャンバス内にあるかチェック
 					if (x >= 0 && x <= canvas.width && y >= 0 && y <= canvas.height) {
+						// 解像度に応じたスケール係数を計算（基準: 800px幅）
+						const scaleFactor = canvas.width / 800;
+						
 						if (habitat.maxR) {
 							// 範囲円を描画
 							ctx.strokeStyle = habitat.color || 'red';
-							ctx.lineWidth = 2;
+							ctx.lineWidth = Math.max(1, 2 * scaleFactor);
 							ctx.globalAlpha = 0.5;
-							const radius = Math.min((habitat.maxR / 20000) * canvas.width, 50); // 半径を制限
+							const radius = Math.min((habitat.maxR / 20000) * canvas.width, 50 * scaleFactor);
 							ctx.beginPath();
 							ctx.arc(x, y, radius, 0, 2 * Math.PI);
 							ctx.stroke();
 							ctx.globalAlpha = 1;
 						} else {
-							// 点を描画（サイズを小さくして見やすくする）
-							const pointSize = Math.min(Math.max((habitat.size || 0.05) * 50, 4), 20); // サイズを制限
+							// 点を描画（解像度に応じたサイズ調整）
+							const baseSize = Math.min(Math.max((habitat.size || 0.05) * 50, 4), 20);
+							const pointSize = baseSize * scaleFactor;
 							ctx.fillStyle = habitat.color || 'red';
 							ctx.beginPath();
 							ctx.arc(x, y, pointSize, 0, 2 * Math.PI);
@@ -103,13 +130,8 @@ const generateMapWithHabitat = (mapName: string, habitatData: HabitatData[]) => 
 
 							// 点の境界線を描画
 							ctx.strokeStyle = 'white';
-							ctx.lineWidth = 1;
+							ctx.lineWidth = Math.max(1, scaleFactor);
 							ctx.stroke();
-
-							// ポイント番号を表示
-							ctx.fillStyle = 'white';
-							ctx.font = 'bold 12px Arial';
-							ctx.fillText(`${index + 1}`, x + pointSize + 3, y + 3);
 						}
 					} else {
 						console.warn(`ポイント${index + 1}がキャンバス外:`, { x, y, canvasWidth: canvas.width, canvasHeight: canvas.height });
@@ -118,7 +140,7 @@ const generateMapWithHabitat = (mapName: string, habitatData: HabitatData[]) => 
 			});
 
 			// キャンバスをデータURLに変換
-			const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+			const dataUrl = canvas.toDataURL('image/png');
 			console.log('生成された画像URL:', dataUrl.substring(0, 100) + '...');
 			resolve(dataUrl);
 		};
@@ -214,6 +236,10 @@ export default function GlobeArea({
 						<p>生息地データ: {habitatData?.length || 0}件</p>
 						<p>地図: {currentMap}</p>
 						<p>画像パス: {customTexture}</p>
+						<p>フォーマット: PNG（高画質）</p>
+						{customTexture && customTexture.startsWith('data:image/') && (
+							<p>生成画像サイズ: {customTexture.length > 100 ? '高解像度' : '標準'}</p>
+						)}
 						{habitatData && habitatData.length > 0 && (
 							<div className="mt-2">
 								<h4 className="font-medium">生息地データ詳細:</h4>

@@ -100,8 +100,8 @@ export async function GET(
 			const likeCount = likeCountMap.get(post.id) || 0;
 			
 			return {
-				...post,
-				user: user,
+			...post,
+			user: user,
 				post_images: post.post_images?.sort((a, b) => a.order_index - b.order_index) || [],
 				likeCount,
 				isLiked,

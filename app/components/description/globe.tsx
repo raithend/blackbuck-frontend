@@ -41,10 +41,11 @@ const GlobeComponent: React.FC<GlobeProps> = ({
 
 	// リサイズハンドラ
 	const handleResize = () => {
-		if (!cameraRef.current || !rendererRef.current) return;
+		if (!cameraRef.current || !rendererRef.current || !containerRef.current) return;
 		
-		const width = window.innerWidth;
-		const height = window.innerHeight;
+		const container = containerRef.current;
+		const width = container.clientWidth;
+		const height = container.clientHeight;
 		cameraRef.current.aspect = width / height;
 		cameraRef.current.updateProjectionMatrix();
 		rendererRef.current.setSize(width, height);
@@ -59,9 +60,10 @@ const GlobeComponent: React.FC<GlobeProps> = ({
 		sceneRef.current = scene;
 
 		// カメラの作成
+		const container = containerRef.current;
 		const camera = new THREE.PerspectiveCamera(
 			75,
-			window.innerWidth / window.innerHeight,
+			container.clientWidth / container.clientHeight,
 			0.1,
 			1000,
 		);
@@ -72,7 +74,7 @@ const GlobeComponent: React.FC<GlobeProps> = ({
 		// レンダラーの作成
 		const renderer = new THREE.WebGLRenderer({ antialias: true });
 		rendererRef.current = renderer;
-		renderer.setSize(window.innerWidth, window.innerHeight);
+		renderer.setSize(container.clientWidth, container.clientHeight);
 		containerRef.current.appendChild(renderer.domElement);
 
 		// 地球儀のジオメトリとマテリアルを作成（テクスチャなし）
