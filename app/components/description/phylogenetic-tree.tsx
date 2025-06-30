@@ -73,16 +73,21 @@ export function PhylogeneticTree({ customTreeFile, customTreeContent }: Phylogen
 	useEffect(() => {
 		if (!svgRef.current || isLoading) return;
 
+		console.log('PhylogeneticTree useEffect - selectedAgeIds:', selectedAgeIds);
+		console.log('PhylogeneticTree useEffect - customTreeData:', customTreeData);
+
 		// データの処理
 		let processedData: TreeNode | null;
 		
 		if (customTreeData) {
-			// カスタムツリーデータを使用
-			processedData = customTreeData;
+			// カスタムツリーデータを使用（地質時代によるフィルタリングを適用）
+			processedData = processTreeData(selectedAgeIds, customTreeData);
 		} else {
 			// デフォルトのツリーデータを使用
 			processedData = processTreeData(selectedAgeIds);
 		}
+
+		console.log('PhylogeneticTree useEffect - processedData:', processedData);
 
 		if (!processedData) {
 			return;
