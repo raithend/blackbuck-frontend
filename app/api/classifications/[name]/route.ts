@@ -58,6 +58,8 @@ export async function GET(
 	try {
 		const { name } = await params;
 		const decodedName = decodeURIComponent(name);
+		const { searchParams } = new URL(request.url);
+		const includePosts = searchParams.get("includePosts") === "true";
 
 		if (!decodedName) {
 			return NextResponse.json(
@@ -80,34 +82,37 @@ export async function GET(
 			throw classificationError;
 		}
 
-		// 1. すべての投稿からclassificationを取得
-		const { data: allPosts, error: allPostsError } = await supabase
-			.from("posts")
-			.select("classification")
-			.not("classification", "is", null);
+		// 投稿データの取得が必要な場合のみ実行
+		let posts: FormattedPost[] = [];
+		if (includePosts) {
+			// 1. すべての投稿からclassificationを取得
+			const { data: allPosts, error: allPostsError } = await supabase
+				.from("posts")
+				.select("classification")
+				.not("classification", "is", null);
 
-		if (allPostsError) {
-			throw allPostsError;
-		}
+			if (allPostsError) {
+				throw allPostsError;
+			}
 
-		// 重複を除去した分類名の配列を作成
-		const classifications = Array.from(
-			new Set(allPosts.map((post) => post.classification)),
-		).filter(Boolean) as string[];
+			// 重複を除去した分類名の配列を作成
+			const classifications = Array.from(
+				new Set(allPosts.map((post) => post.classification)),
+			).filter(Boolean) as string[];
 
-		console.log('=== Claude API デバッグ情報 ===');
-		console.log('検索対象の分類名:', decodedName);
-		console.log('データベース内の全分類名:', classifications);
-		console.log('分類名の数:', classifications.length);
+			console.log('=== Claude API デバッグ情報 ===');
+			console.log('検索対象の分類名:', decodedName);
+			console.log('データベース内の全分類名:', classifications);
+			console.log('分類名の数:', classifications.length);
 
-		// 2. Claude APIに分類名と配列を送信して階層関係を考慮した分類を取得
-		const message = await anthropic.messages.create({
-			model: "claude-opus-4-20250514",
-			max_tokens: 1000,
-			messages: [
-				{
-					role: "user",
-					content: `あなたは生物分類の専門家です。以下の分類名のリストから、「${decodedName}」に属する生物名のみを抽出してください。
+			// 2. Claude APIに分類名と配列を送信して階層関係を考慮した分類を取得
+			const message = await anthropic.messages.create({
+				model: "claude-opus-4-20250514",
+				max_tokens: 1000,
+				messages: [
+					{
+						role: "user",
+						content: `あなたは生物分類の専門家です。以下の分類名のリストから、「${decodedName}」に属する生物名のみを抽出してください。
 
 必ず以下の形式のJSONで返答してください：
 {"matchedClassifications": ["分類名1", "分類名2", ...]}
@@ -117,87 +122,78 @@ export async function GET(
 
 分類名リスト：
 ${JSON.stringify(classifications)}`,
-				},
-			],
-		});
-
-		// Claude APIの応答をパース
-		const response =
-			message.content[0].type === "text" ? message.content[0].text : "";
-
-		console.log('Claude APIの生の応答:', response);
-
-		// JSONの部分を抽出（余分なテキストがある場合に対応）
-		const jsonMatch = response.match(/\{[\s\S]*\}/);
-		if (!jsonMatch) {
-			console.error("No JSON found in response:", response);
-			return NextResponse.json({ 
-				classification: classification || null,
-				posts: []
+					},
+				],
 			});
+
+			// Claude APIの応答をパース
+			const response =
+				message.content[0].type === "text" ? message.content[0].text : "";
+
+			console.log('Claude APIの生の応答:', response);
+
+			// JSONの部分を抽出（余分なテキストがある場合に対応）
+			const jsonMatch = response.match(/\{[\s\S]*\}/);
+			if (!jsonMatch) {
+				console.error("No JSON found in response:", response);
+			} else {
+				const parsedResponse: { matchedClassifications?: string[] } = JSON.parse(jsonMatch[0]);
+				const matchedClassifications: string[] = parsedResponse.matchedClassifications || [];
+
+				console.log('Claude APIから返されたマッチした分類名:', matchedClassifications);
+				console.log('マッチした分類名の数:', matchedClassifications.length);
+				console.log('=== デバッグ情報終了 ===');
+
+				if (Array.isArray(matchedClassifications)) {
+					// 3. マッチした分類名を持つ投稿を取得
+					const { data: postsData, error: postsError } = await supabase
+						.from("posts")
+						.select(`
+							*,
+							users!posts_user_id_fkey (
+								id,
+								username,
+								avatar_url,
+								account_id,
+								bio,
+								created_at,
+								header_url,
+								updated_at
+							),
+							post_images (
+								id,
+								image_url,
+								order_index
+							),
+							likes (
+								id
+							)
+						`)
+						.in("classification", matchedClassifications)
+						.order("created_at", { ascending: false });
+
+					if (postsError) {
+						throw postsError;
+					}
+
+					console.log('取得された投稿の数:', postsData?.length || 0);
+					console.log('取得された投稿の分類名:', postsData?.map(post => post.classification).filter(Boolean));
+
+					// 投稿データを整形
+					posts = postsData?.map((post: Post) => ({
+						...post,
+						user: post.users, // usersをuserにリネーム
+						likeCount: post.likes?.length || 0,
+						isLiked: false, // フロントエンドで設定
+						images: post.post_images?.sort((a: PostImage, b: PostImage) => a.order_index - b.order_index) || [],
+					})) || [];
+				}
+			}
 		}
-
-		const parsedResponse: { matchedClassifications?: string[] } = JSON.parse(jsonMatch[0]);
-		const matchedClassifications: string[] = parsedResponse.matchedClassifications || [];
-
-		console.log('Claude APIから返されたマッチした分類名:', matchedClassifications);
-		console.log('マッチした分類名の数:', matchedClassifications.length);
-		console.log('=== デバッグ情報終了 ===');
-
-		if (!Array.isArray(matchedClassifications)) {
-			console.error("Invalid response format:", parsedResponse);
-			return NextResponse.json({ 
-				classification: classification || null,
-				posts: []
-			});
-		}
-
-		// 3. マッチした分類名を持つ投稿を取得
-		const { data: posts, error: postsError } = await supabase
-			.from("posts")
-			.select(`
-				*,
-				users!posts_user_id_fkey (
-					id,
-					username,
-					avatar_url,
-					account_id,
-					bio,
-					created_at,
-					header_url,
-					updated_at
-				),
-				post_images (
-					id,
-					image_url,
-					order_index
-				),
-				likes (
-					id
-				)
-			`)
-			.in("classification", matchedClassifications)
-			.order("created_at", { ascending: false });
-
-		if (postsError) {
-			throw postsError;
-		}
-
-		console.log('取得された投稿の数:', posts?.length || 0);
-		console.log('取得された投稿の分類名:', posts?.map(post => post.classification).filter(Boolean));
-
-		// 投稿データを整形
-		const formattedPosts: FormattedPost[] = posts?.map((post: Post) => ({
-			...post,
-			user: post.users, // usersをuserにリネーム
-			likeCount: post.likes?.length || 0,
-			isLiked: false, // フロントエンドで設定
-			images: post.post_images?.sort((a: PostImage, b: PostImage) => a.order_index - b.order_index) || [],
-		})) || [];
 
 		return NextResponse.json({ 
 			classification: classification || null,
-			posts: formattedPosts
+			posts: posts
 		}, {
 			headers: {
 				'Cache-Control': 'public, max-age=300, s-maxage=300', // 5分間キャッシュ

@@ -63,9 +63,9 @@ export default function ClassificationPage() {
 	const decodedName = decodeURIComponent(params.name as string);
 	const [activeTab, setActiveTab] = useState("overview");
 
-	// 分類データと投稿データを一度に取得
-	const { data, error, isLoading, mutate } = useSWR<ClassificationResponse>(
-		`/api/classifications/${encodeURIComponent(decodedName)}`,
+	// 分類情報のみを取得（即座に表示可能）
+	const { data: classificationData, error: classificationError, isLoading: classificationLoading } = useSWR<{ classification: Classification | null }>(
+		`/api/classifications/${encodeURIComponent(decodedName)}?includePosts=false`,
 		fetcher,
 		{
 			revalidateOnFocus: false,
@@ -73,21 +73,37 @@ export default function ClassificationPage() {
 			dedupingInterval: 30000,
 			refreshInterval: 0,
 			onSuccess: (data) => {
-				console.log('=== フロントエンド デバッグ情報 ===');
-				console.log('API呼び出し成功');
-				console.log('検索対象の分類名:', decodedName);
-				console.log('取得された投稿の数:', data?.posts?.length || 0);
-				console.log('取得された投稿の分類名:', data?.posts?.map(post => post.classification).filter(Boolean));
-				console.log('=== フロントエンド デバッグ情報終了 ===');
+				console.log('=== 分類情報取得完了 ===');
+				console.log('分類情報:', data?.classification);
 			},
 			onError: (error) => {
-				console.error('API呼び出しエラー:', error);
+				console.error('分類情報取得エラー:', error);
 			}
 		}
 	);
 
-	const classification = data?.classification;
-	const posts = data?.posts || [];
+	// 投稿情報を別途取得（Claude API使用のため時間がかかる）
+	const { data: postsData, error: postsError, isLoading: postsLoading, mutate: mutatePosts } = useSWR<{ posts: PostWithUser[] }>(
+		`/api/classifications/${encodeURIComponent(decodedName)}?includePosts=true`,
+		fetcher,
+		{
+			revalidateOnFocus: false,
+			revalidateOnReconnect: false,
+			dedupingInterval: 30000,
+			refreshInterval: 0,
+			onSuccess: (data) => {
+				console.log('=== 投稿情報取得完了 ===');
+				console.log('取得された投稿の数:', data?.posts?.length || 0);
+				console.log('取得された投稿の分類名:', data?.posts?.map(post => post.classification).filter(Boolean));
+			},
+			onError: (error) => {
+				console.error('投稿情報取得エラー:', error);
+			}
+		}
+	);
+
+	const classification = classificationData?.classification;
+	const posts = postsData?.posts || [];
 
 	// 生息地データをメモ化して不要な再レンダリングを防ぐ
 	const habitatData = useMemo(() => {
@@ -102,7 +118,7 @@ export default function ClassificationPage() {
 
 	// いいね状態変更のハンドラー
 	const handleLikeChange = (postId: string, likeCount: number, isLiked: boolean) => {
-		mutate((currentData) => {
+		mutatePosts((currentData) => {
 			if (!currentData) return currentData;
 			return {
 				...currentData,
@@ -118,12 +134,12 @@ export default function ClassificationPage() {
 	// 投稿更新のハンドラー
 	const handlePostUpdate = (postId: string) => {
 		// 投稿データを再取得
-		mutate();
+		mutatePosts();
 	};
 
 	// 投稿削除のハンドラー
 	const handlePostDelete = (postId: string) => {
-		mutate((currentData) => {
+		mutatePosts((currentData) => {
 			if (!currentData) return currentData;
 			return {
 				...currentData,
@@ -132,8 +148,9 @@ export default function ClassificationPage() {
 		}, false);
 	};
 
-	if (isLoading) return <div>読み込み中...</div>;
-	if (error) return <div>エラーが発生しました</div>;
+	// 分類情報の読み込み中
+	if (classificationLoading) return <div>分類情報を読み込み中...</div>;
+	if (classificationError) return <div>分類情報の取得でエラーが発生しました</div>;
 
 	// 各要素の存在チェック
 	const hasOverview = classification?.description || classification?.english_name || classification?.scientific_name || classification?.era_start || classification?.era_end;
@@ -148,7 +165,7 @@ export default function ClassificationPage() {
 					<h1 className="text-2xl font-bold">{decodedName}</h1>
 					<ClassificationEditButton 
 						classification={classification || null} 
-						onUpdate={mutate}
+						onUpdate={mutatePosts}
 					/>
 				</div>
 				
@@ -204,7 +221,15 @@ export default function ClassificationPage() {
 					</TabsContent>
 					
 					<TabsContent value="posts" className="mt-6">
-						{hasPosts ? (
+						{postsLoading ? (
+							<div className="flex items-center justify-center h-64 text-gray-500">
+								<p>投稿を読み込み中...</p>
+							</div>
+						) : postsError ? (
+							<div className="flex items-center justify-center h-64 text-red-500">
+								<p>投稿の取得でエラーが発生しました</p>
+							</div>
+						) : hasPosts ? (
 							<PostCards 
 								posts={posts} 
 								onLikeChange={handleLikeChange}
