@@ -99,6 +99,9 @@ export default function HabitatEditPage() {
 		try {
 			const { data: { session } } = await supabase.auth.getSession();
 			
+			// habitatDataをJSON文字列に変換
+			const geographicDataFile = JSON.stringify(habitatData);
+			
 			const response = await fetch(`/api/classifications/${encodeURIComponent(decodedName)}`, {
 				method: 'PUT',
 				headers: {
@@ -106,7 +109,7 @@ export default function HabitatEditPage() {
 					'Authorization': `Bearer ${session?.access_token}`,
 				},
 				body: JSON.stringify({
-					habitat: habitatData
+					geographic_data_file: geographicDataFile
 				}),
 			});
 
