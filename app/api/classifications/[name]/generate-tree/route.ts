@@ -1,0 +1,149 @@
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+import { createClient } from '@/app/lib/supabase-server';
+
+export async function POST(
+  request: NextRequest,
+  { params }: { params: { name: string } }
+) {
+  try {
+    const { name } = await params;
+    const decodedName = decodeURIComponent(name);
+    
+    // Authorizationヘッダーからアクセストークンを取得
+    const authHeader = request.headers.get("authorization");
+    const accessToken = authHeader?.replace("Bearer ", "");
+
+    if (!accessToken) {
+      return NextResponse.json(
+        { error: "認証が必要です" },
+        { status: 401 }
+      );
+    }
+
+    // アクセストークンを使ってSupabaseクライアントを作成
+    const supabase = await createClient(accessToken);
+
+    // ユーザー情報を取得
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return NextResponse.json(
+        { error: "認証が必要です" },
+        { status: 401 }
+      );
+    }
+    
+    // Claude APIの設定
+    const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
+    if (!ANTHROPIC_API_KEY) {
+      return NextResponse.json({ error: 'Claude APIキーが設定されていません' }, { status: 500 });
+    }
+
+    // WikipediaのURLを構築
+    const wikipediaUrl = `https://ja.wikipedia.org/wiki/${encodeURIComponent(decodedName)}`;
+    
+    // Claude APIに送信するプロンプト
+    const prompt = `以下のWikipediaページから系統樹データを抽出し、YAML形式で返してください：
+
+URL: ${wikipediaUrl}
+
+以下の形式でYAMLデータを作成してください：
+- ページ内の「分類」「系統」「分類学的位置」「分類学」「分類表」などのセクションから情報を抽出
+- 階層構造を表現するため、childrenを使用
+- 各分類群の名前をnameフィールドに設定
+- 適切なインデントで階層を表現
+- 分類階級（門、綱、目、科、属、種など）を考慮して階層を構築
+
+例：
+name: 脊椎動物亜門
+children:
+  - name: 無顎上綱
+    children:
+      - name: 円口類
+        children:
+          - name: ヤツメウナギ目
+          - name: ヌタウナギ目
+  - name: 顎口上綱
+    children:
+      - name: 板皮類
+
+注意：
+- 日本語の分類名を優先的に使用
+- 日本語名が存在しない場合は、英語名をそのまま使用（翻訳しない）
+- 英語名を使用する場合は、日本語の分類階級（目、科、属、種など）を付け足さない
+- 例：英語名「Primates」の場合、「Primates目」ではなく「Primates」と表記
+- 例：英語名「Hominidae」の場合、「Hominidae科」ではなく「Hominidae」と表記
+- 階層構造を正確に表現
+- 不要な情報は除外
+- 純粋なYAML形式のみを返す（説明文は含めない）
+- 分類情報が見つからない場合は、基本的な分類構造を提案する
+- 各分類群は適切な階層レベルで配置する
+- 英語名を使用する場合は、そのまま英語表記を維持する`;
+
+    // Claude APIにリクエスト
+    const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: 'claude-3-5-sonnet-20241022',
+        max_tokens: 4000,
+        temperature: 0.1,
+        messages: [
+          {
+            role: 'user',
+            content: prompt
+          }
+        ]
+      })
+    });
+
+    if (!claudeResponse.ok) {
+      const errorText = await claudeResponse.text();
+      console.error('Claude API error:', errorText);
+      return NextResponse.json({ 
+        error: 'Claude APIからの応答に失敗しました',
+        details: errorText
+      }, { status: 500 });
+    }
+
+    const claudeData = await claudeResponse.json();
+    const generatedYaml = claudeData.content[0].text;
+
+    // YAMLの妥当性をチェック（基本的なチェック）
+    if (!generatedYaml.includes('name:') || !generatedYaml.includes('children:')) {
+      return NextResponse.json({ 
+        error: '生成されたデータが正しいYAML形式ではありません',
+        generatedContent: generatedYaml
+      }, { status: 400 });
+    }
+
+    // 生成されたYAMLをデータベースに保存
+    const { error: updateError } = await supabase
+      .from('classifications')
+      .update({ phylogenetic_tree_file: generatedYaml })
+      .eq('name', decodedName);
+
+    if (updateError) {
+      console.error('データベース更新エラー:', updateError);
+      return NextResponse.json({ error: 'データベースの更新に失敗しました' }, { status: 500 });
+    }
+
+    return NextResponse.json({ 
+      success: true, 
+      yaml: generatedYaml,
+      message: 'Wikipediaから系統樹データを生成しました',
+      source: wikipediaUrl
+    });
+
+  } catch (error) {
+    console.error('系統樹生成エラー:', error);
+    return NextResponse.json({ 
+      error: '系統樹の生成に失敗しました',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 });
+  }
+} 

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/app/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card";
-import { ArrowLeft, Save, Download, Upload } from "lucide-react";
+import { ArrowLeft, Save, Download, Upload, Sparkles } from "lucide-react";
 import { createClient } from "@/app/lib/supabase-browser";
 import { toast } from "sonner";
 import dynamic from "next/dynamic";
@@ -25,6 +25,7 @@ export default function PhylogeneticTreeEditPage() {
 	const [treeContent, setTreeContent] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
 	const [isSaving, setIsSaving] = useState(false);
+	const [isGenerating, setIsGenerating] = useState(false);
 	const [originalContent, setOriginalContent] = useState("");
 
 	// 既存の系統樹データを取得
@@ -49,6 +50,38 @@ export default function PhylogeneticTreeEditPage() {
 
 		fetchTreeData();
 	}, [decodedName]);
+
+	// Wikipediaから系統樹を生成
+	const handleGenerateFromWikipedia = async () => {
+		setIsGenerating(true);
+		try {
+			const supabase = createClient();
+			const { data: { session } } = await supabase.auth.getSession();
+			
+			const response = await fetch(`/api/classifications/${encodeURIComponent(decodedName)}/generate-tree`, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'Authorization': `Bearer ${session?.access_token}`,
+				},
+			});
+
+			if (!response.ok) {
+				const errorData = await response.json();
+				throw new Error(errorData.error || '生成に失敗しました');
+			}
+
+			const data = await response.json();
+			setTreeContent(data.yaml);
+			setOriginalContent(data.yaml);
+			toast.success('Wikipediaから系統樹を生成しました');
+		} catch (error) {
+			console.error('系統樹生成エラー:', error);
+			toast.error(error instanceof Error ? error.message : '系統樹の生成に失敗しました');
+		} finally {
+			setIsGenerating(false);
+		}
+	};
 
 	// 保存処理
 	const handleSave = async () => {
@@ -134,6 +167,15 @@ export default function PhylogeneticTreeEditPage() {
 					</Button>
 					<h1 className="text-2xl font-bold">系統樹編集: {decodedName}</h1>
 					<div className="ml-auto flex items-center gap-2">
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={handleGenerateFromWikipedia}
+							disabled={isGenerating}
+						>
+							<Sparkles className="h-4 w-4 mr-2" />
+							{isGenerating ? "生成中..." : "Wikipediaから生成"}
+						</Button>
 						<Button
 							variant="outline"
 							size="sm"
