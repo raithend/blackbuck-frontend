@@ -1,5 +1,4 @@
 import geologicalAgesData from "@/app/data/geological-ages.json";
-import treeDataYamlString from "@/app/data/tree-data.yml";
 import { load } from "js-yaml";
 
 interface TreeNode {
@@ -144,10 +143,25 @@ const filterNodeByAge = (
 };
 
 // メインの処理関数
-export const processTreeData = (selectedAgeIds: number[]): TreeNode | null => {
-	// YAMLデータをパース
-	const parsedData = load(treeDataYamlString) as TreeNode;
+export const processTreeData = (selectedAgeIds: number[], customData?: TreeNode): TreeNode | null => {
+	console.log('processTreeData - selectedAgeIds:', selectedAgeIds);
+	console.log('processTreeData - customData:', customData);
+	
+	// カスタムデータが提供されていない場合はnullを返す
+	if (!customData) {
+		console.log('processTreeData - no custom data provided, returning null');
+		return null;
+	}
+	
+	// カスタムデータを使用（データベースのphylogenetic_tree_fileの内容）
+	console.log('processTreeData - using customData from database');
+	const parsedData = customData;
+
+	console.log('processTreeData - parsedData before filtering:', parsedData);
 
 	// データをフィルタリング
-	return filterNodeByAge(parsedData, selectedAgeIds);
+	const filteredData = filterNodeByAge(parsedData, selectedAgeIds);
+	console.log('processTreeData - filteredData:', filteredData);
+	
+	return filteredData;
 };

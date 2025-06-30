@@ -5,6 +5,7 @@ import { PostCards } from "@/app/components/post/post-cards";
 import PhylogeneticTreeArea from "@/app/components/description/phylogenetic-tree-area";
 import GlobeArea from "@/app/components/description/globe-area";
 import { GeologicalAgeProvider } from "@/app/components/description/geological-context";
+import { GeologicalAgeCard } from "@/app/components/description/geological-age-card";
 import { ClassificationEditButton } from "@/app/components/classification/classification-edit-button";
 import type { PostWithUser } from "@/app/types/types";
 import { useParams } from "next/navigation";
@@ -158,6 +159,11 @@ export default function ClassificationPage() {
 	const hasPhylogeneticTree = classification?.phylogenetic_tree_file;
 	const hasGeographicData = classification?.geographic_data_file;
 
+	// デバッグ出力
+	console.log('ClassificationPage - classification:', classification);
+	console.log('ClassificationPage - hasPhylogeneticTree:', hasPhylogeneticTree);
+	console.log('ClassificationPage - phylogenetic_tree_file:', classification?.phylogenetic_tree_file);
+
 	return (
 		<GeologicalAgeProvider>
 		<div className="container mx-auto px-4 py-8">
@@ -244,13 +250,25 @@ export default function ClassificationPage() {
 					</TabsContent>
 					
 					<TabsContent value="tree" className="mt-6">
+						<div className="flex items-center justify-between mb-4">
+							<h3 className="text-lg font-semibold">系統樹</h3>
+							<div className="flex items-center gap-2">
+								<GeologicalAgeCard />
+								<Link href={`/classifications/${encodeURIComponent(decodedName)}/tree/edit`}>
+									<Button variant="outline" size="sm" className="flex items-center gap-2">
+										<Edit className="h-4 w-4" />
+										{hasPhylogeneticTree ? '系統樹を編集' : '系統樹を作成'}
+									</Button>
+								</Link>
+							</div>
+						</div>
 						{hasPhylogeneticTree ? (
 							<PhylogeneticTreeArea 
 								customTreeContent={classification.phylogenetic_tree_file}
 							/>
 						) : (
 							<div className="flex items-center justify-center h-64 text-gray-500">
-								<p>系統樹が設定されていません</p>
+								<p>系統樹が設定されていません。編集ボタンから新しい系統樹を作成してください。</p>
 							</div>
 						)}
 					</TabsContent>
@@ -260,12 +278,15 @@ export default function ClassificationPage() {
 							<>
 								<div className="flex items-center justify-between mb-4">
 									<h3 className="text-lg font-semibold">生息地</h3>
-									<Link href={`/classifications/${encodeURIComponent(decodedName)}/habitat/edit`}>
-										<Button variant="outline" size="sm" className="flex items-center gap-2">
-											<Edit className="h-4 w-4" />
-											生息地を編集
-										</Button>
-									</Link>
+									<div className="flex items-center gap-2">
+										<GeologicalAgeCard />
+										<Link href={`/classifications/${encodeURIComponent(decodedName)}/habitat/edit`}>
+											<Button variant="outline" size="sm" className="flex items-center gap-2">
+												<Edit className="h-4 w-4" />
+												生息地を編集
+											</Button>
+										</Link>
+									</div>
 								</div>
 								{hasGeographicData ? (
 									<GlobeArea 

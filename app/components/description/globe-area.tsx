@@ -5,6 +5,7 @@ import Globe from "./globe";
 import { Button } from "@/app/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select";
 import { Label } from "@/app/components/ui/label";
+import { useGeologicalAge } from "./geological-context";
 
 interface HabitatData {
 	lat: number;
@@ -177,10 +178,19 @@ export default function GlobeArea({
 	habitatData,
 	showMapSelector = true 
 }: GlobeAreaProps) {
+	const { selectedMap } = useGeologicalAge();
 	const [customTexture, setCustomTexture] = useState<string | undefined>(undefined);
 	const [isGenerating, setIsGenerating] = useState(false);
 	const [currentMap, setCurrentMap] = useState("Map1a_PALEOMAP_PaleoAtlas_000.jpg");
 	const [showDebug, setShowDebug] = useState(false); // デバッグ表示フラグ
+
+	// 地質時代の選択に応じて地図を更新
+	useEffect(() => {
+		if (selectedMap) {
+			const mapFileName = `${selectedMap}.jpg`;
+			setCurrentMap(mapFileName);
+		}
+	}, [selectedMap]);
 
 	// 生息地データ付きの地図画像を生成
 	useEffect(() => {
@@ -204,7 +214,7 @@ export default function GlobeArea({
 			setCustomTexture(`/PALEOMAP_PaleoAtlas_Rasters_v3/${currentMap}`);
 			setIsGenerating(false);
 		}
-	}, [habitatData, currentMap]);
+	}, [currentMap, habitatData]);
 
 	return (
 		<div className="h-[calc(100vh-4rem)]">

@@ -41,11 +41,11 @@ export function PhylogeneticTree({ customTreeFile, customTreeContent }: Phylogen
 		const loadCustomTreeData = async () => {
 			setIsLoading(true);
 			try {
-				let data;
+				let data: TreeNode;
 				
 				if (customTreeContent) {
 					// データベースから直接コンテンツを読み込み（YAML形式）
-					data = yaml.load(customTreeContent) as any;
+					data = yaml.load(customTreeContent) as TreeNode;
 				} else if (customTreeFile) {
 					// ファイルURLから読み込み（YAML形式）
 					const response = await fetch(customTreeFile);
@@ -53,7 +53,9 @@ export function PhylogeneticTree({ customTreeFile, customTreeContent }: Phylogen
 						throw new Error('Failed to load custom tree data');
 					}
 					const text = await response.text();
-					data = yaml.load(text) as any;
+					data = yaml.load(text) as TreeNode;
+				} else {
+					throw new Error('No custom tree data provided');
 				}
 				
 				setCustomTreeData(data);
