@@ -37,13 +37,18 @@ interface ClassificationResponse {
 
 // フェッチャー関数
 const fetcher = async (url: string) => {
+	console.log('API呼び出し開始:', url);
 	try {
 		const response = await fetch(url);
+		console.log('APIレスポンスステータス:', response.status);
 		if (!response.ok) {
 			throw new Error('Failed to fetch data');
 		}
-		return response.json();
+		const data = await response.json();
+		console.log('APIレスポンスデータ:', data);
+		return data;
 	} catch (error) {
+		console.error('フェッチャー関数エラー:', error);
 		// ネットワークエラーの場合は既存データを保持するため、エラーを投げない
 		if (error instanceof TypeError && error.message.includes('fetch')) {
 			console.warn('ネットワークエラーが発生しましたが、既存のデータを表示し続けます:', error);
@@ -67,6 +72,17 @@ export default function ClassificationPage() {
 			revalidateOnReconnect: false,
 			dedupingInterval: 30000,
 			refreshInterval: 0,
+			onSuccess: (data) => {
+				console.log('=== フロントエンド デバッグ情報 ===');
+				console.log('API呼び出し成功');
+				console.log('検索対象の分類名:', decodedName);
+				console.log('取得された投稿の数:', data?.posts?.length || 0);
+				console.log('取得された投稿の分類名:', data?.posts?.map(post => post.classification).filter(Boolean));
+				console.log('=== フロントエンド デバッグ情報終了 ===');
+			},
+			onError: (error) => {
+				console.error('API呼び出しエラー:', error);
+			}
 		}
 	);
 

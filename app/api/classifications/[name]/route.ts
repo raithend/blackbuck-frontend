@@ -1,5 +1,55 @@
 import { createClient } from "@/app/lib/supabase-server";
-import { NextRequest, NextResponse } from "next/server";
+import Anthropic from "@anthropic-ai/sdk";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
+
+const anthropic = new Anthropic({
+	apiKey: process.env.ANTHROPIC_API_KEY,
+});
+
+interface PostImage {
+	id: string;
+	image_url: string;
+	order_index: number;
+}
+
+interface PostUser {
+	id: string;
+	username: string;
+	avatar_url: string | null;
+	account_id: string | null;
+	bio: string | null;
+	created_at: string;
+	header_url: string | null;
+	updated_at: string;
+}
+
+interface Post {
+	id: string;
+	classification: string | null;
+	content: string;
+	created_at: string;
+	location: string | null;
+	updated_at: string;
+	user_id: string;
+	users: PostUser;
+	post_images: PostImage[];
+	likes: { id: string }[];
+}
+
+interface FormattedPost {
+	id: string;
+	classification: string | null;
+	content: string;
+	created_at: string;
+	location: string | null;
+	updated_at: string;
+	user_id: string;
+	user: PostUser;
+	likeCount: number;
+	isLiked: boolean;
+	images: PostImage[];
+}
 
 export async function GET(
 	request: NextRequest,
@@ -30,7 +80,79 @@ export async function GET(
 			throw classificationError;
 		}
 
-		// その分類の投稿を取得
+		// 1. すべての投稿からclassificationを取得
+		const { data: allPosts, error: allPostsError } = await supabase
+			.from("posts")
+			.select("classification")
+			.not("classification", "is", null);
+
+		if (allPostsError) {
+			throw allPostsError;
+		}
+
+		// 重複を除去した分類名の配列を作成
+		const classifications = Array.from(
+			new Set(allPosts.map((post) => post.classification)),
+		).filter(Boolean) as string[];
+
+		console.log('=== Claude API デバッグ情報 ===');
+		console.log('検索対象の分類名:', decodedName);
+		console.log('データベース内の全分類名:', classifications);
+		console.log('分類名の数:', classifications.length);
+
+		// 2. Claude APIに分類名と配列を送信して階層関係を考慮した分類を取得
+		const message = await anthropic.messages.create({
+			model: "claude-opus-4-20250514",
+			max_tokens: 1000,
+			messages: [
+				{
+					role: "user",
+					content: `あなたは生物分類の専門家です。以下の分類名のリストから、「${decodedName}」に属する生物名のみを抽出してください。
+
+必ず以下の形式のJSONで返答してください：
+{"matchedClassifications": ["分類名1", "分類名2", ...]}
+
+分類名が見つからない場合は空配列を返してください：
+{"matchedClassifications": []}
+
+分類名リスト：
+${JSON.stringify(classifications)}`,
+				},
+			],
+		});
+
+		// Claude APIの応答をパース
+		const response =
+			message.content[0].type === "text" ? message.content[0].text : "";
+
+		console.log('Claude APIの生の応答:', response);
+
+		// JSONの部分を抽出（余分なテキストがある場合に対応）
+		const jsonMatch = response.match(/\{[\s\S]*\}/);
+		if (!jsonMatch) {
+			console.error("No JSON found in response:", response);
+			return NextResponse.json({ 
+				classification: classification || null,
+				posts: []
+			});
+		}
+
+		const parsedResponse: { matchedClassifications?: string[] } = JSON.parse(jsonMatch[0]);
+		const matchedClassifications: string[] = parsedResponse.matchedClassifications || [];
+
+		console.log('Claude APIから返されたマッチした分類名:', matchedClassifications);
+		console.log('マッチした分類名の数:', matchedClassifications.length);
+		console.log('=== デバッグ情報終了 ===');
+
+		if (!Array.isArray(matchedClassifications)) {
+			console.error("Invalid response format:", parsedResponse);
+			return NextResponse.json({ 
+				classification: classification || null,
+				posts: []
+			});
+		}
+
+		// 3. マッチした分類名を持つ投稿を取得
 		const { data: posts, error: postsError } = await supabase
 			.from("posts")
 			.select(`
@@ -54,20 +176,23 @@ export async function GET(
 					id
 				)
 			`)
-			.eq("classification", decodedName)
+			.in("classification", matchedClassifications)
 			.order("created_at", { ascending: false });
 
 		if (postsError) {
 			throw postsError;
 		}
 
+		console.log('取得された投稿の数:', posts?.length || 0);
+		console.log('取得された投稿の分類名:', posts?.map(post => post.classification).filter(Boolean));
+
 		// 投稿データを整形
-		const formattedPosts = posts?.map((post) => ({
+		const formattedPosts: FormattedPost[] = posts?.map((post: Post) => ({
 			...post,
 			user: post.users, // usersをuserにリネーム
 			likeCount: post.likes?.length || 0,
 			isLiked: false, // フロントエンドで設定
-			images: post.post_images?.sort((a, b) => a.order_index - b.order_index) || [],
+			images: post.post_images?.sort((a: PostImage, b: PostImage) => a.order_index - b.order_index) || [],
 		})) || [];
 
 		return NextResponse.json({ 
@@ -133,8 +258,8 @@ export async function PUT(
 			.eq("name", decodedName)
 			.single();
 
-		let classification;
-		let operationError;
+		let classification: unknown;
+		let operationError: unknown;
 
 		if (checkError && checkError.code === "PGRST116") {
 			// 分類が存在しない場合は作成
