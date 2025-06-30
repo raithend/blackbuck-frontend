@@ -91,13 +91,34 @@ const generateMapWithHabitat = (mapName: string, habitatData: HabitatData[]) => 
 			// 生息地ポイントを描画
 			habitatData.forEach((habitat, index) => {
 				if (habitat.lat !== undefined && habitat.lng !== undefined) {
-					// 緯度経度をキャンバス座標に変換
-					const x = ((habitat.lng + 180) / 360) * canvas.width;
-					const y = ((90 - habitat.lat) / 180) * canvas.height;
+					// エディターと同じ基準（800x600、4:3アスペクト比）で座標変換
+					const editorWidth = 800;
+					const editorHeight = 600;
+					const editorX = ((habitat.lng + 180) / 360) * editorWidth;
+					const editorY = ((90 - habitat.lat) / 180) * editorHeight;
+
+					// 地図画像の実際のアスペクト比を考慮してスケール調整
+					// 地図画像は通常2:1のアスペクト比（360度 x 180度）
+					const mapAspectRatio = 2; // 幅:高さ = 2:1
+					const editorAspectRatio = editorWidth / editorHeight; // 4:3 = 1.33...
+					
+					// エディターの座標を地図画像の座標系に変換
+					const mapX = editorX;
+					const mapY = editorY * (mapAspectRatio / editorAspectRatio);
+
+					// リサイズされた画像に合わせてスケール調整
+					const scaleX = canvas.width / editorWidth;
+					const scaleY = canvas.height / (editorHeight * (mapAspectRatio / editorAspectRatio));
+					const x = mapX * scaleX;
+					const y = mapY * scaleY;
 
 					console.log(`ポイント${index + 1}:`, {
 						lat: habitat.lat,
 						lng: habitat.lng,
+						editorX,
+						editorY,
+						mapX,
+						mapY,
 						canvasX: x,
 						canvasY: y,
 						color: habitat.color,
@@ -106,8 +127,9 @@ const generateMapWithHabitat = (mapName: string, habitatData: HabitatData[]) => 
 
 					// 座標がキャンバス内にあるかチェック
 					if (x >= 0 && x <= canvas.width && y >= 0 && y <= canvas.height) {
-						// 解像度に応じたスケール係数を計算（基準: 800px幅）
-						const scaleFactor = canvas.width / 800;
+						// エディターと同じ基準でサイズをスケール調整
+						const scaleFactor = Math.min(scaleX, scaleY); // アスペクト比を保持
+						const pointSize = (habitat.size || 20) * scaleFactor; // デフォルトサイズ20px
 						
 						if (habitat.maxR) {
 							// 範囲円を描画
@@ -120,9 +142,7 @@ const generateMapWithHabitat = (mapName: string, habitatData: HabitatData[]) => 
 							ctx.stroke();
 							ctx.globalAlpha = 1;
 						} else {
-							// 点を描画（解像度に応じたサイズ調整）
-							const baseSize = Math.min(Math.max((habitat.size || 0.05) * 50, 4), 20);
-							const pointSize = baseSize * scaleFactor;
+							// 点を描画
 							ctx.fillStyle = habitat.color || 'red';
 							ctx.beginPath();
 							ctx.arc(x, y, pointSize, 0, 2 * Math.PI);
@@ -141,7 +161,7 @@ const generateMapWithHabitat = (mapName: string, habitatData: HabitatData[]) => 
 
 			// キャンバスをデータURLに変換
 			const dataUrl = canvas.toDataURL('image/png');
-			console.log('生成された画像URL:', dataUrl.substring(0, 100) + '...');
+			console.log(`生成された画像URL: ${dataUrl.substring(0, 100)}...`);
 			resolve(dataUrl);
 		};
 		img.onerror = (error) => {
@@ -237,14 +257,14 @@ export default function GlobeArea({
 						<p>地図: {currentMap}</p>
 						<p>画像パス: {customTexture}</p>
 						<p>フォーマット: PNG（高画質）</p>
-						{customTexture && customTexture.startsWith('data:image/') && (
+						{customTexture?.startsWith('data:image/') && (
 							<p>生成画像サイズ: {customTexture.length > 100 ? '高解像度' : '標準'}</p>
 						)}
 						{habitatData && habitatData.length > 0 && (
 							<div className="mt-2">
 								<h4 className="font-medium">生息地データ詳細:</h4>
 								{habitatData.map((habitat, index) => (
-									<div key={index} className="text-xs mt-1 p-1 bg-gray-100 rounded">
+									<div key={`habitat-${habitat.lat}-${habitat.lng}-${index}`} className="text-xs mt-1 p-1 bg-gray-100 rounded">
 										<p>ポイント{index + 1}:</p>
 										<p>緯度: {habitat.lat}, 経度: {habitat.lng}</p>
 										<p>色: {habitat.color || 'red'}</p>
