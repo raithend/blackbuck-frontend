@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState, useCallback, useLayoutEffect } from "react";
-import { Canvas, Image, Circle } from "fabric";
+import { Canvas, Image, Circle, Text } from "fabric";
 import type { Object as FabricObject } from "fabric";
 import { Button } from "@/app/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card";
@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/components/ui/ta
 import { 
 	MousePointer, 
 	Circle as LucideCircle,
+	Type,
 	Undo,
 	Redo,
 	Save,
@@ -25,9 +26,11 @@ interface HabitatPoint {
 	lng: number;
 	color: string;
 	size: number;
-	shape: 'circle';
+	shape: 'circle' | 'text';
 	label?: string;
 	maxR?: number;
+	text?: string;
+	fontSize?: number;
 }
 
 interface FabricHabitatEditorProps {
@@ -68,12 +71,16 @@ export default function FabricHabitatEditor({
 }: FabricHabitatEditorProps) {
 	const fabricCanvasRef = useRef<Canvas | null>(null);
 	const canvasRef = useRef<HTMLCanvasElement>(null);
-	const [selectedTool, setSelectedTool] = useState<'select' | 'circle'>('select');
+	const [selectedTool, setSelectedTool] = useState<'select' | 'circle' | 'text'>('select');
 	const currentToolRef = useRef(selectedTool);
 	const [pointColor, setPointColor] = useState('#ff0000');
 	const [pointSize, setPointSize] = useState(20);
+	const [textContent, setTextContent] = useState('テキスト');
+	const [fontSize, setFontSize] = useState(16);
 	const pointColorRef = useRef('#ff0000');
 	const pointSizeRef = useRef(20);
+	const textContentRef = useRef('テキスト');
+	const fontSizeRef = useRef(16);
 
 	// ツールバーの色変更時に選択中のオブジェクトを更新
 	const handleColorChange = (color: string) => {
@@ -93,6 +100,26 @@ export default function FabricHabitatEditor({
 		const point = getSelectedPoint();
 		if (selectedObject || point) {
 			updateSelectedPoint('size', size);
+		}
+	};
+
+	// ツールバーのテキスト内容変更時に選択中のオブジェクトを更新
+	const handleTextContentChange = (text: string) => {
+		setTextContent(text);
+		textContentRef.current = text; // refも即座に更新
+		const point = getSelectedPoint();
+		if (selectedObject || point) {
+			updateSelectedPoint('text', text);
+		}
+	};
+
+	// ツールバーのフォントサイズ変更時に選択中のオブジェクトを更新
+	const handleFontSizeChange = (size: number) => {
+		setFontSize(size);
+		fontSizeRef.current = size; // refも即座に更新
+		const point = getSelectedPoint();
+		if (selectedObject || point) {
+			updateSelectedPoint('fontSize', size);
 		}
 	};
 	const [habitatPoints, setHabitatPoints] = useState<HabitatPoint[]>(habitatData);
@@ -331,19 +358,37 @@ export default function FabricHabitatEditor({
 		const y = ((90 - point.lat) / 180) * height;
 		console.log('キャンバス座標に変換:', x, y);
 
-		// 円形オブジェクトを作成
-		const fabricObject = new Circle({
-			left: x,
-			top: y,
-			fill: point.color,
-			stroke: '#ffffff',
-			strokeWidth: 2,
-			radius: point.size / 2,
-			originX: 'center' as const,
-			originY: 'center' as const,
-			selectable: true,
-			evented: true,
-		});
+		let fabricObject: FabricObject;
+
+		if (point.shape === 'circle') {
+			// 円形オブジェクトを作成
+			fabricObject = new Circle({
+				left: x,
+				top: y,
+				fill: point.color,
+				stroke: '#ffffff',
+				strokeWidth: 2,
+				radius: point.size / 2,
+				originX: 'center' as const,
+				originY: 'center' as const,
+				selectable: true,
+				evented: true,
+			});
+		} else if (point.shape === 'text') {
+			// テキストオブジェクトを作成
+			fabricObject = new Text(point.text || 'テキスト', {
+				left: x,
+				top: y,
+				fontSize: point.fontSize || 16,
+				fill: point.color,
+				originX: 'center' as const,
+				originY: 'center' as const,
+				selectable: true,
+				evented: true,
+			});
+		} else {
+			return; // 不明な形状の場合は処理をスキップ
+		}
 
 		// オブジェクトにカスタムデータを追加
 		(fabricObject as FabricObject & { habitatPointId?: string }).habitatPointId = point.id;
@@ -375,6 +420,12 @@ export default function FabricHabitatEditor({
 				if (point) {
 					setPointColor(point.color);
 					setPointSize(point.size);
+					if (point.text) {
+						setTextContent(point.text);
+					}
+					if (point.fontSize) {
+						setFontSize(point.fontSize);
+					}
 				}
 			}
 		}
@@ -461,7 +512,9 @@ export default function FabricHabitatEditor({
 			lng,
 			color: pointColorRef.current, // refの最新値を使用
 			size: pointSizeRef.current,   // refの最新値を使用
-			shape: 'circle',
+			shape: currentTool === 'text' ? 'text' : 'circle',
+			text: currentTool === 'text' ? textContentRef.current : undefined,
+			fontSize: currentTool === 'text' ? fontSizeRef.current : undefined,
 		};
 		setHabitatPoints(prev => [...prev, newPoint]);
 		addPointToCanvas(newPoint);
@@ -524,6 +577,14 @@ export default function FabricHabitatEditor({
 						} else {
 							obj.set('width', value);
 							obj.set('height', value);
+						}
+					} else if (field === 'text' && typeof value === 'string') {
+						if (obj.type === 'text') {
+							obj.set('text', value);
+						}
+					} else if (field === 'fontSize' && typeof value === 'number') {
+						if (obj.type === 'text') {
+							obj.set('fontSize', value);
 						}
 					}
 				}
@@ -595,6 +656,13 @@ export default function FabricHabitatEditor({
 					>
 						<LucideCircle className="h-4 w-4" />
 					</Button>
+					<Button
+						variant={selectedTool === 'text' ? 'default' : 'outline'}
+						size="sm"
+						onClick={() => handleToolChange('text')}
+					>
+						<Type className="h-4 w-4" />
+					</Button>
 				</div>
 
 				<div className="flex items-center gap-2 ml-4">
@@ -606,16 +674,42 @@ export default function FabricHabitatEditor({
 						onChange={(e) => handleColorChange(e.target.value)}
 						className="w-16 h-8"
 					/>
-					<Label htmlFor="point-size">サイズ:</Label>
-					<Input
-						id="point-size"
-						type="number"
-						value={pointSize}
-						onChange={(e) => handleSizeChange(Number(e.target.value))}
-						className="w-20"
-						min="5"
-						max="100"
-					/>
+					{selectedTool === 'circle' && (
+						<>
+							<Label htmlFor="point-size">サイズ:</Label>
+							<Input
+								id="point-size"
+								type="number"
+								value={pointSize}
+								onChange={(e) => handleSizeChange(Number(e.target.value))}
+								className="w-20"
+								min="5"
+								max="100"
+							/>
+						</>
+					)}
+					{selectedTool === 'text' && (
+						<>
+							<Label htmlFor="text-content">テキスト:</Label>
+							<Input
+								id="text-content"
+								type="text"
+								value={textContent}
+								onChange={(e) => handleTextContentChange(e.target.value)}
+								className="w-32"
+							/>
+							<Label htmlFor="font-size">フォントサイズ:</Label>
+							<Input
+								id="font-size"
+								type="number"
+								value={fontSize}
+								onChange={(e) => handleFontSizeChange(Number(e.target.value))}
+								className="w-20"
+								min="8"
+								max="72"
+							/>
+						</>
+					)}
 				</div>
 
 				<div className="flex items-center gap-1 ml-4">
