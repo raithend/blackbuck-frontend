@@ -53,7 +53,7 @@ interface FormattedPost {
 
 export async function GET(
 	request: NextRequest,
-	{ params }: { params: { name: string } }
+	{ params }: { params: Promise<{ name: string }> }
 ) {
 	try {
 		const { name } = await params;
@@ -210,7 +210,7 @@ ${JSON.stringify(classifications)}`,
 
 export async function PUT(
 	request: NextRequest,
-	{ params }: { params: { name: string } }
+	{ params }: { params: Promise<{ name: string }> }
 ) {
 	try {
 		const { name } = await params;

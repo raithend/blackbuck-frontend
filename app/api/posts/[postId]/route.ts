@@ -1,5 +1,6 @@
 import { createClient } from "@/app/lib/supabase-server";
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 export async function PUT(
 	request: NextRequest,
@@ -102,7 +103,7 @@ export async function PUT(
 
 export async function DELETE(
 	request: NextRequest,
-	{ params }: { params: { postId: string } }
+	{ params }: { params: Promise<{ postId: string }> }
 ) {
 	try {
 		const { postId } = await params;

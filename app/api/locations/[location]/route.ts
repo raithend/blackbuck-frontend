@@ -1,9 +1,10 @@
 import { createClient } from "@/app/lib/supabase-server";
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 export async function GET(
 	request: NextRequest,
-	{ params }: { params: { location: string } }
+	{ params }: { params: Promise<{ location: string }> }
 ) {
 	try {
 		const { location } = await params;
@@ -46,7 +47,7 @@ export async function GET(
 
 export async function PUT(
 	request: NextRequest,
-	{ params }: { params: { location: string } }
+	{ params }: { params: Promise<{ location: string }> }
 ) {
 	try {
 		const { location: locationName } = await params;
