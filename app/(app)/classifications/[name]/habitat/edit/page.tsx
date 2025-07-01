@@ -6,6 +6,9 @@ import { Button } from "@/app/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { createClient } from "@/app/lib/supabase-browser";
 import FabricHabitatEditor from "@/app/components/description/fabric-habitat-editor";
+import Globe from "@/app/components/description/globe";
+import { GeologicalAgeCard } from "@/app/components/description/geological-age-card";
+import { GeologicalAgeProvider } from "@/app/components/description/geological-context";
 import { toast } from "sonner";
 
 interface HabitatData {
@@ -35,6 +38,7 @@ export default function HabitatEditPage() {
 	const [habitatData, setHabitatData] = useState<HabitatData[]>([]);
 	const [isLoading, setIsLoading] = useState(false);
 	const [isSaving, setIsSaving] = useState(false);
+	const [currentMap, setCurrentMap] = useState("Map1a_PALEOMAP_PaleoAtlas_000.jpg");
 
 	// HabitatDataをHabitatPointに変換する関数
 	const convertToHabitatPoints = (data: HabitatData[]): HabitatPoint[] => {
@@ -133,6 +137,11 @@ export default function HabitatEditPage() {
 		setHabitatData(newHabitatData);
 	};
 
+	// 地図変更時の処理
+	const handleMapChange = (mapFile: string) => {
+		setCurrentMap(mapFile);
+	};
+
 	if (isLoading) {
 		return (
 			<div className="container mx-auto px-4 py-8">
@@ -144,23 +153,55 @@ export default function HabitatEditPage() {
 	}
 
 	return (
-		<div className="container mx-auto px-4 py-8">
-			<div className="flex items-center gap-4 mb-6">
-				<Button
-					variant="outline"
-					onClick={() => router.push(`/classifications/${encodeURIComponent(decodedName)}`)}
-				>
-					<ArrowLeft className="h-4 w-4 mr-2" />
-					戻る
-				</Button>
-				<h1 className="text-2xl font-bold">生息地編集: {decodedName}</h1>
-			</div>
+		<GeologicalAgeProvider>
+			<div className="container mx-auto px-4 py-8">
+				<div className="flex items-center gap-4 mb-6">
+					<Button
+						variant="outline"
+						onClick={() => router.push(`/classifications/${encodeURIComponent(decodedName)}`)}
+					>
+						<ArrowLeft className="h-4 w-4 mr-2" />
+						戻る
+					</Button>
+					<h1 className="text-2xl font-bold">生息地編集: {decodedName}</h1>
+				</div>
 
-			<FabricHabitatEditor
-				habitatData={convertToHabitatPoints(habitatData)}
-				onSave={handleSave}
-				showMapSelector={true}
-			/>
-		</div>
+				{/* 編集エリア */}
+				<div className="mb-8">
+					<FabricHabitatEditor
+						habitatData={convertToHabitatPoints(habitatData)}
+						onSave={handleSave}
+						showMapSelector={true}
+						onMapChange={handleMapChange}
+						width={1000}
+						height={600}
+					/>
+				</div>
+
+				{/* プレビューエリア */}
+				<div className="mb-6">
+					<h2 className="text-xl font-semibold mb-4">プレビュー</h2>
+					<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+						{/* 左側：地球儀 */}
+						<div className="bg-white rounded-lg border p-4">
+							<h3 className="text-lg font-medium mb-3">地球儀ビュー</h3>
+							<div className="h-80 w-full">
+								<Globe 
+									customTexture={`/PALEOMAP_PaleoAtlas_Rasters_v3/${currentMap}`}
+								/>
+							</div>
+						</div>
+
+						{/* 右側：地質時代カード */}
+						<div className="bg-white rounded-lg border p-4">
+							<h3 className="text-lg font-medium mb-3">地質時代選択</h3>
+							<div className="h-80 overflow-y-auto">
+								<GeologicalAgeCard />
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</GeologicalAgeProvider>
 	);
 } 

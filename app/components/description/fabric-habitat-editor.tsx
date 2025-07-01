@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useEffect, useRef, useState, useCallback, useLayoutEffect } from "react";
-import { Canvas, Image, Circle, Object as FabricObject, FabricImage } from "fabric";
+import { Canvas, Image, Circle } from "fabric";
+import type { Object as FabricObject } from "fabric";
 import { Button } from "@/app/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card";
 import { Input } from "@/app/components/ui/input";
@@ -16,6 +17,7 @@ import {
 	Save,
 	Trash2
 } from 'lucide-react';
+import type { TEvent } from "fabric";
 
 interface HabitatPoint {
 	id: string;
@@ -34,6 +36,7 @@ interface FabricHabitatEditorProps {
 	showMapSelector?: boolean;
 	width?: number;
 	height?: number;
+	onMapChange?: (mapFile: string) => void;
 }
 
 // 地図画像のリスト
@@ -60,7 +63,8 @@ export default function FabricHabitatEditor({
 	onSave,
 	showMapSelector = true,
 	width = 800,
-	height = 600
+	height = 600,
+	onMapChange
 }: FabricHabitatEditorProps) {
 	const fabricCanvasRef = useRef<Canvas | null>(null);
 	const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -68,41 +72,36 @@ export default function FabricHabitatEditor({
 	const currentToolRef = useRef(selectedTool);
 	const [pointColor, setPointColor] = useState('#ff0000');
 	const [pointSize, setPointSize] = useState(20);
+	const pointColorRef = useRef('#ff0000');
+	const pointSizeRef = useRef(20);
+
+	// ツールバーの色変更時に選択中のオブジェクトを更新
+	const handleColorChange = (color: string) => {
+		setPointColor(color);
+		pointColorRef.current = color; // refも即座に更新
+		// 選択中のオブジェクトまたはポイントがあれば必ず反映
+		const point = getSelectedPoint();
+		if (selectedObject || point) {
+			updateSelectedPoint('color', color);
+		}
+	};
+
+	// ツールバーのサイズ変更時に選択中のオブジェクトを更新
+	const handleSizeChange = (size: number) => {
+		setPointSize(size);
+		pointSizeRef.current = size; // refも即座に更新
+		const point = getSelectedPoint();
+		if (selectedObject || point) {
+			updateSelectedPoint('size', size);
+		}
+	};
 	const [habitatPoints, setHabitatPoints] = useState<HabitatPoint[]>(habitatData);
 	const [selectedObject, setSelectedObject] = useState<FabricObject | null>(null);
 	const [isInitialized, setIsInitialized] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
 	const [currentMap, setCurrentMap] = useState(MAP_IMAGES[0].file);
 
-	// 高解像度Canvasの設定
-	const setupHighResolutionCanvas = useCallback((canvas: HTMLCanvasElement) => {
-		const ctx = canvas.getContext('2d');
-		if (!ctx) return;
 
-		// デバイスピクセル比を取得（最大2倍まで）
-		const dpr = Math.min(window.devicePixelRatio || 1, 2);
-		
-		// 実際の表示サイズ
-		const displayWidth = width;
-		const displayHeight = height;
-
-		// キャンバスの内部サイズを高解像度に設定
-		canvas.width = displayWidth * dpr;
-		canvas.height = displayHeight * dpr;
-
-		// CSSサイズを表示サイズに設定
-		canvas.style.width = displayWidth + 'px';
-		canvas.style.height = displayHeight + 'px';
-
-		// コンテキストをスケール
-		ctx.scale(dpr, dpr);
-
-		// 高品質なレンダリング設定
-		ctx.imageSmoothingEnabled = true;
-		ctx.imageSmoothingQuality = 'high';
-
-		return { dpr, displayWidth, displayHeight };
-	}, [width, height]);
 
 	// Fabric.jsキャンバスの初期化
 	useEffect(() => {
@@ -143,7 +142,7 @@ export default function FabricHabitatEditor({
 				preserveObjectStacking: true,
 				enableRetinaScaling: true,
 				imageSmoothingEnabled: true,
-				imageSmoothingQuality: 'high' as any,
+				imageSmoothingQuality: 'high' as ImageSmoothingQuality,
 				renderOnAddRemove: true,
 				skipTargetFind: false,
 				selectionBorderColor: '#2196F3',
@@ -161,11 +160,16 @@ export default function FabricHabitatEditor({
 			fabricCanvasRef.current = fabricCanvas;
 
 			// イベントリスナーを設定
+			// @ts-ignore
 			fabricCanvas.on('selection:created', handleSelection);
+			// @ts-ignore
 			fabricCanvas.on('selection:updated', handleSelection);
 			fabricCanvas.on('selection:cleared', handleSelectionCleared);
+			// @ts-ignore
 			fabricCanvas.on('object:modified', handleObjectModified);
+			// @ts-ignore
 			fabricCanvas.on('object:removed', handleObjectRemoved);
+			// @ts-ignore
 			fabricCanvas.on('mouse:down', handleCanvasClick);
 			
 			// 追加のデバッグイベント
@@ -199,7 +203,7 @@ export default function FabricHabitatEditor({
 				fabricCanvasRef.current = null;
 			}
 		};
-	}, [width, height]);
+	}, [width, height, isInitialized]);
 
 	// 地図画像の読み込み
 	useEffect(() => {
@@ -231,7 +235,7 @@ export default function FabricHabitatEditor({
 				crossOrigin: 'anonymous',
 			}, {
 				imageSmoothingEnabled: true,
-				imageSmoothingQuality: 'high' as any,
+				imageSmoothingQuality: 'high' as ImageSmoothingQuality,
 			}).then((img: Image) => {
 				console.log('地図画像読み込み成功:', img.width, 'x', img.height);
 				
@@ -241,7 +245,7 @@ export default function FabricHabitatEditor({
 					return;
 				}
 
-				// 画像をキャンバスサイズに合わせてスケール（高品質）
+				// 画像をキャンバスサイズに合わせてスケール（縦横比を保持）
 				const scaleX = width / (img.width || 1);
 				const scaleY = height / (img.height || 1);
 				const scale = Math.min(scaleX, scaleY);
@@ -260,16 +264,16 @@ export default function FabricHabitatEditor({
 
 				console.log('地図画像をCanvasに追加完了');
 
-				// 既存の生息地ポイントを追加
-				habitatPoints.forEach((point) => {
+				// 初期の生息地ポイントを追加（propsから受け取ったデータ）
+				for (const point of habitatData) {
 					addPointToCanvas(point);
-				});
+				}
 				
-				console.log('生息地ポイント追加完了:', habitatPoints.length, '個');
+				console.log('生息地ポイント追加完了:', habitatData.length, '個');
 				
 				setIsLoading(false);
 				console.log('地図画像の読み込みが完了しました - isLoadingをfalseに設定');
-			}).catch((error: any) => {
+			}).catch((error: unknown) => {
 				console.error('地図画像の読み込みに失敗しました:', error);
 				setIsLoading(false);
 				console.log('エラーのためisLoadingをfalseに設定');
@@ -281,7 +285,35 @@ export default function FabricHabitatEditor({
 			console.log('地図画像読み込みuseEffectクリーンアップ');
 			clearTimeout(loadTimeout);
 		};
-	}, [currentMap, width, height, isInitialized]);
+	}, [currentMap, width, height, isInitialized, habitatData, habitatData.length]);
+
+	// 地図変更時のコールバック
+	useEffect(() => {
+		if (onMapChange) {
+			onMapChange(currentMap);
+		}
+	}, [currentMap, onMapChange]);
+
+	// habitatDataの変更を監視して初期ポイントを設定
+	useEffect(() => {
+		if (fabricCanvasRef.current && isInitialized && !isLoading) {
+			// 既存のポイントオブジェクトを削除
+			const canvas = fabricCanvasRef.current;
+			const objects = canvas.getObjects();
+			for (const obj of objects) {
+				if ((obj as FabricObject & { habitatPointId?: string }).habitatPointId) {
+					canvas.remove(obj);
+				}
+			}
+			
+			// 新しいポイントを追加
+			for (const point of habitatData) {
+				addPointToCanvas(point);
+			}
+			
+			canvas.renderAll();
+		}
+	}, [habitatData, isInitialized, isLoading]);
 
 	// キャンバスにポイントを追加（高品質）
 	const addPointToCanvas = (point: HabitatPoint) => {
@@ -314,43 +346,60 @@ export default function FabricHabitatEditor({
 		});
 
 		// オブジェクトにカスタムデータを追加
-		(fabricObject as any).habitatPointId = point.id;
+		(fabricObject as FabricObject & { habitatPointId?: string }).habitatPointId = point.id;
 		canvas.add(fabricObject);
 		canvas.renderAll();
 		console.log('ポイントをCanvasに追加完了:', point.id);
+		
+		// habitatPointsの状態を更新
+		setHabitatPoints(prev => {
+			const exists = prev.find(p => p.id === point.id);
+			if (!exists) {
+				return [...prev, point];
+			}
+			return prev;
+		});
 	};
 
 	// 選択イベントの処理
-	const handleSelection = (e: any) => {
-		console.log('選択イベント発生:', e);
-		console.log('e.selected:', e.selected);
-		console.log('e.target:', e.target);
-		const selected = e.selected?.[0] || e.target;
-		console.log('選択されたオブジェクト:', selected);
-		console.log('選択されたオブジェクトのID:', (selected as any)?.habitatPointId);
-		console.log('選択されたオブジェクトのタイプ:', (selected as any)?.type);
+	// @ts-ignore
+	const handleSelection = (e: TEvent) => {
+		const selected = (e.selected?.[0] as FabricObject) || (e.target as FabricObject);
 		setSelectedObject(selected);
+		
+		// 選択されたオブジェクトの色とサイズをツールバーに反映
+		if (selected) {
+			const obj = selected as FabricObject & { habitatPointId?: string };
+			if (obj.habitatPointId) {
+				const point = habitatPoints.find(p => p.id === obj.habitatPointId);
+				if (point) {
+					setPointColor(point.color);
+					setPointSize(point.size);
+				}
+			}
+		}
 	};
 
 	// 選択解除イベントの処理
 	const handleSelectionCleared = () => {
-		console.log('選択解除イベント発生');
 		setSelectedObject(null);
 	};
 
 	// オブジェクト変更イベントの処理
-	const handleObjectModified = (e: any) => {
-		const obj = e.target;
-		if (obj && (obj as any).habitatPointId) {
-			updateHabitatPointPosition((obj as any).habitatPointId, obj.left || 0, obj.top || 0);
+	// @ts-ignore
+	const handleObjectModified = (e: TEvent) => {
+		const obj = e.target as FabricObject & { habitatPointId?: string };
+		if (obj?.habitatPointId) {
+			updateHabitatPointPosition(obj.habitatPointId, obj.left || 0, obj.top || 0);
 		}
 	};
 
 	// オブジェクト削除イベントの処理
-	const handleObjectRemoved = (e: any) => {
-		const obj = e.target;
-		if (obj && (obj as any).habitatPointId) {
-			removeHabitatPoint((obj as any).habitatPointId);
+	// @ts-ignore
+	const handleObjectRemoved = (e: TEvent) => {
+		const obj = e.target as FabricObject & { habitatPointId?: string };
+		if (obj?.habitatPointId) {
+			removeHabitatPoint(obj.habitatPointId);
 		}
 	};
 
@@ -374,7 +423,7 @@ export default function FabricHabitatEditor({
 		if (fabricCanvasRef.current) {
 			const canvas = fabricCanvasRef.current;
 			const objects = canvas.getObjects();
-			const objectToRemove = objects.find((obj: any) => (obj as any).habitatPointId === id);
+			const objectToRemove = objects.find((obj: FabricObject) => (obj as FabricObject & { habitatPointId?: string }).habitatPointId === id);
 			if (objectToRemove) {
 				canvas.remove(objectToRemove);
 				canvas.renderAll();
@@ -387,15 +436,9 @@ export default function FabricHabitatEditor({
 	};
 
 	// キャンバスクリックイベントの処理
-	const handleCanvasClick = (e: any) => {
-		// 現在のselectedToolの値を取得（refから最新値を取得）
+	const handleCanvasClick = (e: TEvent) => {
 		const currentTool = currentToolRef.current;
-		console.log('Canvasクリックイベント発生 - selectedTool:', currentTool);
-		
-		if (currentTool === 'select') {
-			console.log('選択ツールのためクリックを無視');
-			return;
-		}
+		if (currentTool === 'select') return;
 
 		if (!fabricCanvasRef.current) {
 			console.log('Canvasが存在しないためクリックを無視');
@@ -416,24 +459,20 @@ export default function FabricHabitatEditor({
 			id: `point_${Date.now()}`,
 			lat,
 			lng,
-			color: pointColor,
-			size: pointSize,
+			color: pointColorRef.current, // refの最新値を使用
+			size: pointSizeRef.current,   // refの最新値を使用
 			shape: 'circle',
 		};
-
-		console.log('新しいポイントを作成:', newPoint);
 		setHabitatPoints(prev => [...prev, newPoint]);
 		addPointToCanvas(newPoint);
 	};
 
 	// ツール変更の処理
 	const handleToolChange = (tool: typeof selectedTool) => {
-		console.log('ツール変更:', selectedTool, '->', tool);
 		setSelectedTool(tool);
 		currentToolRef.current = tool; // 即座にrefを更新
 		if (fabricCanvasRef.current) {
 			fabricCanvasRef.current.defaultCursor = tool === 'select' ? 'default' : 'crosshair';
-			console.log('カーソルを変更:', tool === 'select' ? 'default' : 'crosshair');
 		}
 	};
 
@@ -461,36 +500,25 @@ export default function FabricHabitatEditor({
 	};
 
 	// 選択されたポイントを更新
-	const updateSelectedPoint = (field: keyof HabitatPoint, value: any) => {
-		console.log('updateSelectedPoint呼び出し:', field, value);
-		
-		// 現在選択されているオブジェクトのIDを取得
+	const updateSelectedPoint = (field: keyof HabitatPoint, value: string | number | undefined) => {
 		const selectedId = getSelectedObjectId();
 		if (!selectedId) {
-			console.log('選択されたオブジェクトが存在しないため更新をスキップ');
 			return;
 		}
-
-		console.log('選択されたオブジェクトID:', selectedId);
-
 		const updatedPoints = habitatPoints.map(point => {
 			if (point.id === selectedId) {
-				console.log('ポイントを更新:', point.id, field, value);
 				return { ...point, [field]: value };
 			}
 			return point;
 		});
 		setHabitatPoints(updatedPoints);
-
-		// キャンバス上のオブジェクトも更新
 		if (fabricCanvasRef.current) {
 			const canvas = fabricCanvasRef.current;
-			canvas.getObjects().forEach((obj: any) => {
-				if ((obj as any).habitatPointId === selectedId) {
-					console.log('Canvasオブジェクトを更新:', field, value);
+			for (const obj of canvas.getObjects()) {
+				if ((obj as FabricObject & { habitatPointId?: string }).habitatPointId === selectedId) {
 					if (field === 'color') {
 						obj.set('fill', value);
-					} else if (field === 'size') {
+					} else if (field === 'size' && typeof value === 'number') {
 						if (obj.type === 'circle') {
 							obj.set('radius', value / 2);
 						} else {
@@ -499,27 +527,26 @@ export default function FabricHabitatEditor({
 						}
 					}
 				}
-			});
+			}
 			canvas.renderAll();
-			console.log('Canvasの再描画完了');
 		}
 	};
 
 	// 選択されたオブジェクトのIDを取得
 	const getSelectedObjectId = () => {
-		return (selectedObject as any)?.habitatPointId;
+		return (selectedObject as FabricObject & { habitatPointId?: string })?.habitatPointId;
 	};
 
 	// 選択されたオブジェクトのタイプを取得
 	const getSelectedObjectType = () => {
-		return (selectedObject as any)?.type;
+		return (selectedObject as FabricObject)?.type;
 	};
 
 	// 選択されたポイントの情報を取得
 	const getSelectedPoint = () => {
 		const selectedId = getSelectedObjectId();
-		if (!selectedId) return null;
-		return habitatPoints.find(p => p.id === selectedId);
+		const point = selectedId ? habitatPoints.find(p => p.id === selectedId) : null;
+		return point;
 	};
 
 	// コンポーネントのマウント状態を管理
@@ -546,6 +573,8 @@ export default function FabricHabitatEditor({
 			console.log('アンマウント時に状態をリセットしました');
 		};
 	}, []);
+
+
 
 	return (
 		<div className="w-full">
@@ -574,7 +603,7 @@ export default function FabricHabitatEditor({
 						id="point-color"
 						type="color"
 						value={pointColor}
-						onChange={(e) => setPointColor(e.target.value)}
+						onChange={(e) => handleColorChange(e.target.value)}
 						className="w-16 h-8"
 					/>
 					<Label htmlFor="point-size">サイズ:</Label>
@@ -582,7 +611,7 @@ export default function FabricHabitatEditor({
 						id="point-size"
 						type="number"
 						value={pointSize}
-						onChange={(e) => setPointSize(Number(e.target.value))}
+						onChange={(e) => handleSizeChange(Number(e.target.value))}
 						className="w-20"
 						min="5"
 						max="100"
@@ -687,7 +716,7 @@ export default function FabricHabitatEditor({
 													// ポイントを選択状態にする
 													if (fabricCanvasRef.current) {
 														const obj = fabricCanvasRef.current.getObjects().find(
-															(o: any) => (o as any).habitatPointId === point.id
+															(o: FabricObject) => (o as FabricObject & { habitatPointId?: string }).habitatPointId === point.id
 														);
 														if (obj) {
 															fabricCanvasRef.current.setActiveObject(obj);
