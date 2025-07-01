@@ -516,6 +516,14 @@ export default function FabricHabitatEditor({
 			text: currentTool === 'text' ? textContentRef.current : undefined,
 			fontSize: currentTool === 'text' ? fontSizeRef.current : undefined,
 		};
+		
+		console.log('新しいポイント作成:', {
+			currentTool,
+			textContentRef: textContentRef.current,
+			fontSizeRef: fontSizeRef.current,
+			newPoint
+		});
+		
 		setHabitatPoints(prev => [...prev, newPoint]);
 		addPointToCanvas(newPoint);
 	};
@@ -544,6 +552,14 @@ export default function FabricHabitatEditor({
 		console.log('保存ボタンがクリックされました');
 		console.log('onSave関数:', onSave);
 		console.log('保存するデータ:', habitatPoints);
+		console.log('保存するデータ詳細:', habitatPoints.map(point => ({
+			id: point.id,
+			shape: point.shape,
+			text: point.text,
+			fontSize: point.fontSize,
+			color: point.color,
+			size: point.size
+		})));
 		if (onSave) {
 			onSave(habitatPoints);
 			console.log('onSave関数を呼び出しました');

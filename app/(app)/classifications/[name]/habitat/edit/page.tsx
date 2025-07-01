@@ -18,6 +18,8 @@ interface HabitatData {
 	size: number;
 	label?: string;
 	maxR?: number;
+	text?: string;
+	fontSize?: number;
 }
 
 interface HabitatPoint {
@@ -26,9 +28,11 @@ interface HabitatPoint {
 	lng: number;
 	color: string;
 	size: number;
-	shape: 'circle';
+	shape: 'circle' | 'text';
 	label?: string;
 	maxR?: number;
+	text?: string;
+	fontSize?: number;
 }
 
 export default function HabitatEditPage() {
@@ -48,9 +52,11 @@ export default function HabitatEditPage() {
 			lng: item.lng,
 			color: item.color,
 			size: item.size,
-			shape: 'circle' as const,
+			shape: item.text ? 'text' : 'circle',
 			label: item.label,
-			maxR: item.maxR
+			maxR: item.maxR,
+			text: item.text,
+			fontSize: item.fontSize,
 		}));
 	};
 
@@ -61,7 +67,10 @@ export default function HabitatEditPage() {
 			lng: point.lng,
 			color: point.color,
 			size: point.size,
+			label: point.label,
 			maxR: point.maxR,
+			text: point.text,
+			fontSize: point.fontSize,
 		}));
 	};
 

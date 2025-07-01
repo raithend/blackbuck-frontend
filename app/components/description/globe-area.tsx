@@ -14,6 +14,8 @@ interface HabitatData {
 	size?: number;
 	maxR?: number;
 	polygon?: [number, number][];
+	text?: string;
+	fontSize?: number;
 }
 
 interface GlobeAreaProps {
@@ -128,11 +130,20 @@ const generateMapWithHabitat = (mapName: string, habitatData: HabitatData[]) => 
 
 					// 座標がキャンバス内にあるかチェック
 					if (x >= 0 && x <= canvas.width && y >= 0 && y <= canvas.height) {
-						// エディターと同じ基準でサイズをスケール調整
-						const scaleFactor = Math.min(scaleX, scaleY); // アスペクト比を保持
-						const pointSize = (habitat.size || 20) * scaleFactor; // デフォルトサイズ20px
-						
-						if (habitat.maxR) {
+						const scaleFactor = Math.min(scaleX, scaleY);
+						const pointSize = (habitat.size || 20) * scaleFactor;
+
+						if (habitat.text) {
+							// テキストを描画
+							ctx.font = `${(habitat.fontSize || 16) * scaleFactor}px sans-serif`;
+							ctx.fillStyle = habitat.color || 'black';
+							ctx.textAlign = 'center';
+							ctx.textBaseline = 'middle';
+							ctx.strokeStyle = 'white';
+							ctx.lineWidth = 2;
+							ctx.strokeText(habitat.text, x, y);
+							ctx.fillText(habitat.text, x, y);
+						} else if (habitat.maxR) {
 							// 範囲円を描画
 							ctx.strokeStyle = habitat.color || 'red';
 							ctx.lineWidth = Math.max(1, 2 * scaleFactor);
