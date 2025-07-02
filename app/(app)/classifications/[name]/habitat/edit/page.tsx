@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/app/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { createClient } from "@/app/lib/supabase-browser";
-import FabricHabitatEditor from "@/app/components/habitat/fabric-habitat-editor";
+import FabricHabitatEditor from "@/app/components/habitat/habitat-editor";
 import Globe from "@/app/components/habitat/globe";
 import { GeologicalAgeCard } from "@/app/components/geological/geological-age-card";
 import { GeologicalAgeProvider } from "@/app/components/geological/geological-context";

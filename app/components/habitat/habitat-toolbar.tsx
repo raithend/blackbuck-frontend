@@ -69,14 +69,18 @@ export function HabitatToolbar({
 			</div>
 
 			<div className="flex items-center gap-2 ml-4">
-				<Label htmlFor="point-color">色:</Label>
-				<Input
-					id="point-color"
-					type="color"
-					value={pointColor}
-					onChange={(e) => onColorChange(e.target.value)}
-					className="w-16 h-8"
-				/>
+				{selectedTool !== 'select' && (
+					<>
+						<Label htmlFor="point-color">色:</Label>
+						<Input
+							id="point-color"
+							type="color"
+							value={pointColor}
+							onChange={(e) => onColorChange(e.target.value)}
+							className="w-16 h-8"
+						/>
+					</>
+				)}
 				{selectedTool === 'circle' && (
 					<>
 						<Label htmlFor="point-size">サイズ:</Label>
