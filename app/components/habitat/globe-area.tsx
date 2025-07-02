@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import Image from "next/image";
 import Globe from "./globe";
 import { Button } from "@/app/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select";
@@ -137,9 +138,11 @@ export default function GlobeArea({
 				<div className="absolute top-4 right-4 z-20 bg-white/90 backdrop-blur-sm rounded-lg p-4 shadow-lg max-w-md max-h-96 overflow-y-auto">
 					<h3 className="font-semibold mb-2">デバッグ: 生成された画像</h3>
 					{customTexture && (
-						<img 
+						<Image 
 							src={customTexture} 
 							alt="生成された地図画像" 
+							width={400}
+							height={300}
 							className="w-full h-auto border border-gray-300 rounded"
 						/>
 					)}

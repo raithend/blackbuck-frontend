@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback } from "react";
+import { useRef, useState, useCallback, useEffect } from "react";
 import { Circle, FabricText } from "fabric";
 import type { Canvas, Object as FabricObject } from "fabric";
 import type { HabitatPoint, FabricObjectWithHabitatId } from "./types";
@@ -21,6 +21,12 @@ export function useFabricCanvas({
 	const [isInitialized, setIsInitialized] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
 	const [currentMap, setCurrentMap] = useState("Map1a_PALEOMAP_PaleoAtlas_000.jpg");
+	const habitatDataRef = useRef(habitatData);
+
+	// habitatDataの更新を追跡
+	useEffect(() => {
+		habitatDataRef.current = habitatData;
+	}, [habitatData]);
 
 	// ポイントをキャンバスに追加する関数
 	const addPointToCanvas = useCallback((point: HabitatPoint) => {
@@ -175,7 +181,47 @@ export function useFabricCanvas({
 		if (onMapChange) {
 			onMapChange(mapFile);
 		}
-	}, [onMapChange]);
+		
+		// 地図変更時にキャンバスを更新
+		if (fabricCanvasRef.current) {
+			const canvas = fabricCanvasRef.current;
+			// 既存のオブジェクトをクリア
+			canvas.clear();
+			
+			// 新しい地図画像を読み込み
+			import('fabric').then(({ Image: FabricImage }) => {
+				FabricImage.fromURL(`/PALEOMAP_PaleoAtlas_Rasters_v3/${mapFile}`, {
+					crossOrigin: 'anonymous',
+				}).then((img) => {
+					// 画像をキャンバスサイズに合わせてスケール
+					const scaleX = width / (img.width || 1);
+					const scaleY = height / (img.height || 1);
+					const scale = Math.min(scaleX, scaleY);
+
+					img.scale(scale);
+					img.set({
+						left: (width - (img.width || 0) * scale) / 2,
+						top: (height - (img.height || 0) * scale) / 2,
+						selectable: false,
+						evented: false,
+					});
+
+					canvas.add(img);
+					canvas.sendObjectToBack(img);
+					canvas.renderAll();
+					
+					// 既存のポイントを再追加
+					for (const point of habitatDataRef.current) {
+						addPointToCanvas(point);
+					}
+					
+					console.log('地図変更完了:', mapFile);
+				}).catch((error) => {
+					console.error('地図画像読み込みエラー:', error);
+				});
+			});
+		}
+	}, [onMapChange, width, height, addPointToCanvas]);
 
 	return {
 		fabricCanvasRef,

@@ -493,6 +493,14 @@ const FabricHabitatEditor = forwardRef(function FabricHabitatEditor({
 		getHabitatPoints: () => habitatPoints
 	}), [habitatPoints]);
 
+	// 地質時代の選択に応じて地図を更新
+	useEffect(() => {
+		if (selectedMap) {
+			const mapFileName = `${selectedMap}.jpg`;
+			handleMapChange(mapFileName);
+		}
+	}, [selectedMap, handleMapChange]);
+
 	return (
 		<div className="w-full">
 			{/* ツールバー */}
