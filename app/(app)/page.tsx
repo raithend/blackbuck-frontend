@@ -1,5 +1,5 @@
-import DescriptionArea from "@/app/components/habitat/description-area";
+import { redirect } from "next/navigation";
 
 export default function Page() {
-	return <DescriptionArea />;
+	redirect(encodeURI("/classifications/脊椎動物"));
 }
