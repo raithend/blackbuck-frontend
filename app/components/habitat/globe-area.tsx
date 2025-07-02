@@ -6,6 +6,7 @@ import { Button } from "@/app/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select";
 import { Label } from "@/app/components/ui/label";
 import { useGeologicalAge } from "../geological/geological-context";
+import geologicalAgesData from "@/app/data/geological-ages.json";
 
 interface HabitatData {
 	lat: number;
@@ -24,24 +25,39 @@ interface GlobeAreaProps {
 	showMapSelector?: boolean; // 地図選択機能を表示するかどうか
 }
 
-// 地図画像のリスト
-const MAP_IMAGES = [
-	{ name: "現在", file: "Map1a_PALEOMAP_PaleoAtlas_000.jpg" },
-	{ name: "最終氷期極大期", file: "Map2a_Last_Glacial_Maximum_001.jpg" },
-	{ name: "鮮新世", file: "Map3a_Pliocene_004.jpg" },
-	{ name: "メッシニアン期", file: "Map4a_Messinian_Event_006.jpg" },
-	{ name: "中新世後期", file: "Map5a_Late_Miocene_010.jpg" },
-	{ name: "中新世中期", file: "Map6a_Middle_Miocene_015.jpg" },
-	{ name: "中新世前期", file: "Map7a_Early_Miocene_020.jpg" },
-	{ name: "漸新世後期", file: "Map8a_Late_Oligocene_025.jpg" },
-	{ name: "漸新世前期", file: "Map9a_Early_Oligocene_030.jpg" },
-	{ name: "始新世後期", file: "Map10a_Late_Eocene_035.jpg" },
-	{ name: "始新世中期", file: "Map11a_MIddle_Eocene_040.jpg" },
-	{ name: "始新世前期", file: "Map12a_early_Middle_Eocene_045.jpg" },
-	{ name: "始新世最前期", file: "Map13a_Early_Eocene_050.jpg" },
-	{ name: "PETM", file: "Map14a_PETM_055.jpg" },
-	{ name: "暁新世", file: "Map15a_Paleocene_060.jpg" },
-];
+// geological-ages.jsonから地図情報を取得する関数
+const getMapImages = () => {
+	const mapImages: { name: string; file: string }[] = [];
+	
+	// すべてのera, period, epoch, ageからmap情報を収集
+	for (const era of geologicalAgesData.eras) {
+		if (era.map) {
+			mapImages.push({ name: era.name, file: `${era.map}.jpg` });
+		}
+		for (const period of era.periods) {
+			if (period.map) {
+				mapImages.push({ name: period.name, file: `${period.map}.jpg` });
+			}
+			for (const epoch of period.epochs) {
+				if (epoch.map) {
+					mapImages.push({ name: epoch.name, file: `${epoch.map}.jpg` });
+				}
+				if (epoch.ages) {
+					for (const age of epoch.ages) {
+						if (age.map) {
+							mapImages.push({ name: age.name, file: `${age.map}.jpg` });
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	// 重複を除去して返す
+	return mapImages.filter((map, index, self) => 
+		index === self.findIndex(m => m.file === map.file)
+	);
+};
 
 // 生息地データ付きの地図画像を生成
 const generateMapWithHabitat = (mapName: string, habitatData: HabitatData[]) => {
@@ -238,7 +254,7 @@ export default function GlobeArea({
 								<SelectValue />
 							</SelectTrigger>
 							<SelectContent>
-								{MAP_IMAGES.map((map) => (
+								{getMapImages().map((map) => (
 									<SelectItem key={map.file} value={map.file}>
 										{map.name}
 									</SelectItem>

@@ -49,7 +49,7 @@ const GlobeComponent: React.FC<GlobeProps> = ({
 		cameraRef.current.aspect = width / height;
 		cameraRef.current.updateProjectionMatrix();
 		rendererRef.current.setSize(width, height);
-	};
+	}, []);
 
 	// 初期化処理（一度だけ実行）
 	const initializeScene = useCallback(() => {

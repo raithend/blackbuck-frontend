@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useEffect, useRef, useState, useLayoutEffect } from "react";
-import { Canvas, Image } from "fabric";
-import type { Object as FabricObject } from "fabric";
+import React, { useEffect, useRef, useState, useLayoutEffect, useCallback } from "react";
+import { Canvas, FabricImage } from "fabric";
+import type { FabricObject } from "fabric";
 import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/components/ui/tabs";
@@ -11,7 +11,7 @@ import { HabitatPointList } from "./habitat-point-list";
 import { HabitatPropertiesPanel } from "./habitat-properties-panel";
 import { useFabricCanvas } from "./use-fabric-canvas";
 import type { HabitatPoint, FabricHabitatEditorProps, FabricObjectWithHabitatId } from "./types";
-import { MAP_IMAGES } from "./constants";
+import geologicalAgesData from "@/app/data/geological-ages.json";
 
 export default function FabricHabitatEditor({
 	habitatData = [],
@@ -21,6 +21,39 @@ export default function FabricHabitatEditor({
 	height = 600,
 	onMapChange
 }: FabricHabitatEditorProps) {
+	// geological-ages.jsonから地図情報を取得する関数
+	const getMapImages = () => {
+		const mapImages: { name: string; file: string }[] = [];
+		
+		// すべてのera, period, epoch, ageからmap情報を収集
+		for (const era of geologicalAgesData.eras) {
+			if (era.map) {
+				mapImages.push({ name: era.name, file: `${era.map}.jpg` });
+			}
+			for (const period of era.periods) {
+				if (period.map) {
+					mapImages.push({ name: period.name, file: `${period.map}.jpg` });
+				}
+				for (const epoch of period.epochs) {
+					if (epoch.map) {
+						mapImages.push({ name: epoch.name, file: `${epoch.map}.jpg` });
+					}
+					if (epoch.ages) {
+						for (const age of epoch.ages) {
+							if (age.map) {
+								mapImages.push({ name: age.name, file: `${age.map}.jpg` });
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		// 重複を除去して返す
+		return mapImages.filter((map, index, self) => 
+			index === self.findIndex(m => m.file === map.file)
+		);
+	};
 	const [selectedTool, setSelectedTool] = useState<'select' | 'circle' | 'text'>('select');
 	const currentToolRef = useRef(selectedTool);
 	const [pointColor, setPointColor] = useState('#ff0000');
@@ -215,7 +248,7 @@ export default function FabricHabitatEditor({
 	};
 
 	// キャンバスクリックイベントの処理
-	const handleCanvasClick = (e: any) => {
+	const handleCanvasClick = useCallback((e: any) => {
 		const currentTool = currentToolRef.current;
 		if (currentTool === 'select') return;
 
@@ -254,7 +287,7 @@ export default function FabricHabitatEditor({
 		
 		setHabitatPoints(prev => [...prev, newPoint]);
 		addPointToCanvas(newPoint);
-	};
+	}, [width, height, addPointToCanvas]);
 
 	// ポイント選択時の処理
 	const handlePointSelect = (pointId: string) => {
@@ -302,11 +335,7 @@ export default function FabricHabitatEditor({
 			console.log('Fabric.js Canvasオブジェクト作成完了');
 
 			// イベントリスナーを設定
-			canvas.on('mouse:down', (e) => {
-				console.log('mouse:downイベント:', e);
-				console.log('クリックされたオブジェクト:', e.target);
-				console.log('現在の選択ツール:', currentToolRef.current);
-			});
+			canvas.on('mouse:down', handleCanvasClick);
 
 			canvas.on('selection:created', handleSelection);
 			canvas.on('selection:updated', handleSelection);
@@ -364,7 +393,7 @@ export default function FabricHabitatEditor({
 			canvas.clear();
 
 			// 高品質な画像読み込み
-			Image.fromURL(`/PALEOMAP_PaleoAtlas_Rasters_v3/${currentMap}`, {
+			FabricImage.fromURL(`/PALEOMAP_PaleoAtlas_Rasters_v3/${currentMap}`, {
 				crossOrigin: 'anonymous',
 			}, {
 				imageSmoothingEnabled: true,
@@ -474,7 +503,7 @@ export default function FabricHabitatEditor({
 											<SelectValue />
 										</SelectTrigger>
 										<SelectContent>
-											{MAP_IMAGES.map((map) => (
+											{getMapImages().map((map) => (
 												<SelectItem key={map.file} value={map.file}>
 													{map.name}
 												</SelectItem>
