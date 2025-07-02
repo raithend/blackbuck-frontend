@@ -363,10 +363,7 @@ const FabricHabitatEditor = forwardRef(function FabricHabitatEditor({
 			// 高品質な画像読み込み
 			FabricImage.fromURL(`/PALEOMAP_PaleoAtlas_Rasters_v3/${currentMap}`, {
 				crossOrigin: 'anonymous',
-			}, {
-				imageSmoothingEnabled: true,
-				imageSmoothingQuality: 'high' as ImageSmoothingQuality,
-			}).then((img: Image) => {
+			}).then((img) => {
 				console.log('地図画像読み込み成功:', img.width, 'x', img.height);
 				
 				// Canvasの存在を再チェック
@@ -524,7 +521,7 @@ const FabricHabitatEditor = forwardRef(function FabricHabitatEditor({
 
 						<TabsContent value="properties">
 							<HabitatPropertiesPanel
-								selectedPoint={getSelectedPoint(habitatPoints)}
+								selectedPoint={getSelectedPoint(habitatPoints) || null}
 								onPropertyChange={handlePropertyChange}
 							/>
 						</TabsContent>

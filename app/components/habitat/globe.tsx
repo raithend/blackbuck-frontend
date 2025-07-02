@@ -130,18 +130,26 @@ const GlobeComponent: React.FC<GlobeProps> = ({
 	// テクスチャの更新処理
 	const updateTexture = useCallback(async (textureUrl: string) => {
 		if (!globeRef.current) return;
+		
+		console.log('=== updateTexture開始 ===');
+		console.log('textureUrl:', textureUrl);
+		console.log('textureUrl長さ:', textureUrl.length);
+		
 		try {
 			setIsLoading(true);
 			const texture = textureCache.current.get(textureUrl);
 			if (texture) {
+				console.log('キャッシュされたテクスチャを使用');
 				(globeRef.current.material as THREE.MeshPhongMaterial).map = texture;
 				(globeRef.current.material as THREE.MeshPhongMaterial).needsUpdate = true;
 				setIsLoading(false);
 			} else {
+				console.log('新しいテクスチャをロード開始');
 				const textureLoader = new THREE.TextureLoader();
 				textureLoader.load(
 					textureUrl,
 					(loadedTexture) => {
+						console.log('テクスチャ読み込み成功:', textureUrl);
 						textureCache.current.set(textureUrl, loadedTexture);
 						if (globeRef.current) {
 							(globeRef.current.material as THREE.MeshPhongMaterial).map = loadedTexture;
@@ -151,11 +159,13 @@ const GlobeComponent: React.FC<GlobeProps> = ({
 					},
 					undefined,
 					(error) => {
+						console.error('テクスチャ読み込み失敗:', textureUrl, error);
 						setIsLoading(false);
 					}
 				);
 			}
-		} catch {
+		} catch (error) {
+			console.error('updateTexture処理エラー:', error);
 			setIsLoading(false);
 		}
 	}, []);
@@ -182,12 +192,26 @@ const GlobeComponent: React.FC<GlobeProps> = ({
 
 	// カスタムテクスチャの生成処理
 	useEffect(() => {
+		console.log('=== Globe.tsx テクスチャ生成処理開始 ===');
+		console.log('customTexture:', customTexture);
+		console.log('habitatPoints:', habitatPoints);
+		
 		if (customTexture && habitatPoints.length > 0) {
 			// 地図画像上にポイントを描画したテクスチャを生成
-			generateMapWithHabitat(customTexture.replace(/^.*\/(Map.*\.jpg).*$/, '$1'), habitatPoints as HabitatData[])
-				.then(setCustomMapTexture)
-				.catch(() => setCustomMapTexture(customTexture));
+			const mapName = customTexture.replace(/^.*\/(Map.*\.jpg).*$/, '$1');
+			console.log('generateMapWithHabitat呼び出し:', { mapName, habitatPoints });
+			
+			generateMapWithHabitat(mapName, habitatPoints as HabitatData[])
+				.then((dataUrl) => {
+					console.log('generateMapWithHabitat成功 - dataURL長さ:', dataUrl.length);
+					setCustomMapTexture(dataUrl);
+				})
+				.catch((error) => {
+					console.error('generateMapWithHabitat失敗:', error);
+					setCustomMapTexture(customTexture);
+				});
 		} else {
+			console.log('habitatPointsが空またはcustomTextureなし - 通常のテクスチャを使用');
 			setCustomMapTexture(customTexture);
 		}
 	}, [customTexture, habitatPoints]);
