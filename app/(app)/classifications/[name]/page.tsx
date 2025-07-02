@@ -2,10 +2,10 @@
 
 import { useMemo, useState } from "react";
 import { PostCards } from "@/app/components/post/post-cards";
-import PhylogeneticTreeArea from "@/app/components/description/phylogenetic-tree-area";
-import GlobeArea from "@/app/components/description/globe-area";
-import { GeologicalAgeProvider } from "@/app/components/description/geological-context";
-import { GeologicalAgeCard } from "@/app/components/description/geological-age-card";
+import PhylogeneticTreeArea from "@/app/components/phylogenetic/phylogenetic-tree-area";
+import GlobeArea from "@/app/components/habitat/globe-area";
+import { GeologicalAgeProvider } from "@/app/components/geological/geological-context";
+import { GeologicalAgeCard } from "@/app/components/geological/geological-age-card";
 import { ClassificationEditButton } from "@/app/components/classification/classification-edit-button";
 import type { PostWithUser } from "@/app/types/types";
 import { useParams } from "next/navigation";

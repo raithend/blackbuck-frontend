@@ -1,5 +1,5 @@
-import { GeologicalAgeCard } from "./geological-age-card";
-import { GeologicalAgeProvider } from "./geological-context";
+import { GeologicalAgeCard } from "../geological/geological-age-card";
+import { GeologicalAgeProvider } from "../geological/geological-context";
 
 export default function DescriptionArea() {
 	return (

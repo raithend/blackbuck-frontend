@@ -8,9 +8,9 @@ import { ArrowLeft, Save, Download, Upload, Sparkles } from "lucide-react";
 import { createClient } from "@/app/lib/supabase-browser";
 import { toast } from "sonner";
 import dynamic from "next/dynamic";
-import { GeologicalAgeProvider } from "@/app/components/description/geological-context";
-import { GeologicalAgeCard } from "@/app/components/description/geological-age-card";
-import { PhylogeneticTree } from "@/app/components/description/phylogenetic-tree";
+import { GeologicalAgeProvider } from "@/app/components/geological/geological-context";
+import { GeologicalAgeCard } from "@/app/components/geological/geological-age-card";
+import { PhylogeneticTree } from "@/app/components/phylogenetic/phylogenetic-tree";
 
 // Monaco Editorを動的インポート（SSRを避けるため）
 const MonacoEditor = dynamic(

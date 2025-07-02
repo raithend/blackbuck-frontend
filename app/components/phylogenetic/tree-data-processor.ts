@@ -1,6 +1,8 @@
 import geologicalAgesData from "@/app/data/geological-ages.json";
 import { load } from "js-yaml";
+import treeData from "@/app/data/tree-data.yml";
 
+// ツリーノードの型定義
 interface TreeNode {
 	name: string;
 	from?: string;
@@ -147,20 +149,23 @@ export const processTreeData = (selectedAgeIds: number[], customData?: TreeNode)
 	console.log('processTreeData - selectedAgeIds:', selectedAgeIds);
 	console.log('processTreeData - customData:', customData);
 	
-	// カスタムデータが提供されていない場合はnullを返す
-	if (!customData) {
-		console.log('processTreeData - no custom data provided, returning null');
-		return null;
-	}
+	// 使用するデータを決定
+	let dataToUse: TreeNode;
 	
-	// カスタムデータを使用（データベースのphylogenetic_tree_fileの内容）
-	console.log('processTreeData - using customData from database');
-	const parsedData = customData;
+	if (customData) {
+		// カスタムデータを使用（データベースのphylogenetic_tree_fileの内容）
+		console.log('processTreeData - using customData from database');
+		dataToUse = customData;
+	} else {
+		// デフォルトのツリーデータを使用
+		console.log('processTreeData - using default tree data');
+		dataToUse = load(treeData) as TreeNode;
+	}
 
-	console.log('processTreeData - parsedData before filtering:', parsedData);
+	console.log('processTreeData - dataToUse before filtering:', dataToUse);
 
 	// データをフィルタリング
-	const filteredData = filterNodeByAge(parsedData, selectedAgeIds);
+	const filteredData = filterNodeByAge(dataToUse, selectedAgeIds);
 	console.log('processTreeData - filteredData:', filteredData);
 	
 	return filteredData;

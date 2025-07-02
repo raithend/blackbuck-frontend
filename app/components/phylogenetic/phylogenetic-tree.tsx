@@ -2,7 +2,7 @@
 
 import * as d3 from "d3";
 import React, { useEffect, useRef, useState } from "react";
-import { useGeologicalAge } from "./geological-context";
+import { useGeologicalAge } from "../geological/geological-context";
 import { processTreeData } from "./tree-data-processor";
 import yaml from "js-yaml";
 

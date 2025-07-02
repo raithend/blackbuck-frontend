@@ -5,7 +5,7 @@ import Globe from "./globe";
 import { Button } from "@/app/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select";
 import { Label } from "@/app/components/ui/label";
-import { useGeologicalAge } from "./geological-context";
+import { useGeologicalAge } from "../geological/geological-context";
 
 interface HabitatData {
 	lat: number;

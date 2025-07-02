@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
@@ -40,7 +40,7 @@ const GlobeComponent: React.FC<GlobeProps> = ({
 	});
 
 	// リサイズハンドラ
-	const handleResize = () => {
+	const handleResize = useCallback(() => {
 		if (!cameraRef.current || !rendererRef.current || !containerRef.current) return;
 		
 		const container = containerRef.current;
@@ -52,7 +52,7 @@ const GlobeComponent: React.FC<GlobeProps> = ({
 	};
 
 	// 初期化処理（一度だけ実行）
-	const initializeScene = () => {
+	const initializeScene = useCallback(() => {
 		if (!containerRef.current || isInitialized.current) return;
 
 		// シーンの作成
@@ -120,51 +120,51 @@ const GlobeComponent: React.FC<GlobeProps> = ({
 		window.addEventListener("resize", handleResize);
 
 		isInitialized.current = true;
-	};
+	}, []);
 
 	// テクスチャの更新処理
-	const updateTexture = async (textureUrl: string) => {
-		if (!globeRef.current) return;
+			const updateTexture = useCallback(async (textureUrl: string) => {
+			if (!globeRef.current) return;
 
-		try {
-			setIsLoading(true);
-			
-			// キャッシュからテクスチャを取得
-			let texture = textureCache.current.get(textureUrl);
-			
-			if (texture) {
-				// キャッシュされたテクスチャを使用
-				(globeRef.current.material as THREE.MeshPhongMaterial).map = texture;
-				(globeRef.current.material as THREE.MeshPhongMaterial).needsUpdate = true;
-				setIsLoading(false);
-			} else {
-				// 新しいテクスチャをロード
-				const textureLoader = new THREE.TextureLoader();
-				textureLoader.load(
-					textureUrl,
-					(loadedTexture) => {
-						// テクスチャをキャッシュに保存
-						textureCache.current.set(textureUrl, loadedTexture);
-						
-						// 地球儀にテクスチャを適用
-						if (globeRef.current) {
-							(globeRef.current.material as THREE.MeshPhongMaterial).map = loadedTexture;
-							(globeRef.current.material as THREE.MeshPhongMaterial).needsUpdate = true;
+			try {
+				setIsLoading(true);
+				
+				// キャッシュからテクスチャを取得
+				const texture = textureCache.current.get(textureUrl);
+				
+				if (texture) {
+					// キャッシュされたテクスチャを使用
+					(globeRef.current.material as THREE.MeshPhongMaterial).map = texture;
+					(globeRef.current.material as THREE.MeshPhongMaterial).needsUpdate = true;
+					setIsLoading(false);
+				} else {
+					// 新しいテクスチャをロード
+					const textureLoader = new THREE.TextureLoader();
+					textureLoader.load(
+						textureUrl,
+						(loadedTexture) => {
+							// テクスチャをキャッシュに保存
+							textureCache.current.set(textureUrl, loadedTexture);
+							
+							// 地球儀にテクスチャを適用
+							if (globeRef.current) {
+								(globeRef.current.material as THREE.MeshPhongMaterial).map = loadedTexture;
+								(globeRef.current.material as THREE.MeshPhongMaterial).needsUpdate = true;
+							}
+							setIsLoading(false);
+						},
+						undefined,
+						(error) => {
+							console.error("テクスチャのロードに失敗しました:", error);
+							setIsLoading(false);
 						}
-						setIsLoading(false);
-					},
-					undefined,
-					(error) => {
-						console.error("テクスチャのロードに失敗しました:", error);
-						setIsLoading(false);
-					}
-				);
+					);
+				}
+			} catch (error) {
+				console.error("テクスチャの更新に失敗しました:", error);
+				setIsLoading(false);
 			}
-		} catch (error) {
-			console.error("テクスチャの更新に失敗しました:", error);
-			setIsLoading(false);
-		}
-	};
+		}, []);
 
 	// 初期化処理
 	useEffect(() => {
@@ -193,9 +193,9 @@ const GlobeComponent: React.FC<GlobeProps> = ({
 	useEffect(() => {
 		return () => {
 			// テクスチャキャッシュのクリーンアップ
-			textureCache.current.forEach((texture) => {
+			for (const texture of textureCache.current.values()) {
 				texture.dispose();
-			});
+			}
 			textureCache.current.clear();
 
 			// シーンのクリーンアップ
