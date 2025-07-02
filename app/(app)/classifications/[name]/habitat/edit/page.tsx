@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/app/components/ui/button";
 import { ArrowLeft } from "lucide-react";
@@ -10,6 +10,7 @@ import Globe from "@/app/components/habitat/globe";
 import { GeologicalAgeCard } from "@/app/components/geological/geological-age-card";
 import { GeologicalAgeProvider } from "@/app/components/geological/geological-context";
 import { toast } from "sonner";
+import type { MutableRefObject } from "react";
 
 interface HabitatData {
 	lat: number;
@@ -43,6 +44,7 @@ export default function HabitatEditPage() {
 	const [isLoading, setIsLoading] = useState(false);
 	const [isSaving, setIsSaving] = useState(false);
 	const [currentMap, setCurrentMap] = useState("Map1a_PALEOMAP_PaleoAtlas_000.jpg");
+	const habitatEditorRef = useRef<{ getHabitatPoints: () => HabitatPoint[] } | null>(null);
 
 	// HabitatDataをHabitatPointに変換する関数
 	const convertToHabitatPoints = (data: HabitatData[]): HabitatPoint[] => {
@@ -178,6 +180,7 @@ export default function HabitatEditPage() {
 				{/* 編集エリア */}
 				<div className="mb-8">
 					<FabricHabitatEditor
+						ref={habitatEditorRef}
 						habitatData={convertToHabitatPoints(habitatData)}
 						onSave={handleSave}
 						showMapSelector={true}
@@ -190,22 +193,25 @@ export default function HabitatEditPage() {
 				{/* プレビューエリア */}
 				<div className="mb-6">
 					<h2 className="text-xl font-semibold mb-4">プレビュー</h2>
-					<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-						{/* 左側：地球儀 */}
-						<div className="bg-white rounded-lg border p-4">
-							<h3 className="text-lg font-medium mb-3">地球儀ビュー</h3>
-							<div className="h-80 w-full">
+					<div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
+						{/* 地球儀エリアを大きく、余白なしで表示 */}
+						<div className="rounded-lg border p-0 bg-black" style={{ width: '100%', height: '600px', position: 'relative' }}>
+							<h3 className="text-lg font-medium mb-3 text-white px-4 pt-4">地球儀ビュー</h3>
+							<div className="w-full h-full" style={{ height: '500px' }}>
 								<Globe 
 									customTexture={`/PALEOMAP_PaleoAtlas_Rasters_v3/${currentMap}`}
+									habitatPoints={habitatData}
 								/>
 							</div>
-						</div>
-
-						{/* 右側：地質時代カード */}
-						<div className="bg-white rounded-lg border p-4">
-							<h3 className="text-lg font-medium mb-3">地質時代選択</h3>
-							<div className="h-80 overflow-y-auto">
-								<GeologicalAgeCard />
+							<div className="flex justify-end px-4 pb-4">
+								<Button onClick={() => {
+									if (habitatEditorRef.current) {
+										setHabitatData(habitatEditorRef.current.getHabitatPoints());
+										setCurrentMap(`${currentMap}?t=${Date.now()}`);
+									}
+								}}>
+									編集内容を反映
+								</Button>
 							</div>
 						</div>
 					</div>

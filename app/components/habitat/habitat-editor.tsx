@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState, useLayoutEffect, useCallback } from "react";
+import React, { useEffect, useRef, useState, useLayoutEffect, useCallback, forwardRef, useImperativeHandle } from "react";
 import { Canvas, FabricImage } from "fabric";
 import type { FabricObject } from "fabric";
 import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card";
@@ -12,48 +12,16 @@ import { HabitatPropertiesPanel } from "./habitat-properties-panel";
 import { useFabricCanvas } from "./use-fabric-canvas";
 import type { HabitatPoint, FabricHabitatEditorProps, FabricObjectWithHabitatId } from "./types";
 import geologicalAgesData from "@/app/data/geological-ages.json";
+import { GeologicalAgeCard } from "@/app/components/geological/geological-age-card";
 
-export default function FabricHabitatEditor({
+const FabricHabitatEditor = forwardRef(function FabricHabitatEditor({
 	habitatData = [],
 	onSave,
 	showMapSelector = true,
 	width = 800,
 	height = 600,
 	onMapChange
-}: FabricHabitatEditorProps) {
-	// geological-ages.jsonから地図情報を取得する関数
-	const getMapImages = () => {
-		const mapImages: { name: string; file: string }[] = [];
-		
-		// すべてのera, period, epoch, ageからmap情報を収集
-		for (const era of geologicalAgesData.eras) {
-			if (era.map) {
-				mapImages.push({ name: era.name, file: `${era.map}.jpg` });
-			}
-			for (const period of era.periods) {
-				if (period.map) {
-					mapImages.push({ name: period.name, file: `${period.map}.jpg` });
-				}
-				for (const epoch of period.epochs) {
-					if (epoch.map) {
-						mapImages.push({ name: epoch.name, file: `${epoch.map}.jpg` });
-					}
-					if (epoch.ages) {
-						for (const age of epoch.ages) {
-							if (age.map) {
-								mapImages.push({ name: age.name, file: `${age.map}.jpg` });
-							}
-						}
-					}
-				}
-			}
-		}
-		
-		// 重複を除去して返す
-		return mapImages.filter((map, index, self) => 
-			index === self.findIndex(m => m.file === map.file)
-		);
-	};
+}: FabricHabitatEditorProps, ref) {
 	const [selectedTool, setSelectedTool] = useState<'select' | 'circle' | 'text'>('select');
 	const currentToolRef = useRef(selectedTool);
 	const [pointColor, setPointColor] = useState('#ff0000');
@@ -471,6 +439,14 @@ export default function FabricHabitatEditor({
 		};
 	}, []);
 
+	useEffect(() => {
+		setHabitatPoints(habitatData);
+	}, [habitatData]);
+
+	useImperativeHandle(ref, () => ({
+		getHabitatPoints: () => habitatPoints
+	}), [habitatPoints]);
+
 	return (
 		<div className="w-full">
 			{/* ツールバー */}
@@ -497,20 +473,6 @@ export default function FabricHabitatEditor({
 						<CardHeader>
 							<CardTitle className="flex items-center justify-between">
 								<span>生息地編集</span>
-								{showMapSelector && (
-									<Select value={currentMap} onValueChange={handleMapChange}>
-										<SelectTrigger className="w-48">
-											<SelectValue />
-										</SelectTrigger>
-										<SelectContent>
-											{getMapImages().map((map) => (
-												<SelectItem key={map.file} value={map.file}>
-													{map.name}
-												</SelectItem>
-											))}
-										</SelectContent>
-									</Select>
-								)}
 							</CardTitle>
 						</CardHeader>
 						<CardContent>
@@ -545,9 +507,10 @@ export default function FabricHabitatEditor({
 				{/* 編集パネル */}
 				<div className="lg:col-span-1">
 					<Tabs defaultValue="points" className="w-full">
-						<TabsList className="grid w-full grid-cols-2">
+						<TabsList className="grid w-full grid-cols-3">
 							<TabsTrigger value="points">ポイント</TabsTrigger>
 							<TabsTrigger value="properties">プロパティ</TabsTrigger>
+							<TabsTrigger value="age">時代選択</TabsTrigger>
 						</TabsList>
 						
 						<TabsContent value="points" className="space-y-4">
@@ -565,9 +528,15 @@ export default function FabricHabitatEditor({
 								onPropertyChange={handlePropertyChange}
 							/>
 						</TabsContent>
+
+						<TabsContent value="age">
+							<GeologicalAgeCard />
+						</TabsContent>
 					</Tabs>
 				</div>
 			</div>
 		</div>
 	);
-} 
+});
+
+export default FabricHabitatEditor; 

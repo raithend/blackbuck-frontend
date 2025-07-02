@@ -4,13 +4,16 @@ import type React from "react";
 import { useEffect, useRef, useState, useCallback } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { generateMapWithHabitat, HabitatData } from "@/app/components/habitat/map-utils";
 
 interface GlobeProps {
 	customTexture?: string; // カスタムテクスチャのURL（生息地データ付きの地図画像）
+	habitatPoints?: { lat: number; lng: number; color: string; size: number }[];
 }
 
 const GlobeComponent: React.FC<GlobeProps> = ({ 
-	customTexture
+	customTexture,
+	habitatPoints = []
 }) => {
 	const containerRef = useRef<HTMLDivElement>(null);
 	const [isLoading, setIsLoading] = useState(false);
@@ -38,6 +41,8 @@ const GlobeComponent: React.FC<GlobeProps> = ({
 		cameraRotation: new THREE.Euler(0, 0, 0),
 		target: new THREE.Vector3(0, 0, 0),
 	});
+
+	const [customMapTexture, setCustomMapTexture] = useState<string | undefined>(undefined);
 
 	// リサイズハンドラ
 	const handleResize = useCallback(() => {
@@ -123,48 +128,37 @@ const GlobeComponent: React.FC<GlobeProps> = ({
 	}, []);
 
 	// テクスチャの更新処理
-			const updateTexture = useCallback(async (textureUrl: string) => {
-			if (!globeRef.current) return;
-
-			try {
-				setIsLoading(true);
-				
-				// キャッシュからテクスチャを取得
-				const texture = textureCache.current.get(textureUrl);
-				
-				if (texture) {
-					// キャッシュされたテクスチャを使用
-					(globeRef.current.material as THREE.MeshPhongMaterial).map = texture;
-					(globeRef.current.material as THREE.MeshPhongMaterial).needsUpdate = true;
-					setIsLoading(false);
-				} else {
-					// 新しいテクスチャをロード
-					const textureLoader = new THREE.TextureLoader();
-					textureLoader.load(
-						textureUrl,
-						(loadedTexture) => {
-							// テクスチャをキャッシュに保存
-							textureCache.current.set(textureUrl, loadedTexture);
-							
-							// 地球儀にテクスチャを適用
-							if (globeRef.current) {
-								(globeRef.current.material as THREE.MeshPhongMaterial).map = loadedTexture;
-								(globeRef.current.material as THREE.MeshPhongMaterial).needsUpdate = true;
-							}
-							setIsLoading(false);
-						},
-						undefined,
-						(error) => {
-							console.error("テクスチャのロードに失敗しました:", error);
-							setIsLoading(false);
-						}
-					);
-				}
-			} catch (error) {
-				console.error("テクスチャの更新に失敗しました:", error);
+	const updateTexture = useCallback(async (textureUrl: string) => {
+		if (!globeRef.current) return;
+		try {
+			setIsLoading(true);
+			const texture = textureCache.current.get(textureUrl);
+			if (texture) {
+				(globeRef.current.material as THREE.MeshPhongMaterial).map = texture;
+				(globeRef.current.material as THREE.MeshPhongMaterial).needsUpdate = true;
 				setIsLoading(false);
+			} else {
+				const textureLoader = new THREE.TextureLoader();
+				textureLoader.load(
+					textureUrl,
+					(loadedTexture) => {
+						textureCache.current.set(textureUrl, loadedTexture);
+						if (globeRef.current) {
+							(globeRef.current.material as THREE.MeshPhongMaterial).map = loadedTexture;
+							(globeRef.current.material as THREE.MeshPhongMaterial).needsUpdate = true;
+						}
+						setIsLoading(false);
+					},
+					undefined,
+					(error) => {
+						setIsLoading(false);
+					}
+				);
 			}
-		}, []);
+		} catch {
+			setIsLoading(false);
+		}
+	}, []);
 
 	// 初期化処理
 	useEffect(() => {
@@ -174,8 +168,6 @@ const GlobeComponent: React.FC<GlobeProps> = ({
 	// カスタムテクスチャの更新処理
 	useEffect(() => {
 		if (!isInitialized.current) return;
-
-		// 現在のカメラとコントロールの状態を保存
 		if (cameraRef.current && controlsRef.current) {
 			stateRef.current = {
 				cameraPosition: cameraRef.current.position.clone(),
@@ -183,11 +175,22 @@ const GlobeComponent: React.FC<GlobeProps> = ({
 				target: controlsRef.current.target.clone(),
 			};
 		}
-
-		if (customTexture) {
-			updateTexture(customTexture);
+		if (customMapTexture) {
+			updateTexture(customMapTexture);
 		}
-	}, [customTexture]);
+	}, [customMapTexture]);
+
+	// カスタムテクスチャの生成処理
+	useEffect(() => {
+		if (customTexture && habitatPoints.length > 0) {
+			// 地図画像上にポイントを描画したテクスチャを生成
+			generateMapWithHabitat(customTexture.replace(/^.*\/(Map.*\.jpg).*$/, '$1'), habitatPoints as HabitatData[])
+				.then(setCustomMapTexture)
+				.catch(() => setCustomMapTexture(customTexture));
+		} else {
+			setCustomMapTexture(customTexture);
+		}
+	}, [customTexture, habitatPoints]);
 
 	// クリーンアップ処理
 	useEffect(() => {
