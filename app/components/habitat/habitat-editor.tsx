@@ -13,6 +13,8 @@ import { useFabricCanvas } from "./use-fabric-canvas";
 import type { HabitatPoint, FabricHabitatEditorProps, FabricObjectWithHabitatId } from "./types";
 import geologicalAgesData from "@/app/data/geological-ages.json";
 import { GeologicalAgeCard } from "@/app/components/geological/geological-age-card";
+import { useGeologicalAge } from "@/app/components/geological/geological-context";
+import { Button } from "@/app/components/ui/button";
 
 const FabricHabitatEditor = forwardRef(function FabricHabitatEditor({
 	habitatData = [],
@@ -34,6 +36,9 @@ const FabricHabitatEditor = forwardRef(function FabricHabitatEditor({
 	const fontSizeRef = useRef(16);
 	const [habitatPoints, setHabitatPoints] = useState<HabitatPoint[]>(habitatData);
 	const [selectedObject, setSelectedObject] = useState<FabricObject | null>(null);
+
+	// 地質時代コンテキストを使用
+	const { selectedMap, selectedAgeIds, setSelectedMap, setSelectedAgeIds } = useGeologicalAge();
 
 	const {
 		fabricCanvasRef,
@@ -128,7 +133,8 @@ const FabricHabitatEditor = forwardRef(function FabricHabitatEditor({
 			text: point.text,
 			fontSize: point.fontSize,
 			color: point.color,
-			size: point.size
+			size: point.size,
+			geologicalAge: point.geologicalAge
 		})));
 		if (onSave) {
 			onSave(habitatPoints);
@@ -199,20 +205,63 @@ const FabricHabitatEditor = forwardRef(function FabricHabitatEditor({
 
 	// 生息地ポイントを削除
 	const removeHabitatPointHandler = (id: string) => {
-		// Canvasからオブジェクトを削除
-		if (fabricCanvasRef.current) {
-			const canvas = fabricCanvasRef.current;
-			const objects = canvas.getObjects();
-			const objectToRemove = objects.find((obj: FabricObject) => (obj as FabricObjectWithHabitatId).habitatPointId === id);
-			if (objectToRemove) {
-				canvas.remove(objectToRemove);
-				canvas.renderAll();
-				console.log('Canvasからオブジェクトを削除:', id);
+		removeHabitatPoint(id);
+	};
+
+	// 地質時代情報を取得する関数
+	const getGeologicalAgeInfo = () => {
+		if (selectedAgeIds.length === 0) return null;
+
+		// 選択された時代IDから地質時代情報を取得
+		const ageId = selectedAgeIds[0]; // 最初のIDを使用
+		
+		for (const era of geologicalAgesData.eras) {
+			for (const period of era.periods) {
+				for (const epoch of period.epochs) {
+					const age = epoch.ages?.find(a => a.id === ageId.toString());
+					if (age) {
+						return {
+							era: era.name,
+							period: period.name,
+							epoch: epoch.name,
+							age: age.name,
+							ageIds: selectedAgeIds,
+							map: selectedMap
+						};
+					}
+				}
 			}
 		}
-		
-		// 状態からも削除
-		setHabitatPoints(prev => prev.filter(point => point.id !== id));
+		return null;
+	};
+
+	// 選択されたポイントに地質時代情報を追加
+	const addGeologicalAgeToSelectedPoint = () => {
+		const geologicalAgeInfo = getGeologicalAgeInfo();
+		if (!geologicalAgeInfo) {
+			console.log('地質時代が選択されていません');
+			return;
+		}
+
+		const selectedPoint = getSelectedPoint(habitatPoints);
+		if (!selectedPoint) {
+			console.log('ポイントが選択されていません');
+			return;
+		}
+
+		// 選択されたポイントに地質時代情報を追加
+		const updatedPoints = habitatPoints.map(point => {
+			if (point.id === selectedPoint.id) {
+				return {
+					...point,
+					geologicalAge: geologicalAgeInfo
+				};
+			}
+			return point;
+		});
+
+		setHabitatPoints(updatedPoints);
+		console.log('地質時代情報を追加しました:', geologicalAgeInfo);
 	};
 
 	// キャンバスクリックイベントの処理
@@ -527,7 +576,9 @@ const FabricHabitatEditor = forwardRef(function FabricHabitatEditor({
 						</TabsContent>
 
 						<TabsContent value="age">
-							<GeologicalAgeCard />
+							<div className="space-y-4">
+								<GeologicalAgeCard enableMenu={false} />
+							</div>
 						</TabsContent>
 					</Tabs>
 				</div>

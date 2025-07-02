@@ -11,6 +11,14 @@ export interface HabitatPoint {
 	maxR?: number;
 	text?: string;
 	fontSize?: number;
+	geologicalAge?: {
+		era?: string;
+		period?: string;
+		epoch?: string;
+		age?: string;
+		ageIds?: number[];
+		map?: string;
+	};
 }
 
 export interface FabricHabitatEditorProps {

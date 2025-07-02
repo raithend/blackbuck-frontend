@@ -77,6 +77,11 @@ export function HabitatPointList({
 							<div className="text-sm text-gray-600 mt-1">
 								{point.lat.toFixed(3)}, {point.lng.toFixed(3)}
 							</div>
+							{point.geologicalAge && (
+								<div className="text-xs text-blue-600 mt-1">
+									{point.geologicalAge.era} → {point.geologicalAge.period} → {point.geologicalAge.epoch} → {point.geologicalAge.age}
+								</div>
+							)}
 						</div>
 					))
 				)}

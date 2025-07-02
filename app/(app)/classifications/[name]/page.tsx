@@ -250,55 +250,53 @@ export default function ClassificationPage() {
 					</TabsContent>
 					
 					<TabsContent value="tree" className="mt-6">
-						<div className="flex items-center justify-between mb-4">
-							<h3 className="text-lg font-semibold">系統樹</h3>
-							<div className="flex items-center gap-2">
-								<GeologicalAgeCard />
+						{hasPhylogeneticTree ? (
+							<div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+								<div className="lg:col-span-3">
+									<PhylogeneticTreeArea 
+										customTreeContent={classification.phylogenetic_tree_file} 
+									/>
+								</div>
+								<div className="lg:col-span-1">
+									<GeologicalAgeCard enableMenu={true} />
+								</div>
+							</div>
+						) : (
+							<div className="text-center py-8">
+								<p className="text-gray-500 mb-4">系統樹が登録されていません</p>
 								<Link href={`/classifications/${encodeURIComponent(decodedName)}/tree/edit`}>
-									<Button variant="outline" size="sm" className="flex items-center gap-2">
-										<Edit className="h-4 w-4" />
-										{hasPhylogeneticTree ? '系統樹を編集' : '系統樹を作成'}
+									<Button>
+										<Edit className="h-4 w-4 mr-2" />
+										系統樹を編集
 									</Button>
 								</Link>
-							</div>
-						</div>
-						{hasPhylogeneticTree ? (
-							<PhylogeneticTreeArea 
-								customTreeContent={classification.phylogenetic_tree_file}
-							/>
-						) : (
-							<div className="flex items-center justify-center h-64 text-gray-500">
-								<p>系統樹が設定されていません。編集ボタンから新しい系統樹を作成してください。</p>
 							</div>
 						)}
 					</TabsContent>
 					
 					<TabsContent value="globe" className="mt-6">
-						{activeTab === "globe" && (
-							<>
-								<div className="flex items-center justify-between mb-4">
-									<h3 className="text-lg font-semibold">生息地</h3>
-									<div className="flex items-center gap-2">
-										<GeologicalAgeCard />
-										<Link href={`/classifications/${encodeURIComponent(decodedName)}/habitat/edit`}>
-											<Button variant="outline" size="sm" className="flex items-center gap-2">
-												<Edit className="h-4 w-4" />
-												生息地を編集
-											</Button>
-										</Link>
-									</div>
-								</div>
-								{hasGeographicData ? (
+						{hasGeographicData ? (
+							<div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+								<div className="lg:col-span-3">
 									<GlobeArea 
+										customGeographicFile={classification.geographic_data_file}
 										habitatData={habitatData}
-										showMapSelector={true}
 									/>
-								) : (
-									<div className="flex items-center justify-center h-64 text-gray-500">
-										<p>生息地が設定されていません</p>
-									</div>
-								)}
-							</>
+								</div>
+								<div className="lg:col-span-1">
+									<GeologicalAgeCard enableMenu={true} />
+								</div>
+							</div>
+						) : (
+							<div className="text-center py-8">
+								<p className="text-gray-500 mb-4">生息地データが登録されていません</p>
+								<Link href={`/classifications/${encodeURIComponent(decodedName)}/habitat/edit`}>
+									<Button>
+										<Edit className="h-4 w-4 mr-2" />
+										生息地を編集
+									</Button>
+								</Link>
+							</div>
 						)}
 					</TabsContent>
 				</Tabs>

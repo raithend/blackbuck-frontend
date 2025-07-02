@@ -64,7 +64,7 @@ interface Era {
 	map?: string;
 }
 
-export function GeologicalAgeCard() {
+export function GeologicalAgeCard({ enableMenu = true }: { enableMenu?: boolean }) {
 	const { selectedMap, selectedAgeIds, setSelectedMap, setSelectedAgeIds } =
 		useGeologicalAge();
 	const [selectedEra, setSelectedEra] = useState<Era | undefined>(undefined);
@@ -75,7 +75,7 @@ export function GeologicalAgeCard() {
 		undefined,
 	);
 	const [selectedAge, setSelectedAge] = useState<GeologicalAge | null>(null);
-	const [isExpanded, setIsExpanded] = useState(false);
+	const [isExpanded, setIsExpanded] = useState(!enableMenu);
 
 	console.log('GeologicalAgeCard - selectedAgeIds:', selectedAgeIds);
 
@@ -281,14 +281,16 @@ export function GeologicalAgeCard() {
 			<CardHeader className={isExpanded ? '' : 'p-2'}>
 				<div className="flex items-center justify-between">
 					{isExpanded && <CardTitle>地質時代</CardTitle>}
-					<Button
-						variant="ghost"
-						size="sm"
-						onClick={() => setIsExpanded(!isExpanded)}
-						className="p-1"
-					>
-						<Menu className="w-4 h-4" />
-					</Button>
+					{enableMenu && (
+						<Button
+							variant="ghost"
+							size="sm"
+							onClick={() => setIsExpanded(!isExpanded)}
+							className="p-1"
+						>
+							<Menu className="w-4 h-4" />
+						</Button>
+					)}
 				</div>
 			</CardHeader>
 			{isExpanded && (

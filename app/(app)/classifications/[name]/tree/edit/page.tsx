@@ -270,7 +270,7 @@ export default function PhylogeneticTreeEditPage() {
 						{/* 地質時代カード */}
 						<Card>
 							<CardContent>
-								<GeologicalAgeCard />
+								<GeologicalAgeCard enableMenu={false} />
 							</CardContent>
 						</Card>
 

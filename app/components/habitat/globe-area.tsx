@@ -132,12 +132,6 @@ export default function GlobeArea({
 				</div>
 			)}
 			
-			{isGenerating && (
-				<div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 z-10">
-					<div className="text-white">地図を生成中...</div>
-				</div>
-			)}
-
 			{/* デバッグ表示 */}
 			{showDebug && (
 				<div className="absolute top-4 right-4 z-20 bg-white/90 backdrop-blur-sm rounded-lg p-4 shadow-lg max-w-md max-h-96 overflow-y-auto">
