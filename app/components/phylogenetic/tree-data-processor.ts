@@ -1,6 +1,5 @@
 import geologicalAgesData from "@/app/data/geological-ages.json";
 import { load } from "js-yaml";
-import treeData from "@/app/data/tree-data.yml";
 
 // ツリーノードの型定義
 interface TreeNode {
@@ -157,9 +156,9 @@ export const processTreeData = (selectedAgeIds: number[], customData?: TreeNode)
 		console.log('processTreeData - using customData from database');
 		dataToUse = customData;
 	} else {
-		// デフォルトのツリーデータを使用
-		console.log('processTreeData - using default tree data');
-		dataToUse = load(treeData) as TreeNode;
+		// カスタムデータがない場合はnullを返す（tree-data.ymlは使用しない）
+		console.log('processTreeData - no custom data provided, returning null');
+		return null;
 	}
 
 	console.log('processTreeData - dataToUse before filtering:', dataToUse);

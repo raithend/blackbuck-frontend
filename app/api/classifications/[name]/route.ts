@@ -270,8 +270,6 @@ export async function PUT(
 					era_end: body.era_end || null,
 					phylogenetic_tree_file: body.phylogenetic_tree_file || null,
 					geographic_data_file: body.geographic_data_file || null,
-					phylogenetic_tree_creator: body.phylogenetic_tree_creator || user.id,
-					geographic_data_creator: body.geographic_data_creator || user.id,
 					created_at: new Date().toISOString(),
 					updated_at: new Date().toISOString(),
 				})
@@ -289,20 +287,37 @@ export async function PUT(
 			);
 		} else {
 			// 分類が存在する場合は更新
+			// 既存データを取得
+			const { data: currentClassification } = await supabase
+				.from("classifications")
+				.select("phylogenetic_tree_file, geographic_data_file, phylogenetic_tree_creator, geographic_data_creator")
+				.eq("name", decodedName)
+				.single();
+
+			// 変更判定
+			const isTreeChanged = body.phylogenetic_tree_file !== undefined && body.phylogenetic_tree_file !== currentClassification?.phylogenetic_tree_file;
+			const isGeoChanged = body.geographic_data_file !== undefined && body.geographic_data_file !== currentClassification?.geographic_data_file;
+
+			const updatePayload: Record<string, unknown> = {
+				english_name: body.english_name,
+				scientific_name: body.scientific_name,
+				description: body.description,
+				era_start: body.era_start,
+				era_end: body.era_end,
+				phylogenetic_tree_file: body.phylogenetic_tree_file,
+				geographic_data_file: body.geographic_data_file,
+				updated_at: new Date().toISOString(),
+			};
+			if (isTreeChanged) {
+				updatePayload.phylogenetic_tree_creator = user.id;
+			}
+			if (isGeoChanged) {
+				updatePayload.geographic_data_creator = user.id;
+			}
+
 			const { data: updatedClassification, error: updateError } = await supabase
 				.from("classifications")
-				.update({
-					english_name: body.english_name,
-					scientific_name: body.scientific_name,
-					description: body.description,
-					era_start: body.era_start,
-					era_end: body.era_end,
-					phylogenetic_tree_file: body.phylogenetic_tree_file,
-					geographic_data_file: body.geographic_data_file,
-					phylogenetic_tree_creator: body.phylogenetic_tree_creator,
-					geographic_data_creator: body.geographic_data_creator,
-					updated_at: new Date().toISOString(),
-				})
+				.update(updatePayload)
 				.eq("name", decodedName)
 				.select()
 				.single();

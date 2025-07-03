@@ -227,27 +227,6 @@ export function ClassificationEditDialog({
 						/>
 					</div>
 
-					<div className="grid grid-cols-2 gap-4">
-						<div className="space-y-2">
-							<Label htmlFor="phylogenetic_tree_creator">系統樹作成者</Label>
-							<Input
-								id="phylogenetic_tree_creator"
-								value={formData.phylogenetic_tree_creator}
-								onChange={(e) => handleInputChange("phylogenetic_tree_creator", e.target.value)}
-								placeholder="作成者名を入力"
-							/>
-						</div>
-						<div className="space-y-2">
-							<Label htmlFor="geographic_data_creator">地理データ作成者</Label>
-							<Input
-								id="geographic_data_creator"
-								value={formData.geographic_data_creator}
-								onChange={(e) => handleInputChange("geographic_data_creator", e.target.value)}
-								placeholder="作成者名を入力"
-							/>
-						</div>
-					</div>
-
 					<div className="space-y-4">
 						<div className="space-y-2">
 							<Label>系統樹ファイル</Label>
