@@ -259,20 +259,29 @@ export async function PUT(
 
 		if (checkError && checkError.code === "PGRST116") {
 			// 分類が存在しない場合は作成
+			const insertPayload = {
+				name: decodedName,
+				english_name: body.english_name || decodedName,
+				scientific_name: body.scientific_name || "",
+				description: body.description || "",
+				era_start: body.era_start || null,
+				era_end: body.era_end || null,
+				phylogenetic_tree_file: body.phylogenetic_tree_file || null,
+				geographic_data_file: body.geographic_data_file || null,
+				created_at: new Date().toISOString(),
+				updated_at: new Date().toISOString(),
+			} as const;
+
+			// ファイルが提供されている場合は作成者を設定
+			const finalPayload = {
+				...insertPayload,
+				...(body.phylogenetic_tree_file && { phylogenetic_tree_creator: user.id }),
+				...(body.geographic_data_file && { geographic_data_creator: user.id }),
+			};
+
 			const { data: newClassification, error: createError } = await supabase
 				.from("classifications")
-				.insert({
-					name: decodedName,
-					english_name: body.english_name || decodedName,
-					scientific_name: body.scientific_name || "",
-					description: body.description || "",
-					era_start: body.era_start || null,
-					era_end: body.era_end || null,
-					phylogenetic_tree_file: body.phylogenetic_tree_file || null,
-					geographic_data_file: body.geographic_data_file || null,
-					created_at: new Date().toISOString(),
-					updated_at: new Date().toISOString(),
-				})
+				.insert(finalPayload)
 				.select()
 				.single();
 
