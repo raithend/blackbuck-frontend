@@ -12,8 +12,9 @@ import { useParams } from "next/navigation";
 import useSWR from "swr";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/components/ui/tabs";
 import { Button } from "@/app/components/ui/button";
-import { Edit } from "lucide-react";
+import { Edit, Eye } from "lucide-react";
 import Link from "next/link";
+import { useUser } from "@/app/contexts/user-context";
 
 // 分類情報の型定義
 interface Classification {
@@ -63,6 +64,7 @@ export default function ClassificationPage() {
 	const params = useParams();
 	const decodedName = decodeURIComponent(params.name as string);
 	const [activeTab, setActiveTab] = useState("overview");
+	const { user } = useUser();
 
 	// 分類情報のみを取得（即座に表示可能）
 	const { data: classificationData, error: classificationError, isLoading: classificationLoading } = useSWR<{ classification: Classification | null }>(
@@ -148,6 +150,9 @@ export default function ClassificationPage() {
 			};
 		}, false);
 	};
+
+	// 系統樹作成者かどうかを判定
+	const isTreeCreator = user && classification?.phylogenetic_tree_creator === user.id;
 
 	// 分類情報の読み込み中
 	if (classificationLoading) return <div>分類情報を読み込み中...</div>;
@@ -264,12 +269,40 @@ export default function ClassificationPage() {
 						) : (
 							<div className="text-center py-8">
 								<p className="text-gray-500 mb-4">系統樹が登録されていません</p>
-								<Link href={`/classifications/${encodeURIComponent(decodedName)}/tree/edit`}>
-									<Button>
-										<Edit className="h-4 w-4 mr-2" />
-										系統樹を編集
-									</Button>
-								</Link>
+								{user && (
+									<Link href={`/classifications/${encodeURIComponent(decodedName)}/tree/edit`}>
+										<Button>
+											<Edit className="h-4 w-4 mr-2" />
+											系統樹を編集
+										</Button>
+									</Link>
+								)}
+							</div>
+						)}
+						
+						{/* 系統樹が存在する場合のボタン表示 */}
+						{hasPhylogeneticTree && (
+							<div className="mt-4 flex justify-center gap-4">
+								{isTreeCreator ? (
+									// 作成者の場合：編集ボタンを表示
+									<Link href={`/classifications/${encodeURIComponent(decodedName)}/tree/edit`}>
+										<Button>
+											<Edit className="h-4 w-4 mr-2" />
+											系統樹を編集
+										</Button>
+									</Link>
+								) : user ? (
+									// ログインユーザー（作成者以外）の場合：見るボタンを表示
+									<Link href={`/classifications/${encodeURIComponent(decodedName)}/tree/view`}>
+										<Button variant="outline">
+											<Eye className="h-4 w-4 mr-2" />
+											系統樹を見る
+										</Button>
+									</Link>
+								) : (
+									// ログインしていない場合：何も表示しない
+									null
+								)}
 							</div>
 						)}
 					</TabsContent>
