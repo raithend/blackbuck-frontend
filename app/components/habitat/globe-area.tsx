@@ -11,6 +11,7 @@ import geologicalAgesData from "@/app/data/geological-ages.json";
 import { generateMapWithHabitat } from "@/app/components/habitat/map-utils";
 
 interface HabitatData {
+	id?: string;
 	lat: number;
 	lng: number;
 	color?: string;
@@ -21,9 +22,15 @@ interface HabitatData {
 	fontSize?: number;
 }
 
+// 新しい構造の型定義
+interface EraGroup {
+	era: string;
+	elements: HabitatData[];
+}
+
 interface GlobeAreaProps {
 	customGeographicFile?: string;
-	habitatData?: HabitatData[]; // 生息地データを直接受け取る
+	eraGroups?: EraGroup[]; // 時代グループデータ
 	showMapSelector?: boolean; // 地図選択機能を表示するかどうか
 }
 
@@ -63,7 +70,7 @@ const getMapImages = () => {
 
 export default function GlobeArea({ 
 	customGeographicFile, 
-	habitatData,
+	eraGroups,
 	showMapSelector = true 
 }: GlobeAreaProps) {
 	const { selectedMap } = useGeologicalAge();
@@ -84,9 +91,12 @@ export default function GlobeArea({
 	useEffect(() => {
 		setIsGenerating(true);
 		
+		// 時代グループから生息地データを平坦化
+		const dataToUse: HabitatData[] = eraGroups ? eraGroups.flatMap(eraGroup => eraGroup.elements) : [];
+		
 		// 生息地データがある場合は生息地付き画像を生成、ない場合は通常の地図画像を使用
-		if (habitatData && habitatData.length > 0) {
-			generateMapWithHabitat(currentMap, habitatData)
+		if (dataToUse.length > 0) {
+			generateMapWithHabitat(currentMap, dataToUse)
 				.then(dataUrl => {
 					setCustomTexture(dataUrl);
 					setIsGenerating(false);
@@ -102,7 +112,7 @@ export default function GlobeArea({
 			setCustomTexture(`/PALEOMAP_PaleoAtlas_Rasters_v3/${currentMap}`);
 			setIsGenerating(false);
 		}
-	}, [currentMap, habitatData]);
+	}, [currentMap, eraGroups]);
 
 	return (
 		<div className="h-[calc(100vh-4rem)]">
@@ -147,23 +157,28 @@ export default function GlobeArea({
 						/>
 					)}
 					<div className="mt-2 text-sm text-gray-600">
-						<p>生息地データ: {habitatData?.length || 0}件</p>
+						<p>生息地データ: {eraGroups ? eraGroups.flatMap(g => g.elements).length : 0}件</p>
 						<p>地図: {currentMap}</p>
 						<p>画像パス: {customTexture}</p>
 						<p>フォーマット: PNG（高画質）</p>
 						{customTexture?.startsWith('data:image/') && (
 							<p>生成画像サイズ: {customTexture.length > 100 ? '高解像度' : '標準'}</p>
 						)}
-						{habitatData && habitatData.length > 0 && (
+						{eraGroups && (
 							<div className="mt-2">
 								<h4 className="font-medium">生息地データ詳細:</h4>
-								{habitatData.map((habitat, index) => (
-									<div key={`habitat-${habitat.lat}-${habitat.lng}-${index}`} className="text-xs mt-1 p-1 bg-gray-100 rounded">
-										<p>ポイント{index + 1}:</p>
-										<p>緯度: {habitat.lat}, 経度: {habitat.lng}</p>
-										<p>色: {habitat.color || 'red'}</p>
-										<p>サイズ: {habitat.size || 0.05}</p>
-										{habitat.maxR && <p>範囲: {habitat.maxR}km</p>}
+								{eraGroups.map((eraGroup) => (
+									<div key={`era-${eraGroup.era}`} className="text-xs mt-1 p-1 bg-blue-100 rounded">
+										<p className="font-medium">時代: {eraGroup.era}</p>
+										{eraGroup.elements.map((habitat) => (
+											<div key={`habitat-${eraGroup.era}-${habitat.lat}-${habitat.lng}`} className="text-xs mt-1 p-1 bg-gray-100 rounded ml-2">
+												<p>ポイント: {habitat.id || 'unknown'}</p>
+												<p>緯度: {habitat.lat}, 経度: {habitat.lng}</p>
+												<p>色: {habitat.color || 'red'}</p>
+												<p>サイズ: {habitat.size || 0.05}</p>
+												{habitat.maxR && <p>範囲: {habitat.maxR}km</p>}
+											</div>
+										))}
 									</div>
 								))}
 							</div>

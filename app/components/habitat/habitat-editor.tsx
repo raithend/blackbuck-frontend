@@ -126,65 +126,132 @@ const FabricHabitatEditor = forwardRef(function FabricHabitatEditor({
 		// 既に取得したselectedMapとselectedAgeIdsを使用
 		console.log('getCurrentGeologicalAgeInfo呼び出し - selectedMap:', selectedMap, 'selectedAgeIds:', selectedAgeIds);
 		
-		// 選択されている時代IDから時代名を取得
-		let selectedAgeName = "顕生代"; // デフォルト値
-		
 		if (selectedAgeIds.length > 0) {
-			// すべての時代から対応するageを探す
-			for (const era of geologicalAgesData.eras) {
-				for (const period of era.periods) {
-					for (const epoch of period.epochs) {
-						if (epoch.ages) {
-							for (const age of epoch.ages) {
-								if (selectedAgeIds.includes(Number.parseInt(age.id))) {
-									// 選択されている一番下の階層の時代を返す
-									if (selectedAgeIds.includes(Number.parseInt(age.id))) {
+			// 選択された地図から時代を特定
+			if (selectedMap) {
+				for (const era of geologicalAgesData.eras) {
+					// eraレベルで一致（最も上位の階層）
+					if (selectedAgeIds.includes(Number.parseInt(era.id)) && era.map === selectedMap) {
+						console.log('eraレベルで一致（地図確認済み）:', era.name);
+						return {
+							era: era.name,
+							period: undefined,
+							epoch: undefined,
+							age: undefined,
+							ageIds: [Number.parseInt(era.id)], // eraのIDのみを含める
+							map: selectedMap
+						};
+					}
+					
+					for (const period of era.periods) {
+						// periodレベルで一致
+						if (selectedAgeIds.includes(Number.parseInt(period.id)) && period.map === selectedMap) {
+							console.log('periodレベルで一致（地図確認済み）:', era.name, period.name);
+							return {
+								era: era.name,
+								period: period.name,
+								epoch: undefined,
+								age: undefined,
+								ageIds: [Number.parseInt(period.id)], // periodのIDのみを含める
+								map: selectedMap
+							};
+						}
+						
+						for (const epoch of period.epochs) {
+							// epochレベルで一致
+							if (selectedAgeIds.includes(Number.parseInt(epoch.id)) && epoch.map === selectedMap) {
+								console.log('epochレベルで一致（地図確認済み）:', era.name, period.name, epoch.name);
+								return {
+									era: era.name,
+									period: period.name,
+									epoch: epoch.name,
+									age: undefined,
+									ageIds: [Number.parseInt(epoch.id)], // epochのIDのみを包含める
+									map: selectedMap
+								};
+							}
+							
+							// ageレベルで一致
+							if (epoch.ages) {
+								for (const age of epoch.ages) {
+									if (selectedAgeIds.includes(Number.parseInt(age.id)) && age.map === selectedMap) {
+										console.log('ageレベルで一致（地図確認済み）:', era.name, period.name, epoch.name, age.name);
 										return {
 											era: era.name,
 											period: period.name,
 											epoch: epoch.name,
 											age: age.name,
-											ageIds: selectedAgeIds,
+											ageIds: [Number.parseInt(age.id)], // ageのIDのみを含める
 											map: selectedMap
 										};
 									}
 								}
 							}
 						}
-						// epochレベルで一致
-						if (selectedAgeIds.includes(Number.parseInt(epoch.id))) {
-							return {
-								era: era.name,
-								period: period.name,
-								epoch: epoch.name,
-								age: undefined,
-								ageIds: selectedAgeIds,
-								map: selectedMap
-							};
-						}
-					}
-					// periodレベルで一致
-					if (selectedAgeIds.includes(Number.parseInt(period.id))) {
-						return {
-							era: era.name,
-							period: period.name,
-							epoch: undefined,
-							age: undefined,
-							ageIds: selectedAgeIds,
-							map: selectedMap
-						};
 					}
 				}
-				// eraレベルで一致
+			}
+			
+			// 地図が一致しない場合は、IDのみで判定（フォールバック）
+			for (const era of geologicalAgesData.eras) {
+				// eraレベルで一致（最も上位の階層）
 				if (selectedAgeIds.includes(Number.parseInt(era.id))) {
+					console.log('eraレベルで一致（フォールバック）:', era.name);
 					return {
 						era: era.name,
 						period: undefined,
 						epoch: undefined,
 						age: undefined,
-						ageIds: selectedAgeIds,
+						ageIds: [Number.parseInt(era.id)], // eraのIDのみを含める
 						map: selectedMap
 					};
+				}
+				
+				for (const period of era.periods) {
+					// periodレベルで一致
+					if (selectedAgeIds.includes(Number.parseInt(period.id))) {
+						console.log('periodレベルで一致（フォールバック）:', era.name, period.name);
+						return {
+							era: era.name,
+							period: period.name,
+							epoch: undefined,
+							age: undefined,
+							ageIds: [Number.parseInt(period.id)], // periodのIDのみを含める
+							map: selectedMap
+						};
+					}
+					
+					for (const epoch of period.epochs) {
+						// epochレベルで一致
+						if (selectedAgeIds.includes(Number.parseInt(epoch.id))) {
+							console.log('epochレベルで一致（フォールバック）:', era.name, period.name, epoch.name);
+							return {
+								era: era.name,
+								period: period.name,
+								epoch: epoch.name,
+								age: undefined,
+								ageIds: [Number.parseInt(epoch.id)], // epochのIDのみを包含める
+								map: selectedMap
+							};
+						}
+						
+						// ageレベルで一致
+						if (epoch.ages) {
+							for (const age of epoch.ages) {
+								if (selectedAgeIds.includes(Number.parseInt(age.id))) {
+									console.log('ageレベルで一致（フォールバック）:', era.name, period.name, epoch.name, age.name);
+									return {
+										era: era.name,
+										period: period.name,
+										epoch: epoch.name,
+										age: age.name,
+										ageIds: [Number.parseInt(age.id)], // ageのIDのみを含める
+										map: selectedMap
+									};
+								}
+							}
+						}
+					}
 				}
 			}
 		}
@@ -204,12 +271,15 @@ const FabricHabitatEditor = forwardRef(function FabricHabitatEditor({
 	const handleSave = () => {
 		console.log('保存ボタンがクリックされました');
 		console.log('onSave関数:', onSave);
+		console.log('現在のselectedAgeIds:', selectedAgeIds);
+		console.log('現在のselectedMap:', selectedMap);
 		
 		// 時代情報を含むデータを生成
 		const habitatDataWithAge = habitatPoints.map(point => {
 			// ポイントに時代情報がない場合は現在選択されている時代を設定
 			if (!point.geologicalAge) {
 				const currentAgeInfo = getCurrentGeologicalAgeInfo();
+				console.log('getCurrentGeologicalAgeInfo結果:', currentAgeInfo);
 				return {
 					...point,
 					geologicalAge: currentAgeInfo

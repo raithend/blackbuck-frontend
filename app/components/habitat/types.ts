@@ -21,6 +21,12 @@ export interface HabitatPoint {
 	};
 }
 
+// 新しい構造の型定義
+export interface EraGroup {
+	era: string;
+	elements: Omit<HabitatPoint, 'geologicalAge'>[];
+}
+
 export interface FabricHabitatEditorProps {
 	habitatData?: HabitatPoint[];
 	onSave?: (data: HabitatPoint[]) => void;

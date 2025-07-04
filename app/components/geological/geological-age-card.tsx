@@ -80,6 +80,7 @@ export function GeologicalAgeCard({ enableMenu = true }: { enableMenu?: boolean 
 	console.log('GeologicalAgeCard - selectedAgeIds:', selectedAgeIds);
 
 	const handleEraChange = (eraId: string) => {
+		console.log('handleEraChange呼び出し - eraId:', eraId);
 		if (eraId === "none") {
 			setSelectedEra(undefined);
 			setSelectedPeriod(undefined);
@@ -91,11 +92,13 @@ export function GeologicalAgeCard({ enableMenu = true }: { enableMenu?: boolean 
 		}
 		const era = geologicalAgesData.eras.find((e) => e.id === eraId);
 		if (era) {
+			console.log('選択されたera:', era.name, 'ID:', era.id);
 			setSelectedEra(era);
 			setSelectedPeriod(undefined);
 			setSelectedEpoch(undefined);
 			setSelectedAge(null);
 			const ageIds = getAgeIds(era);
+			console.log('getAgeIds結果:', ageIds);
 			setSelectedAgeIds(ageIds);
 			if (era.map) {
 				setSelectedMap(era.map);
@@ -196,7 +199,7 @@ export function GeologicalAgeCard({ enableMenu = true }: { enableMenu?: boolean 
 		[setSelectedMap],
 	);
 
-	// 時代のID配列を取得する関数（元のコードに合わせて修正）
+	// 時代のID配列を取得する関数（修正版）
 	const getAgeIds = useCallback((age: GeologicalAge | Epoch | Period | Era | null): number[] => {
 		if (!age) return [];
 
@@ -206,30 +209,26 @@ export function GeologicalAgeCard({ enableMenu = true }: { enableMenu?: boolean 
 		}
 
 		// 上位の時代（era, period, epoch）の場合
-		const ids: number[] = [];
-		const traverse = (node: GeologicalAge | Epoch | Period | Era) => {
-			if (node.id) {
-				ids.push(Number.parseInt(node.id));
-			}
-			if ('ages' in node && node.ages) {
-				// このノードにagesがある場合、それらをすべて追加
-				for (const age of node.ages) {
-					ids.push(Number.parseInt(age.id));
-				}
-			} else if ('epochs' in node) {
-				// periodの場合、epochsを走査
-				for (const epoch of node.epochs) {
-					traverse(epoch);
-				}
-			} else if ('periods' in node) {
-				// eraの場合、periodsを走査
-				for (const period of node.periods) {
-					traverse(period);
-				}
-			}
-		};
-		traverse(age);
-		return ids;
+		// 最も上位の階層のIDのみを含める
+		if (age.id) {
+			return [Number.parseInt(age.id)];
+		}
+
+		// 階層を判定して適切なIDを返す
+		if ('ages' in age && age.ages) {
+			// epochの場合、epochのIDのみを返す
+			return age.id ? [Number.parseInt(age.id)] : [];
+		}
+		if ('epochs' in age) {
+			// periodの場合、periodのIDのみを返す
+			return age.id ? [Number.parseInt(age.id)] : [];
+		}
+		if ('periods' in age) {
+			// eraの場合、eraのIDのみを返す
+			return age.id ? [Number.parseInt(age.id)] : [];
+		}
+
+		return [];
 	}, []);
 
 	const handleSliderChange = useCallback(

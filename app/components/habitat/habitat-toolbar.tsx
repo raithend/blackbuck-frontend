@@ -126,7 +126,10 @@ export function HabitatToolbar({
 				<Button variant="outline" size="sm" onClick={onRedo}>
 					<Redo className="h-4 w-4" />
 				</Button>
-				<Button size="sm" onClick={onSave}>
+				<Button size="sm" onClick={() => {
+					console.log('保存ボタンがクリックされました（toolbar）');
+					onSave();
+				}}>
 					<Save className="h-4 w-4 mr-2" />
 					保存
 				</Button>

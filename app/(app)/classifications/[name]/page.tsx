@@ -108,14 +108,23 @@ export default function ClassificationPage() {
 	const classification = classificationData?.classification;
 	const posts = postsData?.posts || [];
 
-	// 生息地データをメモ化して不要な再レンダリングを防ぐ
-	const habitatData = useMemo(() => {
-		if (!classification?.geographic_data_file) return [];
+
+
+	// 時代グループデータをメモ化
+	const eraGroups = useMemo(() => {
+		if (!classification?.geographic_data_file) return undefined;
 		try {
-			return JSON.parse(classification.geographic_data_file);
+			const parsedData = JSON.parse(classification.geographic_data_file);
+			
+			// 時代グループ構造の場合：そのまま返す
+			if (Array.isArray(parsedData) && parsedData.length > 0 && parsedData[0].era && parsedData[0].elements) {
+				return parsedData;
+			}
+			// データが不正な場合はundefinedを返す
+			return undefined;
 		} catch (error) {
 			console.error('生息地データのパースに失敗しました:', error);
-			return [];
+			return undefined;
 		}
 	}, [classification?.geographic_data_file]);
 
@@ -316,7 +325,7 @@ export default function ClassificationPage() {
 								<div className="lg:col-span-3">
 									<GlobeArea 
 										customGeographicFile={classification.geographic_data_file}
-										habitatData={habitatData}
+										eraGroups={eraGroups}
 									/>
 								</div>
 								<div className="lg:col-span-1">

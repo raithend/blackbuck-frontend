@@ -44,6 +44,22 @@ interface HabitatPoint {
 	};
 }
 
+interface EraGroupElement {
+	id: string;
+	lat: number;
+	lng: number;
+	color: string;
+	size: number;
+	shape: string;
+	text?: string;
+	fontSize?: number;
+}
+
+interface EraGroup {
+	era: string;
+	elements: EraGroupElement[];
+}
+
 export default function HabitatEditPage() {
 	const params = useParams();
 	const router = useRouter();
@@ -141,10 +157,39 @@ export default function HabitatEditPage() {
 				return point;
 			});
 			
-			// habitatDataをJSON文字列に変換
-			const geographicDataFile = JSON.stringify(habitatDataWithAge);
+			// 新しい構造（時代グループ）に変換
+			const eraGroups: EraGroup[] = [];
 			
-			console.log('保存する生息地データ:', habitatDataWithAge);
+			for (const point of habitatDataWithAge) {
+				const era = point.geologicalAge?.era || "顕生代";
+				const existingGroup = eraGroups.find(group => group.era === era);
+				
+				// geologicalAgeを除去した要素を作成
+				const element: EraGroupElement = {
+					id: point.id,
+					lat: point.lat,
+					lng: point.lng,
+					color: point.color,
+					size: point.size,
+					shape: point.shape,
+					text: point.text,
+					fontSize: point.fontSize
+				};
+				
+				if (existingGroup) {
+					existingGroup.elements.push(element);
+				} else {
+					eraGroups.push({
+						era: era,
+						elements: [element]
+					});
+				}
+			}
+			
+			// 新しい構造をJSON文字列に変換
+			const geographicDataFile = JSON.stringify(eraGroups);
+			
+			console.log('保存する生息地データ（新しい構造）:', eraGroups);
 			
 			const response = await fetch(`/api/classifications/${encodeURIComponent(decodedName)}`, {
 				method: 'PUT',
