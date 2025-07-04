@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useMemo, useCallback } from "react";
 
 interface GeologicalAgeContextType {
 	selectedMap: string;
@@ -23,10 +23,27 @@ export function GeologicalAgeProvider({
 	const [selectedMap, setSelectedMap] = useState<string>("");
 	const [selectedAgeIds, setSelectedAgeIds] = useState<number[]>([]);
 
+	// 関数をメモ化
+	const memoizedSetSelectedMap = useCallback((map: string) => {
+		console.log('GeologicalAgeContext - setSelectedMap呼び出し:', map);
+		setSelectedMap(map);
+	}, []);
+
+	const memoizedSetSelectedAgeIds = useCallback((ids: number[]) => {
+		console.log('GeologicalAgeContext - setSelectedAgeIds呼び出し:', ids);
+		setSelectedAgeIds(ids);
+	}, []);
+
+	// コンテキスト値をメモ化
+	const contextValue = useMemo(() => ({
+		selectedMap,
+		selectedAgeIds,
+		setSelectedMap: memoizedSetSelectedMap,
+		setSelectedAgeIds: memoizedSetSelectedAgeIds,
+	}), [selectedMap, selectedAgeIds, memoizedSetSelectedMap, memoizedSetSelectedAgeIds]);
+
 	return (
-		<GeologicalAgeContext.Provider
-			value={{ selectedMap, selectedAgeIds, setSelectedMap, setSelectedAgeIds }}
-		>
+		<GeologicalAgeContext.Provider value={contextValue}>
 			{children}
 		</GeologicalAgeContext.Provider>
 	);

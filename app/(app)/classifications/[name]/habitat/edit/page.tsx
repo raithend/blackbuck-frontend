@@ -34,6 +34,14 @@ interface HabitatPoint {
 	maxR?: number;
 	text?: string;
 	fontSize?: number;
+	geologicalAge?: {
+		era?: string;
+		period?: string;
+		epoch?: string;
+		age?: string;
+		ageIds?: number[];
+		map?: string;
+	};
 }
 
 export default function HabitatEditPage() {
@@ -114,8 +122,29 @@ export default function HabitatEditPage() {
 		try {
 			const { data: { session } } = await supabase.auth.getSession();
 			
+			// 時代情報を含むJSONを生成
+			const habitatDataWithAge = habitatData.map(point => {
+				// ポイントに時代情報がない場合はデフォルト値を設定
+				if (!point.geologicalAge) {
+					return {
+						...point,
+						geologicalAge: {
+							era: "顕生代",
+							period: undefined,
+							epoch: undefined,
+							age: undefined,
+							ageIds: [],
+							map: undefined
+						}
+					};
+				}
+				return point;
+			});
+			
 			// habitatDataをJSON文字列に変換
-			const geographicDataFile = JSON.stringify(habitatData);
+			const geographicDataFile = JSON.stringify(habitatDataWithAge);
+			
+			console.log('保存する生息地データ:', habitatDataWithAge);
 			
 			const response = await fetch(`/api/classifications/${encodeURIComponent(decodedName)}`, {
 				method: 'PUT',

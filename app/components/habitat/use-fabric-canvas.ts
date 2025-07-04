@@ -221,7 +221,7 @@ export function useFabricCanvas({
 				});
 			});
 		}
-	}, [onMapChange, width, height, addPointToCanvas]);
+	}, [onMapChange, width, height]);
 
 	return {
 		fabricCanvasRef,

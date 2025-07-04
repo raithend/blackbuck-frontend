@@ -153,6 +153,9 @@ export default function ClassificationPage() {
 
 	// 系統樹作成者かどうかを判定
 	const isTreeCreator = user && classification?.phylogenetic_tree_creator === user.id;
+	
+	// 生息地データ作成者かどうかを判定
+	const isGeographicDataCreator = user && classification?.geographic_data_creator === user.id;
 
 	// 分類情報の読み込み中
 	if (classificationLoading) return <div>分類情報を読み込み中...</div>;
@@ -329,6 +332,32 @@ export default function ClassificationPage() {
 										生息地を編集
 									</Button>
 								</Link>
+							</div>
+						)}
+						
+						{/* 生息地データが存在する場合のボタン表示 */}
+						{hasGeographicData && (
+							<div className="mt-4 flex justify-center gap-4">
+								{isGeographicDataCreator ? (
+									// 作成者の場合：編集ボタンを表示
+									<Link href={`/classifications/${encodeURIComponent(decodedName)}/habitat/edit`}>
+										<Button>
+											<Edit className="h-4 w-4 mr-2" />
+											生息地を編集
+										</Button>
+									</Link>
+								) : user ? (
+									// ログインユーザー（作成者以外）の場合：見るボタンを表示
+									<Link href={`/classifications/${encodeURIComponent(decodedName)}/habitat/view`}>
+										<Button variant="outline">
+											<Eye className="h-4 w-4 mr-2" />
+											生息地を見る
+										</Button>
+									</Link>
+								) : (
+									// ログインしていない場合：何も表示しない
+									null
+								)}
 							</div>
 						)}
 					</TabsContent>

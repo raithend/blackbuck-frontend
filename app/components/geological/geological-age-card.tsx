@@ -17,7 +17,7 @@ import {
 import { Slider } from "@/app/components/ui/slider";
 import { Button } from "@/app/components/ui/button";
 import geologicalAgesData from "@/app/data/geological-ages.json";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, memo } from "react";
 import { useGeologicalAge } from "./geological-context";
 import { Menu } from "lucide-react";
 
@@ -64,7 +64,7 @@ interface Era {
 	map?: string;
 }
 
-export function GeologicalAgeCard({ enableMenu = true }: { enableMenu?: boolean }) {
+export const GeologicalAgeCard = memo(function GeologicalAgeCard({ enableMenu = true }: { enableMenu?: boolean }) {
 	const { selectedMap, selectedAgeIds, setSelectedMap, setSelectedAgeIds } =
 		useGeologicalAge();
 	const [selectedEra, setSelectedEra] = useState<Era | undefined>(undefined);
@@ -79,7 +79,84 @@ export function GeologicalAgeCard({ enableMenu = true }: { enableMenu?: boolean 
 
 	console.log('GeologicalAgeCard - selectedAgeIds:', selectedAgeIds);
 
-	const handleEraChange = (eraId: string) => {
+	// 選択状態を復元するuseEffect
+	useEffect(() => {
+		console.log('GeologicalAgeCard - 選択状態復元開始 - selectedAgeIds:', selectedAgeIds);
+		
+		if (selectedAgeIds.length === 0) {
+			console.log('選択状態復元をスキップ - selectedAgeIdsが空');
+			return;
+		}
+
+		// 選択されている時代IDから対応する時代を特定
+		for (const era of geologicalAgesData.eras) {
+			for (const period of era.periods) {
+				for (const epoch of period.epochs) {
+					if (epoch.ages) {
+						for (const age of epoch.ages) {
+							if (selectedAgeIds.includes(Number.parseInt(age.id))) {
+								console.log('選択状態を復元:', era.name, period.name, epoch.name, age.name);
+								setSelectedEra(era);
+								setSelectedPeriod(period);
+								setSelectedEpoch(epoch);
+								setSelectedAge(age);
+								return;
+							}
+						}
+					}
+					// epochレベルで一致
+					if (selectedAgeIds.includes(Number.parseInt(epoch.id))) {
+						console.log('選択状態を復元（epochレベル）:', era.name, period.name, epoch.name);
+						setSelectedEra(era);
+						setSelectedPeriod(period);
+						setSelectedEpoch(epoch);
+						setSelectedAge(null);
+						return;
+					}
+				}
+				// periodレベルで一致
+				if (selectedAgeIds.includes(Number.parseInt(period.id))) {
+					console.log('選択状態を復元（periodレベル）:', era.name, period.name);
+					setSelectedEra(era);
+					setSelectedPeriod(period);
+					setSelectedEpoch(undefined);
+					setSelectedAge(null);
+					return;
+				}
+			}
+			// eraレベルで一致
+			if (selectedAgeIds.includes(Number.parseInt(era.id))) {
+				console.log('選択状態を復元（eraレベル）:', era.name);
+				setSelectedEra(era);
+				setSelectedPeriod(undefined);
+				setSelectedEpoch(undefined);
+				setSelectedAge(null);
+				return;
+			}
+		}
+	}, [selectedAgeIds]);
+
+	// 初期状態で最新の時代を選択（マウント時のみ）
+	useEffect(() => {
+		console.log('GeologicalAgeCard初期化useEffect開始 - selectedAgeIds:', selectedAgeIds);
+		
+		// 既に時代が選択されている場合は初期化をスキップ
+		if (selectedAgeIds.length > 0) {
+			console.log('既に時代が選択されているため初期化をスキップ:', selectedAgeIds);
+			return;
+		}
+		
+		const age = findAgeBySliderValue(102);
+		if (age) {
+			console.log('初期時代を設定:', age.name);
+			const ageIds = getAgeIds(age);
+			setSelectedAgeIds(ageIds);
+		} else {
+			console.log('初期時代の設定をスキップ - ageが見つかりません');
+		}
+	}, []); // 空の依存配列でマウント時のみ実行
+
+	const handleEraChange = useCallback((eraId: string) => {
 		if (eraId === "none") {
 			setSelectedEra(undefined);
 			setSelectedPeriod(undefined);
@@ -101,9 +178,9 @@ export function GeologicalAgeCard({ enableMenu = true }: { enableMenu?: boolean 
 				setSelectedMap(era.map);
 			}
 		}
-	};
+	}, [setSelectedAgeIds, setSelectedMap]);
 
-	const handlePeriodChange = (periodId: string) => {
+	const handlePeriodChange = useCallback((periodId: string) => {
 		if (periodId === "none") {
 			setSelectedPeriod(undefined);
 			setSelectedEpoch(undefined);
@@ -123,9 +200,9 @@ export function GeologicalAgeCard({ enableMenu = true }: { enableMenu?: boolean 
 				setSelectedMap(period.map);
 			}
 		}
-	};
+	}, [selectedEra, setSelectedAgeIds, setSelectedMap]);
 
-	const handleEpochChange = (epochId: string) => {
+	const handleEpochChange = useCallback((epochId: string) => {
 		if (epochId === "none") {
 			setSelectedEpoch(undefined);
 			setSelectedAge(null);
@@ -145,9 +222,9 @@ export function GeologicalAgeCard({ enableMenu = true }: { enableMenu?: boolean 
 				}
 			}
 		}
-	};
+	}, [selectedPeriod, setSelectedAgeIds, setSelectedMap]);
 
-	const handleAgeChange = (ageId: string) => {
+	const handleAgeChange = useCallback((ageId: string) => {
 		if (ageId === "none") {
 			setSelectedAge(null);
 			setSelectedAgeIds([]);
@@ -165,7 +242,7 @@ export function GeologicalAgeCard({ enableMenu = true }: { enableMenu?: boolean 
 				}
 			}
 		}
-	};
+	}, [selectedEpoch, setSelectedAgeIds, setSelectedMap]);
 
 	// スライダーの値から時代を探す関数
 	const findAgeBySliderValue = useCallback(
@@ -244,14 +321,9 @@ export function GeologicalAgeCard({ enableMenu = true }: { enableMenu?: boolean 
 		[findAgeBySliderValue, setSelectedAgeIds, getAgeIds],
 	);
 
-	// 初期状態で最新の時代を選択
-	useEffect(() => {
-		const age = findAgeBySliderValue(102);
-		if (age) {
-			const ageIds = getAgeIds(age);
-			setSelectedAgeIds(ageIds);
-		}
-	}, [findAgeBySliderValue, getAgeIds, setSelectedAgeIds]); // 依存配列を修正
+	const handleToggleExpanded = useCallback(() => {
+		setIsExpanded(!isExpanded);
+	}, [isExpanded]);
 
 	function formatAgeRange(startMa: number, endMa: number): string {
 		const startYear = Math.round(startMa * 1_000_000);
@@ -285,7 +357,7 @@ export function GeologicalAgeCard({ enableMenu = true }: { enableMenu?: boolean 
 						<Button
 							variant="ghost"
 							size="sm"
-							onClick={() => setIsExpanded(!isExpanded)}
+							onClick={handleToggleExpanded}
 							className="p-1"
 						>
 							<Menu className="w-4 h-4" />
@@ -407,4 +479,4 @@ export function GeologicalAgeCard({ enableMenu = true }: { enableMenu?: boolean 
 			)}
 		</Card>
 	);
-}
+});

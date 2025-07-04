@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo } from "react";
 import { Input } from "@/app/components/ui/input";
 import { Label } from "@/app/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card";
@@ -9,7 +9,7 @@ interface HabitatPropertiesPanelProps {
 	onPropertyChange: (field: keyof HabitatPoint, value: string | number | undefined) => void;
 }
 
-export function HabitatPropertiesPanel({
+export const HabitatPropertiesPanel = memo(function HabitatPropertiesPanel({
 	selectedPoint,
 	onPropertyChange,
 }: HabitatPropertiesPanelProps) {
@@ -93,4 +93,4 @@ export function HabitatPropertiesPanel({
 			</CardContent>
 		</Card>
 	);
-} 
+}); 

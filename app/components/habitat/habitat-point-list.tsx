@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo } from "react";
 import { Button } from "@/app/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card";
 import { Trash2 } from 'lucide-react';
@@ -11,7 +11,7 @@ interface HabitatPointListProps {
 	onPointDelete: (pointId: string) => void;
 }
 
-export function HabitatPointList({
+export const HabitatPointList = memo(function HabitatPointList({
 	habitatPoints,
 	selectedObjectId,
 	onPointSelect,
@@ -88,4 +88,4 @@ export function HabitatPointList({
 			</CardContent>
 		</Card>
 	);
-} 
+}); 
