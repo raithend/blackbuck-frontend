@@ -123,8 +123,8 @@ const FabricHabitatEditor = forwardRef(function FabricHabitatEditor({
 
 	// 現在選択されている時代の情報を取得する関数
 	const getCurrentGeologicalAgeInfo = useCallback(() => {
-		// 地質時代データから現在選択されている時代を特定
-		const { selectedMap, selectedAgeIds } = useGeologicalAge();
+		// 既に取得したselectedMapとselectedAgeIdsを使用
+		console.log('getCurrentGeologicalAgeInfo呼び出し - selectedMap:', selectedMap, 'selectedAgeIds:', selectedAgeIds);
 		
 		// 選択されている時代IDから時代名を取得
 		let selectedAgeName = "顕生代"; // デフォルト値
@@ -198,7 +198,7 @@ const FabricHabitatEditor = forwardRef(function FabricHabitatEditor({
 			ageIds: [],
 			map: selectedMap
 		};
-	}, []);
+	}, [selectedMap, selectedAgeIds]);
 
 	// 保存
 	const handleSave = () => {

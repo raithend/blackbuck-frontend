@@ -136,13 +136,11 @@ const GlobeComponent: React.FC<GlobeProps> = ({
 		console.log('textureUrl長さ:', textureUrl.length);
 		
 		try {
-			setIsLoading(true);
 			const texture = textureCache.current.get(textureUrl);
 			if (texture) {
 				console.log('キャッシュされたテクスチャを使用');
 				(globeRef.current.material as THREE.MeshPhongMaterial).map = texture;
 				(globeRef.current.material as THREE.MeshPhongMaterial).needsUpdate = true;
-				setIsLoading(false);
 			} else {
 				console.log('新しいテクスチャをロード開始');
 				const textureLoader = new THREE.TextureLoader();
@@ -155,18 +153,15 @@ const GlobeComponent: React.FC<GlobeProps> = ({
 							(globeRef.current.material as THREE.MeshPhongMaterial).map = loadedTexture;
 							(globeRef.current.material as THREE.MeshPhongMaterial).needsUpdate = true;
 						}
-						setIsLoading(false);
 					},
 					undefined,
 					(error) => {
 						console.error('テクスチャ読み込み失敗:', textureUrl, error);
-						setIsLoading(false);
 					}
 				);
 			}
 		} catch (error) {
 			console.error('updateTexture処理エラー:', error);
-			setIsLoading(false);
 		}
 	}, []);
 
