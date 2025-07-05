@@ -189,9 +189,20 @@ const GlobeComponent: React.FC<GlobeProps> = ({
 
 	// カスタムテクスチャの生成処理
 	useEffect(() => {
-		console.log('=== Globe.tsx テクスチャ生成処理開始 ===');
-		console.log('customTexture:', customTexture);
-		console.log('habitatPoints:', habitatPoints);
+		// デバッグ出力を削減（開発時のみ）
+		if (process.env.NODE_ENV === 'development') {
+			console.log('=== Globe.tsx テクスチャ生成処理開始 ===');
+			console.log('customTexture:', customTexture);
+			console.log('habitatPoints:', habitatPoints);
+		}
+		
+		// 既に同じテクスチャが設定されている場合はスキップ
+		if (customMapTexture === customTexture) {
+			if (process.env.NODE_ENV === 'development') {
+				console.log('同じテクスチャが既に設定されているためスキップ');
+			}
+			return;
+		}
 		
 		if (customTexture && habitatPoints.length > 0) {
 			// 地図画像上にポイントを描画したテクスチャを生成
@@ -211,7 +222,7 @@ const GlobeComponent: React.FC<GlobeProps> = ({
 			console.log('habitatPointsが空またはcustomTextureなし - 通常のテクスチャを使用');
 			setCustomMapTexture(customTexture);
 		}
-	}, [customTexture, habitatPoints]);
+	}, [customTexture, habitatPoints, customMapTexture]);
 
 	// クリーンアップ処理
 	useEffect(() => {

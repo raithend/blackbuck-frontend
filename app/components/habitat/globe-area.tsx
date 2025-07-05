@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import Image from "next/image";
 import Globe from "./globe";
 import { Button } from "@/app/components/ui/button";
@@ -10,17 +10,9 @@ import { useGeologicalAge } from "../geological/geological-context";
 import geologicalAgesData from "@/app/data/geological-ages.json";
 import { generateMapWithHabitat } from "@/app/components/habitat/map-utils";
 
-interface HabitatData {
-	id?: string;
-	lat: number;
-	lng: number;
-	color?: string;
-	size?: number;
-	maxR?: number;
-	polygon?: [number, number][];
-	text?: string;
-	fontSize?: number;
-}
+import type { HabitatElement } from "./types";
+
+type HabitatData = HabitatElement;
 
 // 新しい構造の型定義
 interface EraGroup {
@@ -77,6 +69,15 @@ export default function GlobeArea({
 	const [customTexture, setCustomTexture] = useState<string | undefined>(undefined);
 	const [isGenerating, setIsGenerating] = useState(false);
 	const [currentMap, setCurrentMap] = useState("Map1a_PALEOMAP_PaleoAtlas_000.jpg");
+	const [isInitialized, setIsInitialized] = useState(false);
+	
+	// 初期地図を設定
+	useEffect(() => {
+		if (!customTexture && !isInitialized) {
+			setCustomTexture(`/PALEOMAP_PaleoAtlas_Rasters_v3/${currentMap}`);
+			setIsInitialized(true);
+		}
+	}, [customTexture, currentMap, isInitialized]);
 	const [showDebug, setShowDebug] = useState(false); // デバッグ表示フラグ
 
 	// 地質時代の選択に応じて地図を更新
@@ -89,30 +90,36 @@ export default function GlobeArea({
 
 	// 生息地データ付きの地図画像を生成
 	useEffect(() => {
-		setIsGenerating(true);
+		// 既に同じテクスチャが設定されている場合はスキップ
+		const expectedTexture = `/PALEOMAP_PaleoAtlas_Rasters_v3/${currentMap}`;
+		if (customTexture === expectedTexture) {
+			return;
+		}
 		
 		// 時代グループから生息地データを平坦化
 		const dataToUse: HabitatData[] = eraGroups ? eraGroups.flatMap(eraGroup => eraGroup.elements) : [];
 		
-		// 生息地データがある場合は生息地付き画像を生成、ない場合は通常の地図画像を使用
-		if (dataToUse.length > 0) {
-			generateMapWithHabitat(currentMap, dataToUse)
-				.then(dataUrl => {
-					setCustomTexture(dataUrl);
-					setIsGenerating(false);
-				})
-				.catch(error => {
-					console.error('地図画像の生成に失敗しました:', error);
-					// エラー時は通常の地図画像を使用
-					setCustomTexture(`/PALEOMAP_PaleoAtlas_Rasters_v3/${currentMap}`);
-					setIsGenerating(false);
-				});
-		} else {
-			// 生息地データがない場合は通常の地図画像を使用
-			setCustomTexture(`/PALEOMAP_PaleoAtlas_Rasters_v3/${currentMap}`);
-			setIsGenerating(false);
+		// 生息地データがない場合は通常の地図画像を使用
+		if (dataToUse.length === 0) {
+			setCustomTexture(expectedTexture);
+			return;
 		}
-	}, [currentMap, eraGroups]);
+		
+		setIsGenerating(true);
+		
+		// 生息地データがある場合は生息地付き画像を生成
+		generateMapWithHabitat(currentMap, dataToUse)
+			.then(dataUrl => {
+				setCustomTexture(dataUrl);
+				setIsGenerating(false);
+			})
+			.catch(error => {
+				console.error('地図画像の生成に失敗しました:', error);
+				// エラー時は通常の地図画像を使用
+				setCustomTexture(expectedTexture);
+				setIsGenerating(false);
+			});
+	}, [currentMap, eraGroups, customTexture]);
 
 	return (
 		<div className="h-[calc(100vh-4rem)]">
@@ -187,9 +194,14 @@ export default function GlobeArea({
 				</div>
 			)}
 
-			<Globe 
-				customTexture={customTexture}
-			/>
+			{useMemo(() => (
+				customTexture ? (
+					<Globe 
+						key={`globe-${customTexture}`}
+						customTexture={customTexture}
+					/>
+				) : null
+			), [customTexture])}
 		</div>
 	);
 }

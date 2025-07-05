@@ -124,6 +124,13 @@ export default function ClassificationPage() {
 		}
 	}, [classification?.geographic_data_file]);
 
+	// 分類情報のデバッグ出力を削減
+	const debugInfo = useMemo(() => ({
+		classification,
+		hasPhylogeneticTree: classification?.phylogenetic_tree_file,
+		phylogenetic_tree_file: classification?.phylogenetic_tree_file
+	}), [classification]);
+
 	// いいね状態変更のハンドラー
 	const handleLikeChange = (postId: string, likeCount: number, isLiked: boolean) => {
 		mutatePosts((currentData) => {
@@ -172,10 +179,12 @@ export default function ClassificationPage() {
 	const hasPhylogeneticTree = classification?.phylogenetic_tree_file;
 	const hasGeographicData = classification?.geographic_data_file;
 
-	// デバッグ出力
-	console.log('ClassificationPage - classification:', classification);
-	console.log('ClassificationPage - hasPhylogeneticTree:', hasPhylogeneticTree);
-	console.log('ClassificationPage - phylogenetic_tree_file:', classification?.phylogenetic_tree_file);
+	// デバッグ出力（開発時のみ）
+	if (process.env.NODE_ENV === 'development') {
+		console.log('ClassificationPage - classification:', debugInfo.classification);
+		console.log('ClassificationPage - hasPhylogeneticTree:', debugInfo.hasPhylogeneticTree);
+		console.log('ClassificationPage - phylogenetic_tree_file:', debugInfo.phylogenetic_tree_file);
+	}
 
 	// GeologicalAgeProvider内で使用するコンポーネント
 	function ClassificationContent() {
@@ -183,13 +192,16 @@ export default function ClassificationPage() {
 
 		// 選択中の時代に一致するグループのみ抽出
 		const filteredEraGroups = useMemo(() => {
-			console.log('filteredEraGroups - eraGroups:', eraGroups);
-			console.log('filteredEraGroups - selectedAgeIds:', selectedAgeIds);
-			console.log('ClassificationPage - selectedAgeIds:', selectedAgeIds);
-			console.log('ClassificationPage - eraGroups:', eraGroups);
-			if (!eraGroups) return [];
-			if (!selectedAgeIds || selectedAgeIds.length === 0) {
-				console.log('filteredEraGroups - No selectedAgeIds, returning empty array');
+			// デバッグ出力を削減（開発時のみ）
+			if (process.env.NODE_ENV === 'development') {
+				console.log('filteredEraGroups - eraGroups:', eraGroups);
+				console.log('filteredEraGroups - selectedAgeIds:', selectedAgeIds);
+			}
+			
+			if (!eraGroups || !selectedAgeIds || selectedAgeIds.length === 0) {
+				if (process.env.NODE_ENV === 'development') {
+					console.log('filteredEraGroups - No eraGroups or selectedAgeIds, returning empty array');
+				}
 				return [];
 			}
 			
