@@ -9,7 +9,7 @@ import { HabitatToolbar } from "./habitat-toolbar";
 import { HabitatPointList } from "./habitat-point-list";
 import { HabitatPropertiesPanel } from "./habitat-properties-panel";
 import { useFabricCanvas } from "./use-fabric-canvas";
-import type { HabitatPoint, FabricHabitatEditorProps, FabricObjectWithHabitatId } from "./types";
+import type { EraGroup, HabitatElement, FabricHabitatEditorProps, FabricObjectWithHabitatId } from "./types";
 import geologicalAgesData from "@/app/data/geological-ages.json";
 import { GeologicalAgeCard } from "@/app/components/geological/geological-age-card";
 import { useGeologicalAge } from "@/app/components/geological/geological-context";
@@ -33,7 +33,7 @@ const FabricHabitatEditor = forwardRef(function FabricHabitatEditor({
 	const pointSizeRef = useRef(20);
 	const textContentRef = useRef('テキスト');
 	const fontSizeRef = useRef(16);
-	const [habitatPoints, setHabitatPoints] = useState<HabitatPoint[]>(habitatData);
+	const [habitatElements, setHabitatElements] = useState<HabitatElement[]>([]);
 	const [selectedObject, setSelectedObject] = useState<FabricObject | null>(null);
 
 	// 地質時代コンテキストを使用
@@ -66,9 +66,9 @@ const FabricHabitatEditor = forwardRef(function FabricHabitatEditor({
 	const handleColorChange = (color: string) => {
 		setPointColor(color);
 		pointColorRef.current = color; // refも即座に更新
-		const point = getSelectedPoint(habitatPoints);
+		const point = getSelectedPoint(habitatElements);
 		if (selectedObject || point) {
-			updateSelectedPoint(habitatPoints, setHabitatPoints, 'color', color);
+			updateSelectedPoint(habitatElements, setHabitatElements, 'color', color);
 		}
 	};
 
@@ -76,9 +76,9 @@ const FabricHabitatEditor = forwardRef(function FabricHabitatEditor({
 	const handleSizeChange = (size: number) => {
 		setPointSize(size);
 		pointSizeRef.current = size; // refも即座に更新
-		const point = getSelectedPoint(habitatPoints);
+		const point = getSelectedPoint(habitatElements);
 		if (selectedObject || point) {
-			updateSelectedPoint(habitatPoints, setHabitatPoints, 'size', size);
+			updateSelectedPoint(habitatElements, setHabitatElements, 'size', size);
 		}
 	};
 
@@ -86,9 +86,9 @@ const FabricHabitatEditor = forwardRef(function FabricHabitatEditor({
 	const handleTextContentChange = (text: string) => {
 		setTextContent(text);
 		textContentRef.current = text; // refも即座に更新
-		const point = getSelectedPoint(habitatPoints);
+		const point = getSelectedPoint(habitatElements);
 		if (selectedObject || point) {
-			updateSelectedPoint(habitatPoints, setHabitatPoints, 'text', text);
+			updateSelectedPoint(habitatElements, setHabitatElements, 'text', text);
 		}
 	};
 
@@ -96,9 +96,9 @@ const FabricHabitatEditor = forwardRef(function FabricHabitatEditor({
 	const handleFontSizeChange = (size: number) => {
 		setFontSize(size);
 		fontSizeRef.current = size; // refも即座に更新
-		const point = getSelectedPoint(habitatPoints);
+		const point = getSelectedPoint(habitatElements);
 		if (selectedObject || point) {
-			updateSelectedPoint(habitatPoints, setHabitatPoints, 'fontSize', size);
+			updateSelectedPoint(habitatElements, setHabitatElements, 'fontSize', size);
 		}
 	};
 
@@ -278,47 +278,24 @@ const FabricHabitatEditor = forwardRef(function FabricHabitatEditor({
 		const currentAgeInfo = getCurrentGeologicalAgeInfo();
 		console.log('getCurrentGeologicalAgeInfo結果:', currentAgeInfo);
 		
-		// 新しい時代グループ構造に変換
-		const eraGroups: Array<{
-			era: string;
-			elements: Array<{
-				id: string;
-				lat: number;
-				lng: number;
-				color: string;
-				size: number;
-				shape: string;
-				text?: string;
-				fontSize?: number;
-			}>;
-		}> = [];
+		// EraGroup構造で保存
+		const eraGroups: EraGroup[] = [];
 		
 		// 現在選択されている時代でグループを作成
 		const era = currentAgeInfo?.era || "顕生代";
-		const elements = habitatPoints.map(point => ({
-			id: point.id,
-			lat: point.lat,
-			lng: point.lng,
-			color: point.color,
-			size: point.size,
-			shape: point.shape,
-			text: point.text,
-			fontSize: point.fontSize
-		}));
 		
-		if (elements.length > 0) {
+		if (habitatElements.length > 0) {
 			eraGroups.push({
 				era: era,
-				elements: elements
+				elements: habitatElements
 			});
 		}
 		
 		console.log('保存する時代グループデータ:', eraGroups);
 		
 		if (onSave) {
-			// 新しい構造で保存
 			onSave(eraGroups);
-			console.log('onSave関数を呼び出しました（新しい構造）');
+			console.log('onSave関数を呼び出しました');
 		} else {
 			console.log('onSave関数が定義されていません');
 		}
@@ -333,7 +310,7 @@ const FabricHabitatEditor = forwardRef(function FabricHabitatEditor({
 		if (selected) {
 			const obj = selected as FabricObjectWithHabitatId;
 			if (obj.habitatPointId) {
-				const point = habitatPoints.find(p => p.id === obj.habitatPointId);
+				const point = habitatElements.find(p => p.id === obj.habitatPointId);
 				if (point) {
 					setPointColor(point.color);
 					setPointSize(point.size);
@@ -371,7 +348,7 @@ const FabricHabitatEditor = forwardRef(function FabricHabitatEditor({
 
 	// 生息地ポイントの位置を更新
 	const updateHabitatPointPositionHandler = (id: string, left: number, top: number) => {
-		const updatedPoints = habitatPoints.map(point => {
+		const updatedPoints = habitatElements.map(point => {
 			if (point.id === id) {
 				// キャンバス座標を緯度経度に変換
 				const lng = (left / width) * 360 - 180;
@@ -380,7 +357,7 @@ const FabricHabitatEditor = forwardRef(function FabricHabitatEditor({
 			}
 			return point;
 		});
-		setHabitatPoints(updatedPoints);
+		setHabitatElements(updatedPoints);
 	};
 
 	// 生息地ポイントを削除
@@ -388,8 +365,8 @@ const FabricHabitatEditor = forwardRef(function FabricHabitatEditor({
 		// Canvasからオブジェクトを削除
 		removeHabitatPoint(id);
 		
-		// habitatPointsの状態からも削除
-		setHabitatPoints(prev => prev.filter(point => point.id !== id));
+		// habitatElementsの状態からも削除
+		setHabitatElements(prev => prev.filter(point => point.id !== id));
 		
 		// 削除されたポイントが選択されていた場合は選択をクリア
 		if (selectedObject && (selectedObject as FabricObjectWithHabitatId).habitatPointId === id) {
@@ -397,7 +374,7 @@ const FabricHabitatEditor = forwardRef(function FabricHabitatEditor({
 		}
 		
 		console.log('ポイントを削除しました:', id);
-	}, [selectedObject, removeHabitatPoint, setHabitatPoints, setSelectedObject]);
+	}, [selectedObject, removeHabitatPoint, setHabitatElements, setSelectedObject]);
 
 	// 地質時代情報を取得する関数
 	const getGeologicalAgeInfo = () => {
@@ -426,29 +403,7 @@ const FabricHabitatEditor = forwardRef(function FabricHabitatEditor({
 		return null;
 	};
 
-	// 選択されたポイントに地質時代情報を追加
-	const addGeologicalAgeToSelectedPoint = useCallback(() => {
-		const ageInfo = getCurrentGeologicalAgeInfo();
-		const selectedPoint = getSelectedPoint(habitatPoints);
-		if (!selectedPoint) {
-			console.log('ポイントが選択されていません');
-			return;
-		}
 
-		// 選択されたポイントに地質時代情報を追加
-		const updatedPoints = habitatPoints.map(point => {
-			if (point.id === selectedPoint.id) {
-				return {
-					...point,
-					geologicalAge: ageInfo
-				};
-			}
-			return point;
-		});
-
-		setHabitatPoints(updatedPoints);
-		console.log('時代情報を追加しました:', ageInfo);
-	}, [habitatPoints, getCurrentGeologicalAgeInfo, getSelectedPoint, setHabitatPoints]);
 
 	// キャンバスクリックイベントの処理
 	const handleCanvasClick = useCallback((e: any) => {
@@ -470,7 +425,7 @@ const FabricHabitatEditor = forwardRef(function FabricHabitatEditor({
 		console.log('計算された緯度経度:', lat, lng);
 
 		// 新しいポイントを作成
-		const newPoint: HabitatPoint = {
+		const newPoint: HabitatElement = {
 			id: `point_${Date.now()}`,
 			lat,
 			lng,
@@ -488,7 +443,7 @@ const FabricHabitatEditor = forwardRef(function FabricHabitatEditor({
 			newPoint
 		});
 		
-		setHabitatPoints(prev => [...prev, newPoint]);
+		setHabitatElements(prev => [...prev, newPoint]);
 		addPointToCanvas(newPoint);
 	}, [width, height, addPointToCanvas]);
 
@@ -506,9 +461,9 @@ const FabricHabitatEditor = forwardRef(function FabricHabitatEditor({
 	}, []);
 
 	// プロパティ変更時の処理
-	const handlePropertyChange = useCallback((field: keyof HabitatPoint, value: string | number | undefined) => {
-		updateSelectedPoint(habitatPoints, setHabitatPoints, field, value);
-	}, [habitatPoints, setHabitatPoints]);
+	const handlePropertyChange = useCallback((field: keyof HabitatElement, value: string | number | undefined) => {
+		updateSelectedPoint(habitatElements, setHabitatElements, field, value);
+	}, [habitatElements, setHabitatElements]);
 
 	// Canvas初期化
 	useLayoutEffect(() => {
@@ -653,7 +608,9 @@ const FabricHabitatEditor = forwardRef(function FabricHabitatEditor({
 			const canvas = fabricCanvasRef.current;
 			const objects = canvas.getObjects();
 			const nonImageObjects = objects.filter(obj => !(obj instanceof FabricImage));
-			nonImageObjects.forEach(obj => canvas.remove(obj));
+			for (const obj of nonImageObjects) {
+				canvas.remove(obj);
+			}
 			
 			// 新しいポイントを追加
 			for (const point of habitatData) {
@@ -688,12 +645,17 @@ const FabricHabitatEditor = forwardRef(function FabricHabitatEditor({
 	}, []);
 
 	useEffect(() => {
-		setHabitatPoints(habitatData);
+		// habitatDataからelementsを抽出
+		const elements: HabitatElement[] = [];
+		for (const group of habitatData) {
+			elements.push(...group.elements);
+		}
+		setHabitatElements(elements);
 	}, [habitatData]);
 
 	useImperativeHandle(ref, () => ({
-		getHabitatPoints: () => habitatPoints
-	}), [habitatPoints]);
+		getHabitatPoints: () => habitatElements
+	}), [habitatElements]);
 
 	// 地質時代の選択に応じて地図を更新（初期化時のみ、かつ地図が実際に変更された場合のみ）
 	useEffect(() => {
@@ -714,38 +676,31 @@ const FabricHabitatEditor = forwardRef(function FabricHabitatEditor({
 		return (
 			<div className="space-y-4">
 				<GeologicalAgeCard enableMenu={false} />
-				<Button 
-					onClick={addGeologicalAgeToSelectedPoint}
-					className="w-full"
-					disabled={!selectedObject}
-				>
-					選択中のポイントに時代を設定
-				</Button>
 			</div>
 		);
-	}, [selectedObject, addGeologicalAgeToSelectedPoint]);
+	}, [selectedObject]);
 
 	const pointsTabContent = useMemo(() => {
-		console.log('pointsTabContent再計算 - habitatPoints:', habitatPoints.length);
+		console.log('pointsTabContent再計算 - habitatElements:', habitatElements.length);
 		return (
 			<HabitatPointList
-				habitatPoints={habitatPoints}
+				habitatPoints={habitatElements}
 				selectedObjectId={getSelectedObjectId()}
 				onPointSelect={handlePointSelect}
 				onPointDelete={removeHabitatPointHandler}
 			/>
 		);
-	}, [habitatPoints, getSelectedObjectId, handlePointSelect, removeHabitatPointHandler]);
+	}, [habitatElements, getSelectedObjectId, handlePointSelect, removeHabitatPointHandler]);
 
 	const propertiesTabContent = useMemo(() => {
-		console.log('propertiesTabContent再計算 - habitatPoints:', habitatPoints.length);
+		console.log('propertiesTabContent再計算 - habitatElements:', habitatElements.length);
 		return (
 			<HabitatPropertiesPanel
-				selectedPoint={getSelectedPoint(habitatPoints) || null}
+				selectedPoint={getSelectedPoint(habitatElements) || null}
 				onPropertyChange={handlePropertyChange}
 			/>
 		);
-	}, [habitatPoints, getSelectedPoint, handlePropertyChange]);
+	}, [habitatElements, getSelectedPoint, handlePropertyChange]);
 
 	return (
 		<div className="w-full">

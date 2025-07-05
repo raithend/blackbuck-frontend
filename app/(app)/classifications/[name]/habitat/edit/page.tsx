@@ -11,7 +11,7 @@ import { GeologicalAgeCard } from "@/app/components/geological/geological-age-ca
 import { GeologicalAgeProvider } from "@/app/components/geological/geological-context";
 import { toast } from "sonner";
 import type { MutableRefObject } from "react";
-import type { EraGroup } from "@/app/components/habitat/types";
+import type { EraGroup, HabitatElement } from "@/app/components/habitat/types";
 
 interface HabitatData {
 	lat: number;
@@ -24,37 +24,7 @@ interface HabitatData {
 	fontSize?: number;
 }
 
-interface HabitatPoint {
-	id: string;
-	lat: number;
-	lng: number;
-	color: string;
-	size: number;
-	shape: 'circle' | 'text';
-	label?: string;
-	maxR?: number;
-	text?: string;
-	fontSize?: number;
-	geologicalAge?: {
-		era?: string;
-		period?: string;
-		epoch?: string;
-		age?: string;
-		ageIds?: number[];
-		map?: string;
-	};
-}
 
-interface EraGroupElement {
-	id: string;
-	lat: number;
-	lng: number;
-	color: string;
-	size: number;
-	shape: string;
-	text?: string;
-	fontSize?: number;
-}
 
 
 
@@ -66,23 +36,9 @@ export default function HabitatEditPage() {
 	const [isLoading, setIsLoading] = useState(false);
 	const [isSaving, setIsSaving] = useState(false);
 	const [currentMap, setCurrentMap] = useState("Map1a_PALEOMAP_PaleoAtlas_000.jpg");
-	const habitatEditorRef = useRef<{ getHabitatPoints: () => HabitatPoint[] } | null>(null);
+	const habitatEditorRef = useRef<{ getHabitatPoints: () => HabitatElement[] } | null>(null);
 
-	// HabitatDataをHabitatPointに変換する関数
-	const convertToHabitatPoints = (data: HabitatData[]): HabitatPoint[] => {
-		return data.map((item, index) => ({
-			id: `point-${index}`,
-			lat: item.lat,
-			lng: item.lng,
-			color: item.color,
-			size: item.size,
-			shape: item.text ? 'text' : 'circle',
-			label: item.label,
-			maxR: item.maxR,
-			text: item.text,
-			fontSize: item.fontSize,
-		}));
-	};
+
 
 	// EraGroupからHabitatDataを抽出
 	const extractHabitatData = (eraGroups: EraGroup[]): HabitatData[] => {
@@ -114,11 +70,10 @@ export default function HabitatEditPage() {
 					if (data.classification?.geographic_data_file) {
 						try {
 							const parsedData = JSON.parse(data.classification.geographic_data_file);
-							// 新しい構造（EraGroup[]）の場合はそのまま使用
+							// EraGroup[]構造のデータをそのまま使用
 							if (Array.isArray(parsedData) && parsedData.length > 0 && 'era' in parsedData[0]) {
 								setHabitatData(parsedData);
 							} else {
-								// 古い構造の場合は空配列を設定
 								setHabitatData([]);
 							}
 						} catch (error) {
@@ -148,10 +103,10 @@ export default function HabitatEditPage() {
 		try {
 			const { data: { session } } = await supabase.auth.getSession();
 			
-			// 新しい構造をJSON文字列に変換
+			// EraGroup[]構造をJSON文字列に変換
 			const geographicDataFile = JSON.stringify(habitatData);
 			
-			console.log('保存する生息地データ（新しい構造）:', habitatData);
+			console.log('保存する生息地データ:', habitatData);
 			
 			const response = await fetch(`/api/classifications/${encodeURIComponent(decodedName)}`, {
 				method: 'PUT',

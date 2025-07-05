@@ -1,12 +1,12 @@
 import { useRef, useState, useCallback, useEffect } from "react";
 import { Circle, FabricText } from "fabric";
 import type { Canvas, Object as FabricObject } from "fabric";
-import type { HabitatPoint, FabricObjectWithHabitatId } from "./types";
+import type { HabitatElement, FabricObjectWithHabitatId } from "./types";
 
 interface UseFabricCanvasProps {
 	width: number;
 	height: number;
-	habitatData: HabitatPoint[];
+	habitatData: HabitatElement[];
 	onMapChange?: (mapFile: string) => void;
 }
 
@@ -29,7 +29,7 @@ export function useFabricCanvas({
 	}, [habitatData]);
 
 	// ポイントをキャンバスに追加する関数
-	const addPointToCanvas = useCallback((point: HabitatPoint) => {
+	const addPointToCanvas = useCallback((point: HabitatElement) => {
 		console.log('addPointToCanvas呼び出し:', point);
 		
 		if (!fabricCanvasRef.current) {
@@ -123,7 +123,7 @@ export function useFabricCanvas({
 	}, []);
 
 	// 選択されたポイントの情報を取得
-	const getSelectedPoint = useCallback((habitatPoints: HabitatPoint[]) => {
+	const getSelectedPoint = useCallback((habitatPoints: HabitatElement[]) => {
 		const selectedId = getSelectedObjectId();
 		const point = selectedId ? habitatPoints.find(p => p.id === selectedId) : null;
 		return point;
@@ -131,9 +131,9 @@ export function useFabricCanvas({
 
 	// 選択されたポイントを更新
 	const updateSelectedPoint = useCallback((
-		habitatPoints: HabitatPoint[],
-		setHabitatPoints: React.Dispatch<React.SetStateAction<HabitatPoint[]>>,
-		field: keyof HabitatPoint,
+		habitatPoints: HabitatElement[],
+		setHabitatPoints: React.Dispatch<React.SetStateAction<HabitatElement[]>>,
+		field: keyof HabitatElement,
 		value: string | number | undefined
 	) => {
 		const selectedId = getSelectedObjectId();
@@ -221,7 +221,7 @@ export function useFabricCanvas({
 				});
 			});
 		}
-	}, [onMapChange, width, height]);
+	}, [onMapChange, width, height, addPointToCanvas]);
 
 	return {
 		fabricCanvasRef,

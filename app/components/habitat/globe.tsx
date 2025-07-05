@@ -4,7 +4,8 @@ import type React from "react";
 import { useEffect, useRef, useState, useCallback } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-import { generateMapWithHabitat, HabitatData } from "@/app/components/habitat/map-utils";
+import { generateMapWithHabitat } from "@/app/components/habitat/map-utils";
+import type { HabitatElement } from "@/app/components/habitat/types";
 
 interface GlobeProps {
 	customTexture?: string; // カスタムテクスチャのURL（生息地データ付きの地図画像）
@@ -126,8 +127,7 @@ const GlobeComponent: React.FC<GlobeProps> = ({
 		window.addEventListener("resize", handleResize);
 
 		isInitialized.current = true;
-	// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []);
+	}, [handleResize]);
 
 	// テクスチャの更新処理
 	const updateTexture = useCallback(async (textureUrl: string) => {
@@ -170,8 +170,7 @@ const GlobeComponent: React.FC<GlobeProps> = ({
 	// 初期化処理
 	useEffect(() => {
 		initializeScene();
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []);
+	}, [initializeScene]);
 
 	// カスタムテクスチャの更新処理
 	useEffect(() => {
@@ -186,8 +185,7 @@ const GlobeComponent: React.FC<GlobeProps> = ({
 		if (customMapTexture) {
 			updateTexture(customMapTexture);
 		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [customMapTexture]);
+	}, [customMapTexture, updateTexture]);
 
 	// カスタムテクスチャの生成処理
 	useEffect(() => {
@@ -200,7 +198,7 @@ const GlobeComponent: React.FC<GlobeProps> = ({
 			const mapName = customTexture.replace(/^.*\/(Map.*\.jpg).*$/, '$1');
 			console.log('generateMapWithHabitat呼び出し:', { mapName, habitatPoints });
 			
-			generateMapWithHabitat(mapName, habitatPoints as HabitatData[])
+			generateMapWithHabitat(mapName, habitatPoints as HabitatElement[])
 				.then((dataUrl) => {
 					console.log('generateMapWithHabitat成功 - dataURL長さ:', dataUrl.length);
 					setCustomMapTexture(dataUrl);
@@ -248,8 +246,7 @@ const GlobeComponent: React.FC<GlobeProps> = ({
 			// イベントリスナーの削除
 			window.removeEventListener("resize", handleResize);
 		};
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []);
+	}, [handleResize]);
 
 	return (
 		<div className="relative w-full h-full">

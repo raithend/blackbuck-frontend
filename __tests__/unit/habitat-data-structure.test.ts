@@ -17,25 +17,7 @@ interface EraGroup {
   elements: EraGroupElement[];
 }
 
-// 生息地ポイントの型定義
-interface HabitatPoint {
-  id: string;
-  lat: number;
-  lng: number;
-  color: string;
-  size: number;
-  shape: 'circle' | 'text';
-  text?: string;
-  fontSize?: number;
-  geologicalAge?: {
-    era?: string;
-    period?: string;
-    epoch?: string;
-    age?: string;
-    ageIds?: number[];
-    map?: string;
-  };
-}
+
 
 describe('生息地データの時代構造', () => {
   describe('時代グループ構造', () => {

@@ -1,13 +1,6 @@
-export interface HabitatData {
-  lat: number;
-  lng: number;
-  color?: string;
-  size?: number;
-  maxR?: number;
-  polygon?: [number, number][];
-  text?: string;
-  fontSize?: number;
-}
+import type { HabitatElement } from "./types";
+
+export type HabitatData = HabitatElement;
 
 // 生息地データ付きの地図画像を生成
 export const generateMapWithHabitat = (mapName: string, habitatData: HabitatData[]) => {

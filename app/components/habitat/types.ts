@@ -1,6 +1,11 @@
 import type { FabricObject } from "fabric";
 
-export interface HabitatPoint {
+export interface EraGroup {
+	era: string;
+	elements: HabitatElement[];
+}
+
+export interface HabitatElement {
 	id: string;
 	lat: number;
 	lng: number;
@@ -11,20 +16,6 @@ export interface HabitatPoint {
 	maxR?: number;
 	text?: string;
 	fontSize?: number;
-	geologicalAge?: {
-		era?: string;
-		period?: string;
-		epoch?: string;
-		age?: string;
-		ageIds?: number[];
-		map?: string;
-	};
-}
-
-// 新しい構造の型定義
-export interface EraGroup {
-	era: string;
-	elements: Omit<HabitatPoint, 'geologicalAge'>[];
 }
 
 export interface FabricHabitatEditorProps {
@@ -36,15 +27,6 @@ export interface FabricHabitatEditorProps {
 	onMapChange?: (mapFile: string) => void;
 }
 
-export interface HabitatData {
-	lat: number;
-	lng: number;
-	color: string;
-	size: number;
-	label?: string;
-	maxR?: number;
-	text?: string;
-	fontSize?: number;
-}
+
 
 export type FabricObjectWithHabitatId = FabricObject & { habitatPointId?: string }; 
