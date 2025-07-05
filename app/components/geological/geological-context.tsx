@@ -36,24 +36,28 @@ const GeologicalAgeProviderComponent = memo(({
 		selectedAgeIds,
 	};
 
-	// 関数をメモ化（依存関係を空にして安定化）
-	const memoizedSetSelectedMap = useCallback((map: string) => {
-		console.log('GeologicalAgeContext - setSelectedMap呼び出し:', map);
+	// 関数をメモ化して安定化
+	const setSelectedMapWithLog = useCallback((map: string) => {
+		if (process.env.NODE_ENV === 'development') {
+			console.log('GeologicalAgeContext - setSelectedMap呼び出し:', map);
+		}
 		setSelectedMap(map);
 	}, []);
 
-	const memoizedSetSelectedAgeIds = useCallback((ids: number[]) => {
-		console.log('GeologicalAgeContext - setSelectedAgeIds呼び出し:', ids);
-		setSelectedAgeIds(ids);
+	const setSelectedAgeIdsWithLog = useCallback((ageIds: number[]) => {
+		if (process.env.NODE_ENV === 'development') {
+			console.log('GeologicalAgeContext - setSelectedAgeIds呼び出し:', ageIds);
+		}
+		setSelectedAgeIds(ageIds);
 	}, []);
 
 	// コンテキスト値をメモ化（依存関係を最小限に）
 	const contextValue = useMemo(() => ({
 		selectedMap,
 		selectedAgeIds,
-		setSelectedMap: memoizedSetSelectedMap,
-		setSelectedAgeIds: memoizedSetSelectedAgeIds,
-	}), [selectedMap, selectedAgeIds, memoizedSetSelectedMap, memoizedSetSelectedAgeIds]);
+		setSelectedMap: setSelectedMapWithLog,
+		setSelectedAgeIds: setSelectedAgeIdsWithLog,
+	}), [selectedMap, selectedAgeIds, setSelectedMapWithLog, setSelectedAgeIdsWithLog]);
 
 	return (
 		<GeologicalAgeContext.Provider value={contextValue}>

@@ -86,10 +86,10 @@ export function GeologicalAgeCard({ enableMenu = true }: { enableMenu?: boolean 
 	const [selectedAge, setSelectedAge] = useState<GeologicalAge | undefined>(undefined);
 	const [isExpanded, setIsExpanded] = useState(!enableMenu);
 
-	console.log('GeologicalAgeCard - selectedAgeIds:', selectedAgeIds);
+	
 
 	const handleEraChange = (eraId: string) => {
-		console.log('handleEraChange呼び出し - eraId:', eraId);
+
 		if (eraId === "none") {
 					setSelectedEra(undefined);
 		setSelectedPeriod(undefined);
@@ -101,13 +101,13 @@ export function GeologicalAgeCard({ enableMenu = true }: { enableMenu?: boolean 
 	}
 	const era = geologicalAgesData.eras.find((e) => e.id === eraId);
 	if (era) {
-		console.log('選択されたera:', era.name, 'ID:', era.id);
+
 		setSelectedEra(era);
 		setSelectedPeriod(undefined);
 		setSelectedEpoch(undefined);
 		setSelectedAge(undefined);
 			const ageIds = getAgeIds(era);
-			console.log('getAgeIds結果:', ageIds);
+
 			setSelectedAgeIds(ageIds);
 			if (era.map) {
 				setSelectedMap(era.map);
@@ -116,20 +116,24 @@ export function GeologicalAgeCard({ enableMenu = true }: { enableMenu?: boolean 
 	};
 
 	const handlePeriodChange = (periodId: string) => {
+		console.log('handlePeriodChange呼び出し - periodId:', periodId);
+		
 		if (periodId === "none") {
-					setSelectedPeriod(undefined);
-		setSelectedEpoch(undefined);
-		setSelectedAge(undefined);
-		setSelectedAgeIds([]);
-		setSelectedMap("");
-		return;
-	}
-	const period = selectedEra?.periods.find((p) => p.id === periodId);
-	if (period) {
-		setSelectedPeriod(period);
-		setSelectedEpoch(period.epochs[0]);
-		setSelectedAge(period.epochs[0].ages?.[0] || undefined);
+			setSelectedPeriod(undefined);
+			setSelectedEpoch(undefined);
+			setSelectedAge(undefined);
+			setSelectedAgeIds([]);
+			setSelectedMap("");
+			return;
+		}
+		const period = selectedEra?.periods.find((p) => p.id === periodId);
+		if (period) {
+			console.log('handlePeriodChange - 選択されたperiod:', period);
+			setSelectedPeriod(period);
+			setSelectedEpoch(period.epochs[0]);
+			setSelectedAge(period.epochs[0].ages?.[0] || undefined);
 			const ageIds = getAgeIds(period);
+			console.log('handlePeriodChange - ageIds:', ageIds);
 			setSelectedAgeIds(ageIds);
 			if (period.map) {
 				setSelectedMap(period.map);
@@ -182,8 +186,10 @@ export function GeologicalAgeCard({ enableMenu = true }: { enableMenu?: boolean 
 	// スライダーの値から時代を探す関数
 	const findAgeBySliderValue = useCallback(
 		(value: number) => {
+			console.log('findAgeBySliderValue呼び出し - value:', value);
 			const reversedValue = 103 - value;
 			const ageId = reversedValue.toString();
+			console.log('reversedValue:', reversedValue, 'ageId:', ageId);
 
 			// すべての時代から対応するageを探す
 			for (const era of geologicalAgesData.eras) {
@@ -191,6 +197,7 @@ export function GeologicalAgeCard({ enableMenu = true }: { enableMenu?: boolean 
 					for (const epoch of period.epochs) {
 						const age = epoch.ages?.find((a) => a.id === ageId);
 						if (age) {
+							console.log('findAgeBySliderValue - 見つかったage:', age);
 							setSelectedEra(era);
 							setSelectedPeriod(period);
 							setSelectedEpoch(epoch);
@@ -203,6 +210,7 @@ export function GeologicalAgeCard({ enableMenu = true }: { enableMenu?: boolean 
 					}
 				}
 			}
+			console.log('findAgeBySliderValue - ageが見つかりませんでした');
 			return null;
 		},
 		[setSelectedMap],
@@ -210,33 +218,34 @@ export function GeologicalAgeCard({ enableMenu = true }: { enableMenu?: boolean 
 
 	// 時代のID配列を取得する関数（修正版）
 	const getAgeIds = useCallback((age: GeologicalAge | Epoch | Period | Era | null): number[] => {
+		console.log('getAgeIds呼び出し - age:', age);
+		
 		if (!age) return [];
 
 		// 最下位の時代（age）の場合
-		if (age.id) {
-			return [Number.parseInt(age.id)];
-		}
-
-		// 上位の時代（era, period, epoch）の場合
-		// 最も上位の階層のIDのみを含める
-		if (age.id) {
-			return [Number.parseInt(age.id)];
-		}
-
-		// 階層を判定して適切なIDを返す
 		if ('ages' in age && age.ages) {
-			// epochの場合、epochのIDのみを返す
+			// epochの場合、epochのIDを返す
+			console.log('getAgeIds - epoch detected, returning epoch ID:', age.id);
 			return age.id ? [Number.parseInt(age.id)] : [];
 		}
 		if ('epochs' in age) {
-			// periodの場合、periodのIDのみを返す
+			// periodの場合、periodのIDを返す
+			console.log('getAgeIds - period detected, returning period ID:', age.id);
 			return age.id ? [Number.parseInt(age.id)] : [];
 		}
 		if ('periods' in age) {
-			// eraの場合、eraのIDのみを返す
+			// eraの場合、eraのIDを返す
+			console.log('getAgeIds - era detected, returning era ID:', age.id);
 			return age.id ? [Number.parseInt(age.id)] : [];
 		}
 
+		// 単一のageの場合
+		if (age.id) {
+			console.log('getAgeIds - single age detected, returning age ID:', age.id);
+			return [Number.parseInt(age.id)];
+		}
+
+		console.log('getAgeIds - no valid age structure found');
 		return [];
 	}, []);
 
@@ -254,12 +263,19 @@ export function GeologicalAgeCard({ enableMenu = true }: { enableMenu?: boolean 
 
 	// 初期状態で最新の時代を選択
 	useEffect(() => {
+		console.log('=== GeologicalAgeCard初期化開始 ===');
 		const age = findAgeBySliderValue(102);
+		console.log('findAgeBySliderValue(102)結果:', age);
 		if (age) {
 			const ageIds = getAgeIds(age);
+			console.log('初期化時のageIds:', ageIds);
 			setSelectedAgeIds(ageIds);
+		} else {
+			console.log('初期化時にageが見つかりませんでした');
 		}
 	}, [findAgeBySliderValue, getAgeIds, setSelectedAgeIds]); // 依存配列を修正
+
+
 
 	function formatAgeRange(startMa: number, endMa: number): string {
 		const startYear = Math.round(startMa * 1_000_000);

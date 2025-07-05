@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, memo, useCallback } from "react";
+import { useState, useMemo, memo, useCallback, useEffect } from "react";
 import { useParams } from "next/navigation";
 import useSWR from "swr";
 import Link from "next/link";
@@ -86,7 +86,7 @@ const ClassificationContent = memo(({
 	user
 }: {
 	decodedName: string;
-	classification: any;
+	classification: Classification | null;
 	posts: PostWithUser[];
 	postsLoading: boolean;
 	postsError: any;
@@ -107,67 +107,71 @@ const ClassificationContent = memo(({
 }) => {
 	const { selectedAgeIds } = useGeologicalAge();
 
-	// 選択中の時代に一致するグループのみ抽出
-	const filteredEraGroups = useMemo(() => {
-		// デバッグ出力を削減（開発時のみ）
-		if (process.env.NODE_ENV === 'development') {
-			console.log('filteredEraGroups - eraGroups:', eraGroups);
-			console.log('filteredEraGroups - selectedAgeIds:', selectedAgeIds);
+	// 階層的な一致をチェックする関数
+	const checkHierarchicalMatch = useCallback((groupEra: string, selectedHierarchy: { era: string; period?: string; epoch?: string; age?: string }): boolean => {
+		console.log('=== checkHierarchicalMatch ===');
+		console.log(`groupEra: "${groupEra}"`);
+		console.log('selectedHierarchy:', selectedHierarchy);
+		
+		// 時代名が完全一致する場合はtrue
+		if (groupEra === selectedHierarchy.era) {
+			console.log(`完全一致: "${groupEra}" === "${selectedHierarchy.era}" = true`);
+			return true;
 		}
 		
+		// 階層的な一致をチェック
+		// 例：「新生代」のデータは「第四紀」「完新世」「メガラヤン」などでも表示されるべき
+		
+		// 選択された時代が下位階層の場合、上位階層のデータも表示
+		// 例：「第四紀」が選択されている場合、「新生代」のデータも表示
+		if (selectedHierarchy.period && groupEra === selectedHierarchy.era) {
+			console.log(`階層一致（Period）: "${groupEra}" === "${selectedHierarchy.era}" = true`);
+			return true;
+		}
+		
+		if (selectedHierarchy.epoch && groupEra === selectedHierarchy.era) {
+			console.log(`階層一致（Epoch）: "${groupEra}" === "${selectedHierarchy.era}" = true`);
+			return true;
+		}
+		
+		if (selectedHierarchy.age && groupEra === selectedHierarchy.era) {
+			console.log(`階層一致（Age）: "${groupEra}" === "${selectedHierarchy.era}" = true`);
+			return true;
+		}
+		
+		console.log(`一致なし: "${groupEra}" と "${selectedHierarchy.era}" の階層チェック = false`);
+		return false;
+	}, []);
+
+	// 選択中の時代に一致するグループのみ抽出
+	const filteredEraGroups = useMemo(() => {
+		console.log('=== filteredEraGroups処理開始 ===');
+		console.log('eraGroups:', eraGroups);
+		console.log('selectedAgeIds:', selectedAgeIds);
+		
 		if (!eraGroups || !selectedAgeIds || selectedAgeIds.length === 0) {
-			if (process.env.NODE_ENV === 'development') {
-				console.log('filteredEraGroups - No eraGroups or selectedAgeIds, returning empty array');
-			}
+			console.log('eraGroupsまたはselectedAgeIdsが空のため、空配列を返す');
 			return [];
 		}
 		
-		// 選択された時代名を全階層対応で取得（階層優先順位付き）
-		const getSelectedAgeName = (selectedAgeIds: number[]): string | undefined => {
+		// 選択された時代の階層情報を取得
+		const getSelectedAgeHierarchy = (selectedAgeIds: number[]): { era: string; period?: string; epoch?: string; age?: string } | undefined => {
 			if (!selectedAgeIds || selectedAgeIds.length === 0) return undefined;
 			const id = selectedAgeIds[0];
-			console.log('getSelectedAgeName - selectedAgeIds:', selectedAgeIds, 'id:', id);
+			console.log('getSelectedAgeHierarchy - selectedAgeIds:', selectedAgeIds, 'id:', id);
 			
-			// 階層の優先順位: Era > Period > Epoch > Age
-			// まずEraレベルで検索
-			for (const era of geologicalAgesData.eras) {
-				if (Number(era.id) === id) {
-					console.log('getSelectedAgeName - Era match found:', era.name);
-					return era.name;
-				}
-			}
+			// 階層の優先順位: Age > Epoch > Period > Era
+			// 最下位から検索して、最初に見つかった階層を返す
 			
-			// Eraで見つからない場合、Periodレベルで検索
-			for (const era of geologicalAgesData.eras) {
-				for (const period of era.periods) {
-					if (Number(period.id) === id) {
-						console.log('getSelectedAgeName - Period match found:', period.name);
-						return period.name;
-					}
-				}
-			}
-			
-			// Periodで見つからない場合、Epochレベルで検索
-			for (const era of geologicalAgesData.eras) {
-				for (const period of era.periods) {
-					for (const epoch of period.epochs) {
-						if (Number(epoch.id) === id) {
-							console.log('getSelectedAgeName - Epoch match found:', epoch.name);
-							return epoch.name;
-						}
-					}
-				}
-			}
-			
-			// Epochで見つからない場合、Ageレベルで検索
+			// まずAgeレベルで検索
 			for (const era of geologicalAgesData.eras) {
 				for (const period of era.periods) {
 					for (const epoch of period.epochs) {
 						if (epoch.ages) {
 							for (const age of epoch.ages) {
 								if (Number(age.id) === id) {
-									console.log('getSelectedAgeName - Age match found:', age.name);
-									return age.name;
+									console.log('getSelectedAgeHierarchy - Age match found:', age.name, 'in epoch:', epoch.name, 'period:', period.name, 'era:', era.name);
+									return { era: era.name, period: period.name, epoch: epoch.name, age: age.name };
 								}
 							}
 						}
@@ -175,20 +179,89 @@ const ClassificationContent = memo(({
 				}
 			}
 			
-			console.log('getSelectedAgeName - No match found for id:', id);
+			// Ageで見つからない場合、Epochレベルで検索
+			for (const era of geologicalAgesData.eras) {
+				for (const period of era.periods) {
+					for (const epoch of period.epochs) {
+						if (Number(epoch.id) === id) {
+							console.log('getSelectedAgeHierarchy - Epoch match found:', epoch.name, 'in period:', period.name, 'era:', era.name);
+							return { era: era.name, period: period.name, epoch: epoch.name };
+						}
+					}
+				}
+			}
+			
+			// Epochで見つからない場合、Periodレベルで検索
+			for (const era of geologicalAgesData.eras) {
+				for (const period of era.periods) {
+					if (Number(period.id) === id) {
+						console.log('getSelectedAgeHierarchy - Period match found:', period.name, 'in era:', era.name);
+						return { era: era.name, period: period.name };
+					}
+				}
+			}
+			
+			// Periodで見つからない場合、Eraレベルで検索
+			for (const era of geologicalAgesData.eras) {
+				if (Number(era.id) === id) {
+					console.log('getSelectedAgeHierarchy - Era match found:', era.name);
+					return { era: era.name };
+				}
+			}
+			
+			console.log('getSelectedAgeHierarchy - No match found for id:', id);
 			return undefined;
 		};
 		
-		const selectedAgeName = getSelectedAgeName(selectedAgeIds);
-		console.log('filteredEraGroups - selectedAgeName:', selectedAgeName);
-		if (!selectedAgeName) {
-			console.log('filteredEraGroups - No selectedAgeName found, returning empty array');
+		const selectedAgeHierarchy = getSelectedAgeHierarchy(selectedAgeIds);
+		console.log('filteredEraGroups - selectedAgeHierarchy:', selectedAgeHierarchy);
+		
+		if (!selectedAgeHierarchy) {
+			console.log('filteredEraGroups - No selectedAgeHierarchy found, returning empty array');
 			return [];
 		}
-		const filtered = eraGroups.filter((group: any) => group.era === selectedAgeName);
+		
+		// 階層的なフィルタリング
+		const filtered = eraGroups.filter((group: { era: string; elements?: any[] }) => {
+			const groupEra = group.era;
+			const selectedEra = selectedAgeHierarchy.era;
+			
+			console.log(`フィルタリング処理 - groupEra: "${groupEra}", selectedEra: "${selectedEra}"`);
+			
+			// 時代名が完全一致する場合
+			if (groupEra === selectedEra) {
+				console.log(`フィルタリング: "${groupEra}" === "${selectedEra}" = true (完全一致)`);
+				return true;
+			}
+			
+			// 階層的な一致をチェック
+			// 例：「新生代」のデータは「第四紀」「完新世」「メガラヤン」などでも表示
+			const isHierarchicalMatch = checkHierarchicalMatch(groupEra, selectedAgeHierarchy);
+			console.log(`フィルタリング: "${groupEra}" 階層チェック = ${isHierarchicalMatch}`);
+			
+			return isHierarchicalMatch;
+		});
+		
 		console.log('filteredEraGroups - filtered result:', filtered);
+		console.log('filteredEraGroups - filtered result詳細:', JSON.stringify(filtered, null, 2));
 		return filtered;
-	}, [selectedAgeIds, eraGroups]);
+	}, [selectedAgeIds, eraGroups, checkHierarchicalMatch]);
+
+	// GlobeAreaコンポーネントに渡すデータを準備
+	const globeData = useMemo(() => {
+		console.log('=== globeData準備開始 ===');
+		console.log('filteredEraGroups:', filteredEraGroups);
+		
+		if (!filteredEraGroups || filteredEraGroups.length === 0) {
+			console.log('filteredEraGroupsが空のため、空配列を返す');
+			return [];
+		}
+
+		// フィルタリングされたグループから要素を抽出してフラット化
+		const flattenedData = filteredEraGroups.flatMap(group => group.elements || []);
+		console.log('globeData結果:', flattenedData);
+		return flattenedData;
+	}, [filteredEraGroups]);
 
 	return (
 		<div className="container mx-auto px-4 py-8">
@@ -333,7 +406,7 @@ const ClassificationContent = memo(({
 							<div className="lg:col-span-3">
 								<GlobeArea 
 									customGeographicFile={classification.geographic_data_file}
-									eraGroups={filteredEraGroups}
+									eraGroups={filteredEraGroups || eraGroups}
 								/>
 							</div>
 							<div className="lg:col-span-1">
@@ -400,11 +473,13 @@ export default function ClassificationPage() {
 			revalidateOnFocus: false,
 			revalidateOnReconnect: false,
 			revalidateOnMount: true,
-			dedupingInterval: 30000,
+			dedupingInterval: 60000, // 1分間の重複排除
 			refreshInterval: 0,
 			onSuccess: (data) => {
-				console.log('=== 分類情報取得完了 ===');
-				console.log('分類情報:', data?.classification);
+				if (process.env.NODE_ENV === 'development') {
+					console.log('=== 分類情報取得完了 ===');
+					console.log('分類情報:', data?.classification);
+				}
 			},
 			onError: (error) => {
 				console.error('分類情報取得エラー:', error);
@@ -420,12 +495,14 @@ export default function ClassificationPage() {
 			revalidateOnFocus: false,
 			revalidateOnReconnect: false,
 			revalidateOnMount: true,
-			dedupingInterval: 30000,
+			dedupingInterval: 60000, // 1分間の重複排除
 			refreshInterval: 0,
 			onSuccess: (data) => {
-				console.log('=== 投稿情報取得完了 ===');
-				console.log('取得された投稿の数:', data?.posts?.length || 0);
-				console.log('取得された投稿の分類名:', data?.posts?.map(post => post.classification).filter(Boolean));
+				if (process.env.NODE_ENV === 'development') {
+					console.log('=== 投稿情報取得完了 ===');
+					console.log('取得された投稿の数:', data?.posts?.length || 0);
+					console.log('取得された投稿の分類名:', data?.posts?.map(post => post.classification).filter(Boolean));
+				}
 			},
 			onError: (error) => {
 				console.error('投稿情報取得エラー:', error);
@@ -436,18 +513,47 @@ export default function ClassificationPage() {
 	const classification = classificationData?.classification;
 	const posts = postsData?.posts || [];
 
-	// 時代グループデータをメモ化
+	// 生息地データを時代別にグループ化
 	const eraGroups = useMemo(() => {
-		if (!classification?.geographic_data_file) return undefined;
+		console.log('=== eraGroups生成開始 ===');
+		console.log('classification:', classification);
+		console.log('classification?.geographic_data_file:', classification?.geographic_data_file);
+		
+		if (!classification?.geographic_data_file) {
+			console.log('geographic_data_fileが存在しないため、空配列を返す');
+			return [];
+		}
+
 		try {
-			const parsedData = JSON.parse(classification.geographic_data_file);
-			if (Array.isArray(parsedData) && parsedData.length > 0 && parsedData[0].era && parsedData[0].elements) {
-				return parsedData;
+			const data = JSON.parse(classification.geographic_data_file);
+			console.log('geographic_data_file解析結果:', data);
+			
+			// データが既に時代別にグループ化されているかチェック
+			if (Array.isArray(data) && data.length > 0 && data[0].era && data[0].elements) {
+				console.log('データは既に時代別にグループ化されています');
+				console.log('eraGroups生成結果:', data);
+				return data;
 			}
-			return undefined;
+			
+			// データを時代別にグループ化
+			const grouped = data.reduce((acc: any[], point: any) => {
+				const era = point.era || '不明';
+				let group = acc.find(g => g.era === era);
+				
+				if (!group) {
+					group = { era, elements: [] };
+					acc.push(group);
+				}
+				
+				group.elements.push(point);
+				return acc;
+			}, []);
+			
+			console.log('eraGroups生成結果:', grouped);
+			return grouped;
 		} catch (error) {
-			console.error('生息地データのパースに失敗しました:', error);
-			return undefined;
+			console.error('geographic_data_file解析エラー:', error);
+			return [];
 		}
 	}, [classification?.geographic_data_file]);
 
@@ -457,6 +563,14 @@ export default function ClassificationPage() {
 		hasPhylogeneticTree: classification?.phylogenetic_tree_file,
 		phylogenetic_tree_file: classification?.phylogenetic_tree_file
 	}), [classification]);
+
+	// 分類情報の存在チェックをメモ化
+	const classificationChecks = useMemo(() => ({
+		hasOverview: !!(classification?.description || classification?.english_name || classification?.scientific_name || classification?.era_start || classification?.era_end),
+		hasPosts: posts.length > 0,
+		hasPhylogeneticTree: !!classification?.phylogenetic_tree_file,
+		hasGeographicData: !!classification?.geographic_data_file
+	}), [classification, posts.length]);
 
 	// いいね状態変更のハンドラー
 	const handleLikeChange = useCallback((postId: string, likeCount: number, isLiked: boolean) => {
@@ -496,22 +610,21 @@ export default function ClassificationPage() {
 	// 生息地データ作成者かどうかを判定
 	const isGeographicDataCreator = !!(user && classification?.geographic_data_creator === user.id);
 
+	// デバッグ出力（開発時のみ、初回のみ）
+	useEffect(() => {
+		if (process.env.NODE_ENV === 'development') {
+			console.log('ClassificationPage - classification:', debugInfo.classification);
+			console.log('ClassificationPage - hasPhylogeneticTree:', debugInfo.hasPhylogeneticTree);
+			console.log('ClassificationPage - phylogenetic_tree_file:', debugInfo.phylogenetic_tree_file);
+		}
+	}, [debugInfo]); // debugInfo全体に依存
+
 	// 分類情報の読み込み中
 	if (classificationLoading) return <div>分類情報を読み込み中...</div>;
 	if (classificationError) return <div>分類情報の取得でエラーが発生しました</div>;
 
-	// 各要素の存在チェック
-	const hasOverview = !!(classification?.description || classification?.english_name || classification?.scientific_name || classification?.era_start || classification?.era_end);
-	const hasPosts = posts.length > 0;
-	const hasPhylogeneticTree = !!classification?.phylogenetic_tree_file;
-	const hasGeographicData = !!classification?.geographic_data_file;
-
-	// デバッグ出力（開発時のみ）
-	if (process.env.NODE_ENV === 'development') {
-		console.log('ClassificationPage - classification:', debugInfo.classification);
-		console.log('ClassificationPage - hasPhylogeneticTree:', debugInfo.hasPhylogeneticTree);
-		console.log('ClassificationPage - phylogenetic_tree_file:', debugInfo.phylogenetic_tree_file);
-	}
+	// 各要素の存在チェック（メモ化済み）
+	const { hasOverview, hasPosts, hasPhylogeneticTree, hasGeographicData } = classificationChecks;
 
 	return (
 		<GeologicalAgeProvider>

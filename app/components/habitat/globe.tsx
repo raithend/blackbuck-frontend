@@ -1,7 +1,6 @@
 "use client";
 
-import type React from "react";
-import { useEffect, useRef, useState, useCallback } from "react";
+import React, { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { generateMapWithHabitat } from "@/app/components/habitat/map-utils";
@@ -12,13 +11,10 @@ interface GlobeProps {
 	habitatPoints?: { lat: number; lng: number; color: string; size: number }[];
 }
 
-const GlobeComponent: React.FC<GlobeProps> = ({ 
+const GlobeComponent = React.memo<GlobeProps>(({ 
 	customTexture,
 	habitatPoints = []
 }) => {
-	console.log('=== GlobeComponent レンダリング ===');
-	console.log('customTexture:', customTexture);
-	console.log('habitatPoints:', habitatPoints);
 	const containerRef = useRef<HTMLDivElement>(null);
 	const [isLoading, setIsLoading] = useState(false);
 	
@@ -34,7 +30,6 @@ const GlobeComponent: React.FC<GlobeProps> = ({
 	
 	// 初期化フラグ
 	const isInitialized = useRef(false);
-	console.log('=== isInitialized 定義 ===', isInitialized.current);
 	
 	// カメラ状態の保存
 	const stateRef = useRef<{
@@ -47,10 +42,21 @@ const GlobeComponent: React.FC<GlobeProps> = ({
 		target: new THREE.Vector3(0, 0, 0),
 	});
 
+	// テクスチャ生成のキーをメモ化
+	const textureKey = useMemo(() => {
+		if (!customTexture || habitatPoints.length === 0) {
+			return customTexture || 'default';
+		}
+		const mapName = customTexture.replace(/^.*\/(Map.*\.jpg).*$/, '$1');
+		const pointsKey = habitatPoints.map(p => `${p.lat},${p.lng},${p.color},${p.size}`).join('|');
+		return `${mapName}_${pointsKey}`;
+	}, [customTexture, habitatPoints]);
+
 	const [customMapTexture, setCustomMapTexture] = useState<string | undefined>(undefined);
+	const [currentTextureKey, setCurrentTextureKey] = useState<string | undefined>(undefined);
 
 	// リサイズハンドラ
-	const handleResize = () => {
+	const handleResize = useCallback(() => {
 		if (!cameraRef.current || !rendererRef.current || !containerRef.current) return;
 		
 		const container = containerRef.current;
@@ -59,13 +65,10 @@ const GlobeComponent: React.FC<GlobeProps> = ({
 		cameraRef.current.aspect = width / height;
 		cameraRef.current.updateProjectionMatrix();
 		rendererRef.current.setSize(width, height);
-	};
+	}, []);
 
 	// 初期化処理（一度だけ実行）
-	const initializeScene = () => {
-		console.log('=== initializeScene 呼び出し ===');
-		console.log('containerRef.current:', !!containerRef.current);
-		console.log('isInitialized.current:', isInitialized.current);
+	const initializeScene = useCallback(() => {
 		if (!containerRef.current || isInitialized.current) return;
 
 		// シーンの作成
@@ -133,61 +136,78 @@ const GlobeComponent: React.FC<GlobeProps> = ({
 		window.addEventListener("resize", handleResize);
 
 		isInitialized.current = true;
-		console.log('=== 初期化完了 ===');
-	};
+	}, [handleResize]);
 
 	// テクスチャの更新処理
-	const updateTexture = async (textureUrl: string) => {
+	const updateTexture = useCallback(async (textureUrl: string) => {
 		if (!globeRef.current) return;
-		
-		console.log('=== updateTexture開始 ===');
-		console.log('textureUrl:', textureUrl);
-		console.log('textureUrl長さ:', textureUrl.length);
 		
 		try {
 			const texture = textureCache.current.get(textureUrl);
 			if (texture) {
-				console.log('キャッシュされたテクスチャを使用');
 				(globeRef.current.material as THREE.MeshPhongMaterial).map = texture;
 				(globeRef.current.material as THREE.MeshPhongMaterial).needsUpdate = true;
 			} else {
-				console.log('新しいテクスチャをロード開始');
 				const textureLoader = new THREE.TextureLoader();
-				textureLoader.load(
-					textureUrl,
-					(loadedTexture) => {
-						console.log('テクスチャ読み込み成功:', textureUrl);
-						textureCache.current.set(textureUrl, loadedTexture);
-						if (globeRef.current) {
-							(globeRef.current.material as THREE.MeshPhongMaterial).map = loadedTexture;
-							(globeRef.current.material as THREE.MeshPhongMaterial).needsUpdate = true;
+				
+				// data:image/png;base64の場合は直接処理
+				if (textureUrl.startsWith('data:image/')) {
+					const img = new Image();
+					img.crossOrigin = 'anonymous';
+					img.onload = () => {
+						const canvas = document.createElement('canvas');
+						const ctx = canvas.getContext('2d');
+						if (ctx) {
+							canvas.width = img.width;
+							canvas.height = img.height;
+							ctx.drawImage(img, 0, 0);
+							const texture = new THREE.CanvasTexture(canvas);
+							textureCache.current.set(textureUrl, texture);
+							if (globeRef.current) {
+								(globeRef.current.material as THREE.MeshPhongMaterial).map = texture;
+								(globeRef.current.material as THREE.MeshPhongMaterial).needsUpdate = true;
+							}
 						}
-					},
-					undefined,
-					(error) => {
-						console.error('テクスチャ読み込み失敗:', textureUrl, error);
-					}
-				);
+					};
+					img.onerror = (error) => {
+						const truncatedTextureUrl = textureUrl ? `${textureUrl.substring(0, 20)}...` : textureUrl;
+						const errorMessage = typeof error === 'string' ? error : String(error);
+						const truncatedError = errorMessage.length > 20 ? `${errorMessage.substring(0, 20)}...` : errorMessage;
+					};
+					img.src = textureUrl;
+				} else {
+					// 通常のURLの場合はTextureLoaderを使用
+					textureLoader.load(
+						textureUrl,
+						(loadedTexture) => {
+							textureCache.current.set(textureUrl, loadedTexture);
+							if (globeRef.current) {
+								(globeRef.current.material as THREE.MeshPhongMaterial).map = loadedTexture;
+								(globeRef.current.material as THREE.MeshPhongMaterial).needsUpdate = true;
+							}
+						},
+						undefined,
+						(error) => {
+							const truncatedTextureUrl = textureUrl ? `${textureUrl.substring(0, 20)}...` : textureUrl;
+							const errorMessage = typeof error === 'string' ? error : String(error);
+							const truncatedError = errorMessage.length > 20 ? `${errorMessage.substring(0, 20)}...` : errorMessage;
+						}
+					);
+				}
 			}
 		} catch (error) {
-			console.error('updateTexture処理エラー:', error);
 		}
-	};
+	}, []);
 
 	// 初期化処理
 	useEffect(() => {
-		console.log('=== 初期化useEffect実行 ===');
 		initializeScene();
-	}, []);
+	}, [initializeScene]);
 
 	// カスタムテクスチャの更新処理
 	useEffect(() => {
-		console.log('=== カスタムテクスチャ更新useEffect実行 ===');
-		console.log('isInitialized.current:', isInitialized.current);
-		console.log('customMapTexture:', customMapTexture);
 		if (!isInitialized.current) return;
 		if (cameraRef.current && controlsRef.current) {
-			console.log('=== カメラ状態保存 ===');
 			stateRef.current = {
 				cameraPosition: cameraRef.current.position.clone(),
 				cameraRotation: cameraRef.current.rotation.clone(),
@@ -197,46 +217,37 @@ const GlobeComponent: React.FC<GlobeProps> = ({
 		if (customMapTexture) {
 			updateTexture(customMapTexture);
 		}
-	}, [customMapTexture]);
+	}, [customMapTexture, updateTexture]);
 
-	// カスタムテクスチャの生成処理
+	// カスタムテクスチャの生成処理（最適化版）
 	useEffect(() => {
-		console.log('=== Globe.tsx テクスチャ生成処理開始 ===');
-		console.log('customTexture:', customTexture);
-		console.log('habitatPoints:', habitatPoints);
-		console.log('customMapTexture:', customMapTexture);
-		
-		// 既に同じテクスチャが設定されている場合はスキップ
-		if (customMapTexture === customTexture) {
-			console.log('同じテクスチャが既に設定されているためスキップ');
+		// 同じテクスチャキーの場合はスキップ
+		if (textureKey === currentTextureKey) {
 			return;
 		}
 		
 		if (customTexture && habitatPoints.length > 0) {
 			// 地図画像上にポイントを描画したテクスチャを生成
 			const mapName = customTexture.replace(/^.*\/(Map.*\.jpg).*$/, '$1');
-			console.log('generateMapWithHabitat呼び出し:', { mapName, habitatPoints });
 			
 			generateMapWithHabitat(mapName, habitatPoints as HabitatElement[])
 				.then((dataUrl) => {
-					console.log('generateMapWithHabitat成功 - dataURL長さ:', dataUrl.length);
 					setCustomMapTexture(dataUrl);
+					setCurrentTextureKey(textureKey);
 				})
 				.catch((error) => {
-					console.error('generateMapWithHabitat失敗:', error);
 					setCustomMapTexture(customTexture);
+					setCurrentTextureKey(textureKey);
 				});
 		} else {
-			console.log('habitatPointsが空またはcustomTextureなし - 通常のテクスチャを使用');
 			setCustomMapTexture(customTexture);
+			setCurrentTextureKey(textureKey);
 		}
-	}, [customTexture, habitatPoints, customMapTexture]);
+	}, [textureKey, currentTextureKey, customTexture, habitatPoints]);
 
 	// クリーンアップ処理
 	useEffect(() => {
-		console.log('=== GlobeComponent クリーンアップuseEffect実行 ===');
 		return () => {
-			console.log('=== GlobeComponent クリーンアップ実行 ===');
 			// テクスチャキャッシュのクリーンアップ
 			for (const texture of textureCache.current.values()) {
 				texture.dispose();
@@ -264,10 +275,10 @@ const GlobeComponent: React.FC<GlobeProps> = ({
 				rendererRef.current.dispose();
 			}
 
-					// イベントリスナーの削除
-		window.removeEventListener("resize", handleResize);
-	};
-	}, []);
+			// イベントリスナーの削除
+			window.removeEventListener("resize", handleResize);
+		};
+	}, [handleResize]);
 
 	return (
 		<div className="relative w-full h-full">
@@ -279,6 +290,8 @@ const GlobeComponent: React.FC<GlobeProps> = ({
 			<div ref={containerRef} className="w-full h-full" />
 		</div>
 	);
-};
+});
+
+GlobeComponent.displayName = 'GlobeComponent';
 
 export default GlobeComponent;
