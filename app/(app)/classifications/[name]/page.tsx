@@ -1,21 +1,23 @@
 "use client";
 
-import { useMemo, useState, useCallback } from "react";
+import { useState, useMemo, memo, useCallback } from "react";
+import { useParams } from "next/navigation";
+import useSWR from "swr";
+import Link from "next/link";
+import { Edit, Eye } from "lucide-react";
+
+import { Button } from "@/app/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/components/ui/tabs";
+import { ClassificationEditButton } from "@/app/components/classification/classification-edit-button";
 import { PostCards } from "@/app/components/post/post-cards";
 import PhylogeneticTreeArea from "@/app/components/phylogenetic/phylogenetic-tree-area";
 import GlobeArea from "@/app/components/habitat/globe-area";
-import { GeologicalAgeProvider, useGeologicalAge } from "@/app/components/geological/geological-context";
 import { GeologicalAgeCard } from "@/app/components/geological/geological-age-card";
-import { ClassificationEditButton } from "@/app/components/classification/classification-edit-button";
-import type { PostWithUser } from "@/app/types/types";
-import { useParams } from "next/navigation";
-import useSWR from "swr";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/components/ui/tabs";
-import { Button } from "@/app/components/ui/button";
-import { Edit, Eye } from "lucide-react";
-import Link from "next/link";
+import { GeologicalAgeProvider, useGeologicalAge } from "@/app/components/geological/geological-context";
 import { useUser } from "@/app/contexts/user-context";
 import geologicalAgesData from "@/app/data/geological-ages.json";
+
+import type { PostWithUser } from "@/app/types/types";
 
 // 分類情報の型定義
 interface Classification {
@@ -61,6 +63,329 @@ const fetcher = async (url: string) => {
 	}
 };
 
+// ClassificationContentコンポーネントをメモ化
+const ClassificationContent = memo(({
+	decodedName,
+	classification,
+	posts,
+	postsLoading,
+	postsError,
+	hasOverview,
+	hasPosts,
+	hasPhylogeneticTree,
+	hasGeographicData,
+	eraGroups,
+	activeTab,
+	setActiveTab,
+	handleLikeChange,
+	handlePostUpdate,
+	handlePostDelete,
+	mutatePosts,
+	isTreeCreator,
+	isGeographicDataCreator,
+	user
+}: {
+	decodedName: string;
+	classification: any;
+	posts: PostWithUser[];
+	postsLoading: boolean;
+	postsError: any;
+	hasOverview: boolean;
+	hasPosts: boolean;
+	hasPhylogeneticTree: boolean;
+	hasGeographicData: boolean;
+	eraGroups: any;
+	activeTab: string;
+	setActiveTab: (tab: string) => void;
+	handleLikeChange: (postId: string, likeCount: number, isLiked: boolean) => void;
+	handlePostUpdate: (postId: string) => void;
+	handlePostDelete: (postId: string) => void;
+	mutatePosts: () => void;
+	isTreeCreator: boolean;
+	isGeographicDataCreator: boolean;
+	user: any;
+}) => {
+	const { selectedAgeIds } = useGeologicalAge();
+
+	// 選択中の時代に一致するグループのみ抽出
+	const filteredEraGroups = useMemo(() => {
+		// デバッグ出力を削減（開発時のみ）
+		if (process.env.NODE_ENV === 'development') {
+			console.log('filteredEraGroups - eraGroups:', eraGroups);
+			console.log('filteredEraGroups - selectedAgeIds:', selectedAgeIds);
+		}
+		
+		if (!eraGroups || !selectedAgeIds || selectedAgeIds.length === 0) {
+			if (process.env.NODE_ENV === 'development') {
+				console.log('filteredEraGroups - No eraGroups or selectedAgeIds, returning empty array');
+			}
+			return [];
+		}
+		
+		// 選択された時代名を全階層対応で取得（階層優先順位付き）
+		const getSelectedAgeName = (selectedAgeIds: number[]): string | undefined => {
+			if (!selectedAgeIds || selectedAgeIds.length === 0) return undefined;
+			const id = selectedAgeIds[0];
+			console.log('getSelectedAgeName - selectedAgeIds:', selectedAgeIds, 'id:', id);
+			
+			// 階層の優先順位: Era > Period > Epoch > Age
+			// まずEraレベルで検索
+			for (const era of geologicalAgesData.eras) {
+				if (Number(era.id) === id) {
+					console.log('getSelectedAgeName - Era match found:', era.name);
+					return era.name;
+				}
+			}
+			
+			// Eraで見つからない場合、Periodレベルで検索
+			for (const era of geologicalAgesData.eras) {
+				for (const period of era.periods) {
+					if (Number(period.id) === id) {
+						console.log('getSelectedAgeName - Period match found:', period.name);
+						return period.name;
+					}
+				}
+			}
+			
+			// Periodで見つからない場合、Epochレベルで検索
+			for (const era of geologicalAgesData.eras) {
+				for (const period of era.periods) {
+					for (const epoch of period.epochs) {
+						if (Number(epoch.id) === id) {
+							console.log('getSelectedAgeName - Epoch match found:', epoch.name);
+							return epoch.name;
+						}
+					}
+				}
+			}
+			
+			// Epochで見つからない場合、Ageレベルで検索
+			for (const era of geologicalAgesData.eras) {
+				for (const period of era.periods) {
+					for (const epoch of period.epochs) {
+						if (epoch.ages) {
+							for (const age of epoch.ages) {
+								if (Number(age.id) === id) {
+									console.log('getSelectedAgeName - Age match found:', age.name);
+									return age.name;
+								}
+							}
+						}
+					}
+				}
+			}
+			
+			console.log('getSelectedAgeName - No match found for id:', id);
+			return undefined;
+		};
+		
+		const selectedAgeName = getSelectedAgeName(selectedAgeIds);
+		console.log('filteredEraGroups - selectedAgeName:', selectedAgeName);
+		if (!selectedAgeName) {
+			console.log('filteredEraGroups - No selectedAgeName found, returning empty array');
+			return [];
+		}
+		const filtered = eraGroups.filter((group: any) => group.era === selectedAgeName);
+		console.log('filteredEraGroups - filtered result:', filtered);
+		return filtered;
+	}, [selectedAgeIds, eraGroups]);
+
+	return (
+		<div className="container mx-auto px-4 py-8">
+			<div className="flex items-center justify-between mb-6">
+				<h1 className="text-2xl font-bold">{decodedName}</h1>
+				<ClassificationEditButton 
+					classification={classification || null} 
+					onUpdate={mutatePosts}
+				/>
+			</div>
+			
+			<Tabs defaultValue="overview" className="w-full" value={activeTab} onValueChange={setActiveTab}>
+				<TabsList className="grid w-full grid-cols-4">
+					<TabsTrigger value="overview">概要</TabsTrigger>
+					<TabsTrigger value="posts">投稿</TabsTrigger>
+					<TabsTrigger value="tree">系統樹</TabsTrigger>
+					<TabsTrigger value="globe">生息地</TabsTrigger>
+				</TabsList>
+				
+				<TabsContent value="overview" className="mt-6">
+					{hasOverview ? (
+						<div className="space-y-4">
+							{classification?.description && (
+								<div className="p-4 bg-gray-50 rounded-lg">
+									<h3 className="font-semibold mb-2">説明</h3>
+									<p className="text-gray-700">{classification.description}</p>
+								</div>
+							)}
+							{(classification?.english_name || classification?.scientific_name) && (
+								<div className="p-4 bg-gray-50 rounded-lg">
+									<h3 className="font-semibold mb-2">分類情報</h3>
+									<div className="space-y-2">
+										{classification?.english_name && (
+											<p><span className="font-medium">英語名:</span> {classification.english_name}</p>
+										)}
+										{classification?.scientific_name && (
+											<p><span className="font-medium">学名:</span> <em>{classification.scientific_name}</em></p>
+										)}
+									</div>
+								</div>
+							)}
+							{(classification?.era_start || classification?.era_end) && (
+								<div className="p-4 bg-gray-50 rounded-lg">
+									<h3 className="font-semibold mb-2">生息年代</h3>
+									<div className="space-y-2">
+										{classification?.era_start && (
+											<p><span className="font-medium">開始:</span> {classification.era_start}</p>
+										)}
+										{classification?.era_end && (
+											<p><span className="font-medium">終了:</span> {classification.era_end}</p>
+										)}
+									</div>
+								</div>
+							)}
+						</div>
+					) : (
+						<div className="flex items-center justify-center h-64 text-gray-500">
+							<p>概要が設定されていません</p>
+						</div>
+					)}
+				</TabsContent>
+				
+				<TabsContent value="posts" className="mt-6">
+					{postsLoading ? (
+						<div className="flex items-center justify-center h-64 text-gray-500">
+							<p>投稿を読み込み中...</p>
+						</div>
+					) : postsError ? (
+						<div className="flex items-center justify-center h-64 text-red-500">
+							<p>投稿の取得でエラーが発生しました</p>
+						</div>
+					) : hasPosts ? (
+						<PostCards 
+							posts={posts} 
+							onLikeChange={handleLikeChange}
+							onPostUpdate={handlePostUpdate}
+							onPostDelete={handlePostDelete}
+						/>
+					) : (
+						<div className="flex items-center justify-center h-64 text-gray-500">
+							<p>投稿がありません</p>
+						</div>
+					)}
+				</TabsContent>
+				
+				<TabsContent value="tree" className="mt-6">
+					{hasPhylogeneticTree ? (
+						<div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+							<div className="lg:col-span-3">
+								<PhylogeneticTreeArea 
+									customTreeContent={classification.phylogenetic_tree_file} 
+								/>
+							</div>
+							<div className="lg:col-span-1">
+								<GeologicalAgeCard enableMenu={true} />
+							</div>
+						</div>
+					) : (
+						<div className="text-center py-8">
+							<p className="text-gray-500 mb-4">系統樹が登録されていません</p>
+							{user && (
+								<Link href={`/classifications/${encodeURIComponent(decodedName)}/tree/edit`}>
+									<Button>
+										<Edit className="h-4 w-4 mr-2" />
+										系統樹を編集
+									</Button>
+								</Link>
+							)}
+						</div>
+					)}
+					
+					{/* 系統樹が存在する場合のボタン表示 */}
+					{hasPhylogeneticTree && (
+						<div className="mt-4 flex justify-center gap-4">
+							{isTreeCreator ? (
+								// 作成者の場合：編集ボタンを表示
+								<Link href={`/classifications/${encodeURIComponent(decodedName)}/tree/edit`}>
+									<Button>
+										<Edit className="h-4 w-4 mr-2" />
+										系統樹を編集
+									</Button>
+								</Link>
+							) : user ? (
+								// ログインユーザー（作成者以外）の場合：見るボタンを表示
+								<Link href={`/classifications/${encodeURIComponent(decodedName)}/tree/view`}>
+									<Button variant="outline">
+										<Eye className="h-4 w-4 mr-2" />
+										系統樹を見る
+									</Button>
+								</Link>
+							) : (
+								// ログインしていない場合：何も表示しない
+								null
+							)}
+						</div>
+					)}
+				</TabsContent>
+				
+				<TabsContent value="globe" className="mt-6">
+					{hasGeographicData ? (
+						<div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+							<div className="lg:col-span-3">
+								<GlobeArea 
+									customGeographicFile={classification.geographic_data_file}
+									eraGroups={filteredEraGroups}
+								/>
+							</div>
+							<div className="lg:col-span-1">
+								<GeologicalAgeCard enableMenu={true} />
+							</div>
+						</div>
+					) : (
+						<div className="text-center py-8">
+							<p className="text-gray-500 mb-4">生息地データが登録されていません</p>
+							<Link href={`/classifications/${encodeURIComponent(decodedName)}/habitat/edit`}>
+								<Button>
+									<Edit className="h-4 w-4 mr-2" />
+									生息地を編集
+								</Button>
+							</Link>
+						</div>
+					)}
+					
+					{/* 生息地データが存在する場合のボタン表示 */}
+					{hasGeographicData && (
+						<div className="mt-4 flex justify-center gap-4">
+							{isGeographicDataCreator ? (
+								// 作成者の場合：編集ボタンを表示
+								<Link href={`/classifications/${encodeURIComponent(decodedName)}/habitat/edit`}>
+									<Button>
+										<Edit className="h-4 w-4 mr-2" />
+										生息地を編集
+									</Button>
+								</Link>
+							) : user ? (
+								// ログインユーザー（作成者以外）の場合：見るボタンを表示
+								<Link href={`/classifications/${encodeURIComponent(decodedName)}/habitat/view`}>
+									<Button variant="outline">
+										<Eye className="h-4 w-4 mr-2" />
+										生息地を見る
+									</Button>
+								</Link>
+							) : (
+								// ログインしていない場合：何も表示しない
+								null
+							)}
+						</div>
+					)}
+				</TabsContent>
+			</Tabs>
+		</div>
+	);
+});
+
+// 表示名を設定
+ClassificationContent.displayName = 'ClassificationContent';
+
 export default function ClassificationPage() {
 	const params = useParams();
 	const decodedName = decodeURIComponent(params.name as string);
@@ -74,6 +399,7 @@ export default function ClassificationPage() {
 		{
 			revalidateOnFocus: false,
 			revalidateOnReconnect: false,
+			revalidateOnMount: true,
 			dedupingInterval: 30000,
 			refreshInterval: 0,
 			onSuccess: (data) => {
@@ -93,6 +419,7 @@ export default function ClassificationPage() {
 		{
 			revalidateOnFocus: false,
 			revalidateOnReconnect: false,
+			revalidateOnMount: true,
 			dedupingInterval: 30000,
 			refreshInterval: 0,
 			onSuccess: (data) => {
@@ -132,7 +459,7 @@ export default function ClassificationPage() {
 	}), [classification]);
 
 	// いいね状態変更のハンドラー
-	const handleLikeChange = (postId: string, likeCount: number, isLiked: boolean) => {
+	const handleLikeChange = useCallback((postId: string, likeCount: number, isLiked: boolean) => {
 		mutatePosts((currentData) => {
 			if (!currentData) return currentData;
 			return {
@@ -144,16 +471,16 @@ export default function ClassificationPage() {
 				)
 			};
 		}, false);
-	};
+	}, [mutatePosts]);
 
 	// 投稿更新のハンドラー
-	const handlePostUpdate = (postId: string) => {
+	const handlePostUpdate = useCallback((postId: string) => {
 		// 投稿データを再取得
 		mutatePosts();
-	};
+	}, [mutatePosts]);
 
 	// 投稿削除のハンドラー
-	const handlePostDelete = (postId: string) => {
+	const handlePostDelete = useCallback((postId: string) => {
 		mutatePosts((currentData) => {
 			if (!currentData) return currentData;
 			return {
@@ -161,23 +488,23 @@ export default function ClassificationPage() {
 				posts: currentData.posts.filter(post => post.id !== postId)
 			};
 		}, false);
-	};
+	}, [mutatePosts]);
 
 	// 系統樹作成者かどうかを判定
-	const isTreeCreator = user && classification?.phylogenetic_tree_creator === user.id;
+	const isTreeCreator = !!(user && classification?.phylogenetic_tree_creator === user.id);
 	
 	// 生息地データ作成者かどうかを判定
-	const isGeographicDataCreator = user && classification?.geographic_data_creator === user.id;
+	const isGeographicDataCreator = !!(user && classification?.geographic_data_creator === user.id);
 
 	// 分類情報の読み込み中
 	if (classificationLoading) return <div>分類情報を読み込み中...</div>;
 	if (classificationError) return <div>分類情報の取得でエラーが発生しました</div>;
 
 	// 各要素の存在チェック
-	const hasOverview = classification?.description || classification?.english_name || classification?.scientific_name || classification?.era_start || classification?.era_end;
+	const hasOverview = !!(classification?.description || classification?.english_name || classification?.scientific_name || classification?.era_start || classification?.era_end);
 	const hasPosts = posts.length > 0;
-	const hasPhylogeneticTree = classification?.phylogenetic_tree_file;
-	const hasGeographicData = classification?.geographic_data_file;
+	const hasPhylogeneticTree = !!classification?.phylogenetic_tree_file;
+	const hasGeographicData = !!classification?.geographic_data_file;
 
 	// デバッグ出力（開発時のみ）
 	if (process.env.NODE_ENV === 'development') {
@@ -186,289 +513,29 @@ export default function ClassificationPage() {
 		console.log('ClassificationPage - phylogenetic_tree_file:', debugInfo.phylogenetic_tree_file);
 	}
 
-	// GeologicalAgeProvider内で使用するコンポーネント
-	function ClassificationContent() {
-		const { selectedAgeIds } = useGeologicalAge();
-
-		// 選択中の時代に一致するグループのみ抽出
-		const filteredEraGroups = useMemo(() => {
-			// デバッグ出力を削減（開発時のみ）
-			if (process.env.NODE_ENV === 'development') {
-				console.log('filteredEraGroups - eraGroups:', eraGroups);
-				console.log('filteredEraGroups - selectedAgeIds:', selectedAgeIds);
-			}
-			
-			if (!eraGroups || !selectedAgeIds || selectedAgeIds.length === 0) {
-				if (process.env.NODE_ENV === 'development') {
-					console.log('filteredEraGroups - No eraGroups or selectedAgeIds, returning empty array');
-				}
-				return [];
-			}
-			
-			// 選択された時代名を全階層対応で取得（階層優先順位付き）
-			const getSelectedAgeName = (selectedAgeIds: number[]): string | undefined => {
-				if (!selectedAgeIds || selectedAgeIds.length === 0) return undefined;
-				const id = selectedAgeIds[0];
-				console.log('getSelectedAgeName - selectedAgeIds:', selectedAgeIds, 'id:', id);
-				
-				// 階層の優先順位: Era > Period > Epoch > Age
-				// まずEraレベルで検索
-				for (const era of geologicalAgesData.eras) {
-					if (Number(era.id) === id) {
-						console.log('getSelectedAgeName - Era match found:', era.name);
-						return era.name;
-					}
-				}
-				
-				// Eraで見つからない場合、Periodレベルで検索
-				for (const era of geologicalAgesData.eras) {
-					for (const period of era.periods) {
-						if (Number(period.id) === id) {
-							console.log('getSelectedAgeName - Period match found:', period.name);
-							return period.name;
-						}
-					}
-				}
-				
-				// Periodで見つからない場合、Epochレベルで検索
-				for (const era of geologicalAgesData.eras) {
-					for (const period of era.periods) {
-						for (const epoch of period.epochs) {
-							if (Number(epoch.id) === id) {
-								console.log('getSelectedAgeName - Epoch match found:', epoch.name);
-								return epoch.name;
-							}
-						}
-					}
-				}
-				
-				// Epochで見つからない場合、Ageレベルで検索
-				for (const era of geologicalAgesData.eras) {
-					for (const period of era.periods) {
-						for (const epoch of period.epochs) {
-							if (epoch.ages) {
-								for (const age of epoch.ages) {
-									if (Number(age.id) === id) {
-										console.log('getSelectedAgeName - Age match found:', age.name);
-										return age.name;
-									}
-								}
-							}
-						}
-					}
-				}
-				
-				console.log('getSelectedAgeName - No match found for id:', id);
-				return undefined;
-			};
-			
-			const selectedAgeName = getSelectedAgeName(selectedAgeIds);
-			console.log('filteredEraGroups - selectedAgeName:', selectedAgeName);
-			if (!selectedAgeName) {
-				console.log('filteredEraGroups - No selectedAgeName found, returning empty array');
-				return [];
-			}
-			const filtered = eraGroups.filter(group => group.era === selectedAgeName);
-			console.log('filteredEraGroups - filtered result:', filtered);
-			return filtered;
-		}, [selectedAgeIds, eraGroups]);
-
-		return (
-			<div className="container mx-auto px-4 py-8">
-				<div className="flex items-center justify-between mb-6">
-					<h1 className="text-2xl font-bold">{decodedName}</h1>
-					<ClassificationEditButton 
-						classification={classification || null} 
-						onUpdate={mutatePosts}
-					/>
-				</div>
-				
-				<Tabs defaultValue="overview" className="w-full" value={activeTab} onValueChange={setActiveTab}>
-					<TabsList className="grid w-full grid-cols-4">
-						<TabsTrigger value="overview">概要</TabsTrigger>
-						<TabsTrigger value="posts">投稿</TabsTrigger>
-						<TabsTrigger value="tree">系統樹</TabsTrigger>
-						<TabsTrigger value="globe">生息地</TabsTrigger>
-					</TabsList>
-					
-					<TabsContent value="overview" className="mt-6">
-						{hasOverview ? (
-							<div className="space-y-4">
-								{classification?.description && (
-									<div className="p-4 bg-gray-50 rounded-lg">
-										<h3 className="font-semibold mb-2">説明</h3>
-										<p className="text-gray-700">{classification.description}</p>
-									</div>
-								)}
-								{(classification?.english_name || classification?.scientific_name) && (
-									<div className="p-4 bg-gray-50 rounded-lg">
-										<h3 className="font-semibold mb-2">分類情報</h3>
-										<div className="space-y-2">
-											{classification?.english_name && (
-												<p><span className="font-medium">英語名:</span> {classification.english_name}</p>
-											)}
-											{classification?.scientific_name && (
-												<p><span className="font-medium">学名:</span> <em>{classification.scientific_name}</em></p>
-											)}
-										</div>
-									</div>
-								)}
-								{(classification?.era_start || classification?.era_end) && (
-									<div className="p-4 bg-gray-50 rounded-lg">
-										<h3 className="font-semibold mb-2">生息年代</h3>
-										<div className="space-y-2">
-											{classification?.era_start && (
-												<p><span className="font-medium">開始:</span> {classification.era_start}</p>
-											)}
-											{classification?.era_end && (
-												<p><span className="font-medium">終了:</span> {classification.era_end}</p>
-											)}
-										</div>
-									</div>
-								)}
-							</div>
-						) : (
-							<div className="flex items-center justify-center h-64 text-gray-500">
-								<p>概要が設定されていません</p>
-							</div>
-						)}
-					</TabsContent>
-					
-					<TabsContent value="posts" className="mt-6">
-						{postsLoading ? (
-							<div className="flex items-center justify-center h-64 text-gray-500">
-								<p>投稿を読み込み中...</p>
-							</div>
-						) : postsError ? (
-							<div className="flex items-center justify-center h-64 text-red-500">
-								<p>投稿の取得でエラーが発生しました</p>
-							</div>
-						) : hasPosts ? (
-							<PostCards 
-								posts={posts} 
-								onLikeChange={handleLikeChange}
-								onPostUpdate={handlePostUpdate}
-								onPostDelete={handlePostDelete}
-							/>
-						) : (
-							<div className="flex items-center justify-center h-64 text-gray-500">
-								<p>投稿がありません</p>
-							</div>
-						)}
-					</TabsContent>
-					
-					<TabsContent value="tree" className="mt-6">
-						{hasPhylogeneticTree ? (
-							<div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-								<div className="lg:col-span-3">
-									<PhylogeneticTreeArea 
-										customTreeContent={classification.phylogenetic_tree_file} 
-									/>
-								</div>
-								<div className="lg:col-span-1">
-									<GeologicalAgeCard enableMenu={true} />
-								</div>
-							</div>
-						) : (
-							<div className="text-center py-8">
-								<p className="text-gray-500 mb-4">系統樹が登録されていません</p>
-								{user && (
-									<Link href={`/classifications/${encodeURIComponent(decodedName)}/tree/edit`}>
-										<Button>
-											<Edit className="h-4 w-4 mr-2" />
-											系統樹を編集
-										</Button>
-									</Link>
-								)}
-							</div>
-						)}
-						
-						{/* 系統樹が存在する場合のボタン表示 */}
-						{hasPhylogeneticTree && (
-							<div className="mt-4 flex justify-center gap-4">
-								{isTreeCreator ? (
-									// 作成者の場合：編集ボタンを表示
-									<Link href={`/classifications/${encodeURIComponent(decodedName)}/tree/edit`}>
-										<Button>
-											<Edit className="h-4 w-4 mr-2" />
-											系統樹を編集
-										</Button>
-									</Link>
-								) : user ? (
-									// ログインユーザー（作成者以外）の場合：見るボタンを表示
-									<Link href={`/classifications/${encodeURIComponent(decodedName)}/tree/view`}>
-										<Button variant="outline">
-											<Eye className="h-4 w-4 mr-2" />
-											系統樹を見る
-										</Button>
-									</Link>
-								) : (
-									// ログインしていない場合：何も表示しない
-									null
-								)}
-							</div>
-						)}
-					</TabsContent>
-					
-					<TabsContent value="globe" className="mt-6">
-						{hasGeographicData ? (
-							<div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-								<div className="lg:col-span-3">
-									<GlobeArea 
-										customGeographicFile={classification.geographic_data_file}
-										eraGroups={filteredEraGroups}
-									/>
-								</div>
-								<div className="lg:col-span-1">
-									<GeologicalAgeCard enableMenu={true} />
-								</div>
-							</div>
-						) : (
-							<div className="text-center py-8">
-								<p className="text-gray-500 mb-4">生息地データが登録されていません</p>
-								<Link href={`/classifications/${encodeURIComponent(decodedName)}/habitat/edit`}>
-									<Button>
-										<Edit className="h-4 w-4 mr-2" />
-										生息地を編集
-									</Button>
-								</Link>
-							</div>
-						)}
-						
-						{/* 生息地データが存在する場合のボタン表示 */}
-						{hasGeographicData && (
-							<div className="mt-4 flex justify-center gap-4">
-								{isGeographicDataCreator ? (
-									// 作成者の場合：編集ボタンを表示
-									<Link href={`/classifications/${encodeURIComponent(decodedName)}/habitat/edit`}>
-										<Button>
-											<Edit className="h-4 w-4 mr-2" />
-											生息地を編集
-										</Button>
-									</Link>
-								) : user ? (
-									// ログインユーザー（作成者以外）の場合：見るボタンを表示
-									<Link href={`/classifications/${encodeURIComponent(decodedName)}/habitat/view`}>
-										<Button variant="outline">
-											<Eye className="h-4 w-4 mr-2" />
-											生息地を見る
-										</Button>
-									</Link>
-								) : (
-									// ログインしていない場合：何も表示しない
-									null
-								)}
-							</div>
-						)}
-					</TabsContent>
-				</Tabs>
-			</div>
-		);
-	}
-
 	return (
 		<GeologicalAgeProvider>
-			<ClassificationContent />
+			<ClassificationContent 
+				decodedName={decodedName}
+				classification={classification}
+				posts={posts}
+				postsLoading={postsLoading}
+				postsError={postsError}
+				hasOverview={hasOverview}
+				hasPosts={hasPosts}
+				hasPhylogeneticTree={hasPhylogeneticTree}
+				hasGeographicData={hasGeographicData}
+				eraGroups={eraGroups}
+				activeTab={activeTab}
+				setActiveTab={setActiveTab}
+				handleLikeChange={handleLikeChange}
+				handlePostUpdate={handlePostUpdate}
+				handlePostDelete={handlePostDelete}
+				mutatePosts={mutatePosts}
+				isTreeCreator={isTreeCreator}
+				isGeographicDataCreator={isGeographicDataCreator}
+				user={user}
+			/>
 		</GeologicalAgeProvider>
 	);
 }

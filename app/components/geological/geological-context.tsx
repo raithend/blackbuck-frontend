@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-import { createContext, useContext, useState, useMemo, useCallback } from "react";
+import { createContext, useContext, useState, useMemo, useCallback, useRef, memo } from "react";
 
 interface GeologicalAgeContextType {
 	selectedMap: string;
@@ -17,13 +17,26 @@ const GeologicalAgeContext = createContext<GeologicalAgeContextType>({
 	setSelectedAgeIds: () => {},
 });
 
-export function GeologicalAgeProvider({
+// プロバイダーコンポーネントをメモ化
+const GeologicalAgeProviderComponent = memo(({
 	children,
-}: { children: React.ReactNode }) {
+}: { children: React.ReactNode }) => {
 	const [selectedMap, setSelectedMap] = useState<string>("");
 	const [selectedAgeIds, setSelectedAgeIds] = useState<number[]>([]);
+	
+	// 状態の安定化のためのref
+	const stateRef = useRef({
+		selectedMap,
+		selectedAgeIds,
+	});
+	
+	// 現在の状態をrefに同期
+	stateRef.current = {
+		selectedMap,
+		selectedAgeIds,
+	};
 
-	// 関数をメモ化
+	// 関数をメモ化（依存関係を空にして安定化）
 	const memoizedSetSelectedMap = useCallback((map: string) => {
 		console.log('GeologicalAgeContext - setSelectedMap呼び出し:', map);
 		setSelectedMap(map);
@@ -34,7 +47,7 @@ export function GeologicalAgeProvider({
 		setSelectedAgeIds(ids);
 	}, []);
 
-	// コンテキスト値をメモ化
+	// コンテキスト値をメモ化（依存関係を最小限に）
 	const contextValue = useMemo(() => ({
 		selectedMap,
 		selectedAgeIds,
@@ -47,6 +60,16 @@ export function GeologicalAgeProvider({
 			{children}
 		</GeologicalAgeContext.Provider>
 	);
+});
+
+// 表示名を設定
+GeologicalAgeProviderComponent.displayName = 'GeologicalAgeProviderComponent';
+
+// エクスポート用のラッパー
+export function GeologicalAgeProvider({
+	children,
+}: { children: React.ReactNode }) {
+	return <GeologicalAgeProviderComponent>{children}</GeologicalAgeProviderComponent>;
 }
 
 export function useGeologicalAge() {
