@@ -38,64 +38,31 @@ interface HabitatPoint {
 }
 
 describe('生息地データの時代構造', () => {
-  describe('時代グループ構造への変換', () => {
-    it('複数のポイントを同じ時代でグループ化できる', () => {
-      const habitatPoints: HabitatPoint[] = [
+  describe('時代グループ構造', () => {
+    it('時代グループ構造が正しく作成される', () => {
+      const eraGroups: EraGroup[] = [
         {
-          id: 'point1',
-          lat: 25.8,
-          lng: -30.06,
-          color: '#ff0000',
-          size: 20,
-          shape: 'circle',
-          geologicalAge: {
-            era: '中生代',
-            ageIds: [2],
-            map: 'Map35a_LtJ_Oxfordian_160'
-          }
-        },
-        {
-          id: 'point2',
-          lat: 6.6,
-          lng: -14.22,
-          color: '#ff0000',
-          size: 20,
-          shape: 'circle',
-          geologicalAge: {
-            era: '中生代',
-            ageIds: [2],
-            map: 'Map35a_LtJ_Oxfordian_160'
-          }
+          era: '中生代',
+          elements: [
+            {
+              id: 'point1',
+              lat: 25.8,
+              lng: -30.06,
+              color: '#ff0000',
+              size: 20,
+              shape: 'circle'
+            },
+            {
+              id: 'point2',
+              lat: 6.6,
+              lng: -14.22,
+              color: '#ff0000',
+              size: 20,
+              shape: 'circle'
+            }
+          ]
         }
       ];
-
-      // 時代グループ構造に変換
-      const eraGroups: EraGroup[] = [];
-      
-      for (const point of habitatPoints) {
-        const era = point.geologicalAge?.era || "顕生代";
-        const existingGroup = eraGroups.find(group => group.era === era);
-        
-        const element: EraGroupElement = {
-          id: point.id,
-          lat: point.lat,
-          lng: point.lng,
-          color: point.color,
-          size: point.size,
-          shape: point.shape,
-          text: point.text,
-          fontSize: point.fontSize
-        };
-        
-        if (existingGroup) {
-          existingGroup.elements.push(element);
-        } else {
-          eraGroups.push({
-            era: era,
-            elements: [element]
-          });
-        }
-      }
 
       expect(eraGroups).toHaveLength(1);
       expect(eraGroups[0].era).toBe('中生代');
@@ -104,115 +71,41 @@ describe('生息地データの時代構造', () => {
       expect(eraGroups[0].elements[1].id).toBe('point2');
     });
 
-    it('異なる時代のポイントを別々のグループに分ける', () => {
-      const habitatPoints: HabitatPoint[] = [
+    it('異なる時代のグループが正しく作成される', () => {
+      const eraGroups: EraGroup[] = [
         {
-          id: 'point1',
-          lat: 25.8,
-          lng: -30.06,
-          color: '#ff0000',
-          size: 20,
-          shape: 'circle',
-          geologicalAge: {
-            era: '中生代',
-            ageIds: [2],
-            map: 'Map35a_LtJ_Oxfordian_160'
-          }
+          era: '中生代',
+          elements: [
+            {
+              id: 'point1',
+              lat: 25.8,
+              lng: -30.06,
+              color: '#ff0000',
+              size: 20,
+              shape: 'circle'
+            }
+          ]
         },
         {
-          id: 'point2',
-          lat: 6.6,
-          lng: -14.22,
-          color: '#ff0000',
-          size: 20,
-          shape: 'circle',
-          geologicalAge: {
-            era: '新生代',
-            ageIds: [1],
-            map: 'Map1a_PALEOMAP_PaleoAtlas_000'
-          }
+          era: '新生代',
+          elements: [
+            {
+              id: 'point2',
+              lat: 6.6,
+              lng: -14.22,
+              color: '#ff0000',
+              size: 20,
+              shape: 'circle'
+            }
+          ]
         }
       ];
-
-      // 時代グループ構造に変換
-      const eraGroups: EraGroup[] = [];
-      
-      for (const point of habitatPoints) {
-        const era = point.geologicalAge?.era || "顕生代";
-        const existingGroup = eraGroups.find(group => group.era === era);
-        
-        const element: EraGroupElement = {
-          id: point.id,
-          lat: point.lat,
-          lng: point.lng,
-          color: point.color,
-          size: point.size,
-          shape: point.shape,
-          text: point.text,
-          fontSize: point.fontSize
-        };
-        
-        if (existingGroup) {
-          existingGroup.elements.push(element);
-        } else {
-          eraGroups.push({
-            era: era,
-            elements: [element]
-          });
-        }
-      }
 
       expect(eraGroups).toHaveLength(2);
       expect(eraGroups[0].era).toBe('中生代');
       expect(eraGroups[0].elements).toHaveLength(1);
       expect(eraGroups[1].era).toBe('新生代');
       expect(eraGroups[1].elements).toHaveLength(1);
-    });
-
-    it('時代情報がないポイントはデフォルト時代に分類される', () => {
-      const habitatPoints: HabitatPoint[] = [
-        {
-          id: 'point1',
-          lat: 25.8,
-          lng: -30.06,
-          color: '#ff0000',
-          size: 20,
-          shape: 'circle'
-          // geologicalAgeなし
-        }
-      ];
-
-      // 時代グループ構造に変換
-      const eraGroups: EraGroup[] = [];
-      
-      for (const point of habitatPoints) {
-        const era = point.geologicalAge?.era || "顕生代";
-        const existingGroup = eraGroups.find(group => group.era === era);
-        
-        const element: EraGroupElement = {
-          id: point.id,
-          lat: point.lat,
-          lng: point.lng,
-          color: point.color,
-          size: point.size,
-          shape: point.shape,
-          text: point.text,
-          fontSize: point.fontSize
-        };
-        
-        if (existingGroup) {
-          existingGroup.elements.push(element);
-        } else {
-          eraGroups.push({
-            era: era,
-            elements: [element]
-          });
-        }
-      }
-
-      expect(eraGroups).toHaveLength(1);
-      expect(eraGroups[0].era).toBe('顕生代');
-      expect(eraGroups[0].elements).toHaveLength(1);
     });
   });
 

@@ -11,6 +11,7 @@ import { GeologicalAgeCard } from "@/app/components/geological/geological-age-ca
 import { GeologicalAgeProvider } from "@/app/components/geological/geological-context";
 import { toast } from "sonner";
 import type { MutableRefObject } from "react";
+import type { EraGroup } from "@/app/components/habitat/types";
 
 interface HabitatData {
 	lat: number;
@@ -55,16 +56,13 @@ interface EraGroupElement {
 	fontSize?: number;
 }
 
-interface EraGroup {
-	era: string;
-	elements: EraGroupElement[];
-}
+
 
 export default function HabitatEditPage() {
 	const params = useParams();
 	const router = useRouter();
 	const decodedName = decodeURIComponent(params.name as string);
-	const [habitatData, setHabitatData] = useState<HabitatData[]>([]);
+	const [habitatData, setHabitatData] = useState<EraGroup[]>([]);
 	const [isLoading, setIsLoading] = useState(false);
 	const [isSaving, setIsSaving] = useState(false);
 	const [currentMap, setCurrentMap] = useState("Map1a_PALEOMAP_PaleoAtlas_000.jpg");
@@ -86,18 +84,23 @@ export default function HabitatEditPage() {
 		}));
 	};
 
-	// HabitatPointをHabitatDataに変換
-	const convertToHabitatData = (points: HabitatPoint[]): HabitatData[] => {
-		return points.map((point) => ({
-			lat: point.lat,
-			lng: point.lng,
-			color: point.color,
-			size: point.size,
-			label: point.label,
-			maxR: point.maxR,
-			text: point.text,
-			fontSize: point.fontSize,
-		}));
+	// EraGroupからHabitatDataを抽出
+	const extractHabitatData = (eraGroups: EraGroup[]): HabitatData[] => {
+		const habitatData: HabitatData[] = [];
+		for (const group of eraGroups) {
+			for (const element of group.elements) {
+				habitatData.push({
+					lat: element.lat,
+					lng: element.lng,
+					color: element.color,
+					size: element.size,
+					label: element.text,
+					text: element.text,
+					fontSize: element.fontSize,
+				});
+			}
+		}
+		return habitatData;
 	};
 
 	// 分類情報と生息地データを取得
@@ -110,10 +113,17 @@ export default function HabitatEditPage() {
 					const data = await response.json();
 					if (data.classification?.geographic_data_file) {
 						try {
-							const habitatData = JSON.parse(data.classification.geographic_data_file);
-							setHabitatData(habitatData);
+							const parsedData = JSON.parse(data.classification.geographic_data_file);
+							// 新しい構造（EraGroup[]）の場合はそのまま使用
+							if (Array.isArray(parsedData) && parsedData.length > 0 && 'era' in parsedData[0]) {
+								setHabitatData(parsedData);
+							} else {
+								// 古い構造の場合は空配列を設定
+								setHabitatData([]);
+							}
 						} catch (error) {
 							console.error('生息地データのパースに失敗しました:', error);
+							setHabitatData([]);
 						}
 					}
 				}
@@ -128,7 +138,7 @@ export default function HabitatEditPage() {
 	}, [decodedName]);
 
 	// 保存処理
-	const handleSave = async (habitatData: HabitatPoint[]) => {
+	const handleSave = async (habitatData: EraGroup[]) => {
 		const supabase = createClient();
 		const { data: { user } } = await supabase.auth.getUser();
 		
@@ -138,58 +148,10 @@ export default function HabitatEditPage() {
 		try {
 			const { data: { session } } = await supabase.auth.getSession();
 			
-			// 時代情報を含むJSONを生成
-			const habitatDataWithAge = habitatData.map(point => {
-				// ポイントに時代情報がない場合はデフォルト値を設定
-				if (!point.geologicalAge) {
-					return {
-						...point,
-						geologicalAge: {
-							era: "顕生代",
-							period: undefined,
-							epoch: undefined,
-							age: undefined,
-							ageIds: [],
-							map: undefined
-						}
-					};
-				}
-				return point;
-			});
-			
-			// 新しい構造（時代グループ）に変換
-			const eraGroups: EraGroup[] = [];
-			
-			for (const point of habitatDataWithAge) {
-				const era = point.geologicalAge?.era || "顕生代";
-				const existingGroup = eraGroups.find(group => group.era === era);
-				
-				// geologicalAgeを除去した要素を作成
-				const element: EraGroupElement = {
-					id: point.id,
-					lat: point.lat,
-					lng: point.lng,
-					color: point.color,
-					size: point.size,
-					shape: point.shape,
-					text: point.text,
-					fontSize: point.fontSize
-				};
-				
-				if (existingGroup) {
-					existingGroup.elements.push(element);
-				} else {
-					eraGroups.push({
-						era: era,
-						elements: [element]
-					});
-				}
-			}
-			
 			// 新しい構造をJSON文字列に変換
-			const geographicDataFile = JSON.stringify(eraGroups);
+			const geographicDataFile = JSON.stringify(habitatData);
 			
-			console.log('保存する生息地データ（新しい構造）:', eraGroups);
+			console.log('保存する生息地データ（新しい構造）:', habitatData);
 			
 			const response = await fetch(`/api/classifications/${encodeURIComponent(decodedName)}`, {
 				method: 'PUT',
@@ -217,9 +179,8 @@ export default function HabitatEditPage() {
 	};
 
 	// FabricHabitatEditorからのデータ変更を処理
-	const handleHabitatDataChange = (points: HabitatPoint[]) => {
-		const newHabitatData = convertToHabitatData(points);
-		setHabitatData(newHabitatData);
+	const handleHabitatDataChange = (eraGroups: EraGroup[]) => {
+		setHabitatData(eraGroups);
 	};
 
 	// 地図変更時の処理
@@ -255,7 +216,7 @@ export default function HabitatEditPage() {
 				<div className="mb-8">
 					<FabricHabitatEditor
 						ref={habitatEditorRef}
-						habitatData={convertToHabitatPoints(habitatData)}
+						habitatData={habitatData}
 						onSave={handleSave}
 						showMapSelector={true}
 						onMapChange={handleMapChange}
@@ -274,13 +235,13 @@ export default function HabitatEditPage() {
 							<div className="w-full h-full" style={{ height: '500px' }}>
 								<Globe 
 									customTexture={`/PALEOMAP_PaleoAtlas_Rasters_v3/${currentMap}`}
-									habitatPoints={habitatData}
+									habitatPoints={extractHabitatData(habitatData)}
 								/>
 							</div>
 							<div className="flex justify-end px-4 pb-4">
 								<Button onClick={() => {
 									if (habitatEditorRef.current) {
-										setHabitatData(habitatEditorRef.current.getHabitatPoints());
+										// エディターから現在のデータを取得して更新
 										setCurrentMap(`${currentMap}?t=${Date.now()}`);
 									}
 								}}>

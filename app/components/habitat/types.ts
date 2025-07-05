@@ -1,4 +1,4 @@
-import type { Object as FabricObject } from "fabric";
+import type { FabricObject } from "fabric";
 
 export interface HabitatPoint {
 	id: string;
@@ -28,8 +28,8 @@ export interface EraGroup {
 }
 
 export interface FabricHabitatEditorProps {
-	habitatData?: HabitatPoint[];
-	onSave?: (data: HabitatPoint[]) => void;
+	habitatData?: EraGroup[];
+	onSave?: (data: EraGroup[]) => void;
 	showMapSelector?: boolean;
 	width?: number;
 	height?: number;

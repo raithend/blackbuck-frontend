@@ -54,6 +54,7 @@ const GlobeComponent: React.FC<GlobeProps> = ({
 		cameraRef.current.aspect = width / height;
 		cameraRef.current.updateProjectionMatrix();
 		rendererRef.current.setSize(width, height);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
 	// 初期化処理（一度だけ実行）
@@ -125,6 +126,7 @@ const GlobeComponent: React.FC<GlobeProps> = ({
 		window.addEventListener("resize", handleResize);
 
 		isInitialized.current = true;
+	// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
 	// テクスチャの更新処理
@@ -168,6 +170,7 @@ const GlobeComponent: React.FC<GlobeProps> = ({
 	// 初期化処理
 	useEffect(() => {
 		initializeScene();
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
 	// カスタムテクスチャの更新処理
@@ -183,6 +186,7 @@ const GlobeComponent: React.FC<GlobeProps> = ({
 		if (customMapTexture) {
 			updateTexture(customMapTexture);
 		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [customMapTexture]);
 
 	// カスタムテクスチャの生成処理
@@ -244,6 +248,7 @@ const GlobeComponent: React.FC<GlobeProps> = ({
 			// イベントリスナーの削除
 			window.removeEventListener("resize", handleResize);
 		};
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
 	return (

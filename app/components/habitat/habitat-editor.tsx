@@ -274,34 +274,51 @@ const FabricHabitatEditor = forwardRef(function FabricHabitatEditor({
 		console.log('現在のselectedAgeIds:', selectedAgeIds);
 		console.log('現在のselectedMap:', selectedMap);
 		
-		// 時代情報を含むデータを生成
-		const habitatDataWithAge = habitatPoints.map(point => {
-			// ポイントに時代情報がない場合は現在選択されている時代を設定
-			if (!point.geologicalAge) {
-				const currentAgeInfo = getCurrentGeologicalAgeInfo();
-				console.log('getCurrentGeologicalAgeInfo結果:', currentAgeInfo);
-				return {
-					...point,
-					geologicalAge: currentAgeInfo
-				};
-			}
-			return point;
-		});
+		// 現在選択されている時代情報を取得
+		const currentAgeInfo = getCurrentGeologicalAgeInfo();
+		console.log('getCurrentGeologicalAgeInfo結果:', currentAgeInfo);
 		
-		console.log('保存するデータ:', habitatDataWithAge);
-		console.log('保存するデータ詳細:', habitatDataWithAge.map(point => ({
+		// 新しい時代グループ構造に変換
+		const eraGroups: Array<{
+			era: string;
+			elements: Array<{
+				id: string;
+				lat: number;
+				lng: number;
+				color: string;
+				size: number;
+				shape: string;
+				text?: string;
+				fontSize?: number;
+			}>;
+		}> = [];
+		
+		// 現在選択されている時代でグループを作成
+		const era = currentAgeInfo?.era || "顕生代";
+		const elements = habitatPoints.map(point => ({
 			id: point.id,
-			shape: point.shape,
-			text: point.text,
-			fontSize: point.fontSize,
+			lat: point.lat,
+			lng: point.lng,
 			color: point.color,
 			size: point.size,
-			geologicalAge: point.geologicalAge
-		})));
+			shape: point.shape,
+			text: point.text,
+			fontSize: point.fontSize
+		}));
+		
+		if (elements.length > 0) {
+			eraGroups.push({
+				era: era,
+				elements: elements
+			});
+		}
+		
+		console.log('保存する時代グループデータ:', eraGroups);
 		
 		if (onSave) {
-			onSave(habitatDataWithAge);
-			console.log('onSave関数を呼び出しました');
+			// 新しい構造で保存
+			onSave(eraGroups);
+			console.log('onSave関数を呼び出しました（新しい構造）');
 		} else {
 			console.log('onSave関数が定義されていません');
 		}

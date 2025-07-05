@@ -1,10 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useCallback } from "react";
 import { PostCards } from "@/app/components/post/post-cards";
 import PhylogeneticTreeArea from "@/app/components/phylogenetic/phylogenetic-tree-area";
 import GlobeArea from "@/app/components/habitat/globe-area";
-import { GeologicalAgeProvider } from "@/app/components/geological/geological-context";
+import { GeologicalAgeProvider, useGeologicalAge } from "@/app/components/geological/geological-context";
 import { GeologicalAgeCard } from "@/app/components/geological/geological-age-card";
 import { ClassificationEditButton } from "@/app/components/classification/classification-edit-button";
 import type { PostWithUser } from "@/app/types/types";
@@ -15,6 +15,7 @@ import { Button } from "@/app/components/ui/button";
 import { Edit, Eye } from "lucide-react";
 import Link from "next/link";
 import { useUser } from "@/app/contexts/user-context";
+import geologicalAgesData from "@/app/data/geological-ages.json";
 
 // 分類情報の型定義
 interface Classification {
@@ -108,19 +109,14 @@ export default function ClassificationPage() {
 	const classification = classificationData?.classification;
 	const posts = postsData?.posts || [];
 
-
-
 	// 時代グループデータをメモ化
 	const eraGroups = useMemo(() => {
 		if (!classification?.geographic_data_file) return undefined;
 		try {
 			const parsedData = JSON.parse(classification.geographic_data_file);
-			
-			// 時代グループ構造の場合：そのまま返す
 			if (Array.isArray(parsedData) && parsedData.length > 0 && parsedData[0].era && parsedData[0].elements) {
 				return parsedData;
 			}
-			// データが不正な場合はundefinedを返す
 			return undefined;
 		} catch (error) {
 			console.error('生息地データのパースに失敗しました:', error);
@@ -181,9 +177,92 @@ export default function ClassificationPage() {
 	console.log('ClassificationPage - hasPhylogeneticTree:', hasPhylogeneticTree);
 	console.log('ClassificationPage - phylogenetic_tree_file:', classification?.phylogenetic_tree_file);
 
-	return (
-		<GeologicalAgeProvider>
-		<div className="container mx-auto px-4 py-8">
+	// GeologicalAgeProvider内で使用するコンポーネント
+	function ClassificationContent() {
+		const { selectedAgeIds } = useGeologicalAge();
+
+		// 選択中の時代に一致するグループのみ抽出
+		const filteredEraGroups = useMemo(() => {
+			console.log('filteredEraGroups - eraGroups:', eraGroups);
+			console.log('filteredEraGroups - selectedAgeIds:', selectedAgeIds);
+			console.log('ClassificationPage - selectedAgeIds:', selectedAgeIds);
+			console.log('ClassificationPage - eraGroups:', eraGroups);
+			if (!eraGroups) return [];
+			if (!selectedAgeIds || selectedAgeIds.length === 0) {
+				console.log('filteredEraGroups - No selectedAgeIds, returning empty array');
+				return [];
+			}
+			
+			// 選択された時代名を全階層対応で取得（階層優先順位付き）
+			const getSelectedAgeName = (selectedAgeIds: number[]): string | undefined => {
+				if (!selectedAgeIds || selectedAgeIds.length === 0) return undefined;
+				const id = selectedAgeIds[0];
+				console.log('getSelectedAgeName - selectedAgeIds:', selectedAgeIds, 'id:', id);
+				
+				// 階層の優先順位: Era > Period > Epoch > Age
+				// まずEraレベルで検索
+				for (const era of geologicalAgesData.eras) {
+					if (Number(era.id) === id) {
+						console.log('getSelectedAgeName - Era match found:', era.name);
+						return era.name;
+					}
+				}
+				
+				// Eraで見つからない場合、Periodレベルで検索
+				for (const era of geologicalAgesData.eras) {
+					for (const period of era.periods) {
+						if (Number(period.id) === id) {
+							console.log('getSelectedAgeName - Period match found:', period.name);
+							return period.name;
+						}
+					}
+				}
+				
+				// Periodで見つからない場合、Epochレベルで検索
+				for (const era of geologicalAgesData.eras) {
+					for (const period of era.periods) {
+						for (const epoch of period.epochs) {
+							if (Number(epoch.id) === id) {
+								console.log('getSelectedAgeName - Epoch match found:', epoch.name);
+								return epoch.name;
+							}
+						}
+					}
+				}
+				
+				// Epochで見つからない場合、Ageレベルで検索
+				for (const era of geologicalAgesData.eras) {
+					for (const period of era.periods) {
+						for (const epoch of period.epochs) {
+							if (epoch.ages) {
+								for (const age of epoch.ages) {
+									if (Number(age.id) === id) {
+										console.log('getSelectedAgeName - Age match found:', age.name);
+										return age.name;
+									}
+								}
+							}
+						}
+					}
+				}
+				
+				console.log('getSelectedAgeName - No match found for id:', id);
+				return undefined;
+			};
+			
+			const selectedAgeName = getSelectedAgeName(selectedAgeIds);
+			console.log('filteredEraGroups - selectedAgeName:', selectedAgeName);
+			if (!selectedAgeName) {
+				console.log('filteredEraGroups - No selectedAgeName found, returning empty array');
+				return [];
+			}
+			const filtered = eraGroups.filter(group => group.era === selectedAgeName);
+			console.log('filteredEraGroups - filtered result:', filtered);
+			return filtered;
+		}, [selectedAgeIds, eraGroups]);
+
+		return (
+			<div className="container mx-auto px-4 py-8">
 				<div className="flex items-center justify-between mb-6">
 					<h1 className="text-2xl font-bold">{decodedName}</h1>
 					<ClassificationEditButton 
@@ -325,7 +404,7 @@ export default function ClassificationPage() {
 								<div className="lg:col-span-3">
 									<GlobeArea 
 										customGeographicFile={classification.geographic_data_file}
-										eraGroups={eraGroups}
+										eraGroups={filteredEraGroups}
 									/>
 								</div>
 								<div className="lg:col-span-1">
@@ -371,7 +450,13 @@ export default function ClassificationPage() {
 						)}
 					</TabsContent>
 				</Tabs>
-		</div>
+			</div>
+		);
+	}
+
+	return (
+		<GeologicalAgeProvider>
+			<ClassificationContent />
 		</GeologicalAgeProvider>
 	);
 }

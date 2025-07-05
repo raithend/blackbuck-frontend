@@ -21,7 +21,8 @@ import { useCallback, useEffect, useState } from "react";
 import { useGeologicalAge } from "./geological-context";
 import { Menu } from "lucide-react";
 
-interface GeologicalAge {
+// 共通のベースインターフェース
+interface BaseGeologicalUnit {
 	id: string;
 	name: string;
 	nameEn: string;
@@ -32,36 +33,44 @@ interface GeologicalAge {
 	map?: string;
 }
 
-interface Epoch {
-	id: string;
-	name: string;
-	nameEn: string;
-	startAge: number;
-	endAge: number;
-	description?: string;
-	descriptionEn?: string;
+// 最下位の時代（Age）
+interface GeologicalAge extends BaseGeologicalUnit {
+	// 追加のプロパティがあればここに定義
+}
+
+// 時代（Epoch）: 複数のAgeを含む
+interface Epoch extends BaseGeologicalUnit {
 	ages?: GeologicalAge[];
-	map?: string;
 }
 
-interface Period {
-	id: string;
-	name: string;
-	nameEn: string;
-	startAge: number;
-	endAge: number;
+// 紀（Period）: 複数のEpochを含む
+interface Period extends BaseGeologicalUnit {
 	epochs: Epoch[];
-	map?: string;
 }
 
-interface Era {
-	id: string;
-	name: string;
-	nameEn: string;
-	startAge: number;
-	endAge: number;
+// 代（Era）: 複数のPeriodを含む
+interface Era extends BaseGeologicalUnit {
 	periods: Period[];
-	map?: string;
+}
+
+// すべての地質年代単位のユニオン型
+type GeologicalUnit = GeologicalAge | Epoch | Period | Era;
+
+// 型ガード関数
+function isGeologicalAge(unit: GeologicalUnit): unit is GeologicalAge {
+	return !('ages' in unit) && !('epochs' in unit) && !('periods' in unit);
+}
+
+function isEpoch(unit: GeologicalUnit): unit is Epoch {
+	return 'ages' in unit && !('epochs' in unit) && !('periods' in unit);
+}
+
+function isPeriod(unit: GeologicalUnit): unit is Period {
+	return 'epochs' in unit && !('periods' in unit);
+}
+
+function isEra(unit: GeologicalUnit): unit is Era {
+	return 'periods' in unit;
 }
 
 export function GeologicalAgeCard({ enableMenu = true }: { enableMenu?: boolean }) {
@@ -74,7 +83,7 @@ export function GeologicalAgeCard({ enableMenu = true }: { enableMenu?: boolean 
 	const [selectedEpoch, setSelectedEpoch] = useState<Epoch | undefined>(
 		undefined,
 	);
-	const [selectedAge, setSelectedAge] = useState<GeologicalAge | null>(null);
+	const [selectedAge, setSelectedAge] = useState<GeologicalAge | undefined>(undefined);
 	const [isExpanded, setIsExpanded] = useState(!enableMenu);
 
 	console.log('GeologicalAgeCard - selectedAgeIds:', selectedAgeIds);
@@ -82,21 +91,21 @@ export function GeologicalAgeCard({ enableMenu = true }: { enableMenu?: boolean 
 	const handleEraChange = (eraId: string) => {
 		console.log('handleEraChange呼び出し - eraId:', eraId);
 		if (eraId === "none") {
-			setSelectedEra(undefined);
-			setSelectedPeriod(undefined);
-			setSelectedEpoch(undefined);
-			setSelectedAge(null);
-			setSelectedAgeIds([]);
-			setSelectedMap("");
-			return;
-		}
-		const era = geologicalAgesData.eras.find((e) => e.id === eraId);
-		if (era) {
-			console.log('選択されたera:', era.name, 'ID:', era.id);
-			setSelectedEra(era);
-			setSelectedPeriod(undefined);
-			setSelectedEpoch(undefined);
-			setSelectedAge(null);
+					setSelectedEra(undefined);
+		setSelectedPeriod(undefined);
+		setSelectedEpoch(undefined);
+		setSelectedAge(undefined);
+		setSelectedAgeIds([]);
+		setSelectedMap("");
+		return;
+	}
+	const era = geologicalAgesData.eras.find((e) => e.id === eraId);
+	if (era) {
+		console.log('選択されたera:', era.name, 'ID:', era.id);
+		setSelectedEra(era);
+		setSelectedPeriod(undefined);
+		setSelectedEpoch(undefined);
+		setSelectedAge(undefined);
 			const ageIds = getAgeIds(era);
 			console.log('getAgeIds結果:', ageIds);
 			setSelectedAgeIds(ageIds);
@@ -108,18 +117,18 @@ export function GeologicalAgeCard({ enableMenu = true }: { enableMenu?: boolean 
 
 	const handlePeriodChange = (periodId: string) => {
 		if (periodId === "none") {
-			setSelectedPeriod(undefined);
-			setSelectedEpoch(undefined);
-			setSelectedAge(null);
-			setSelectedAgeIds([]);
-			setSelectedMap("");
-			return;
-		}
-		const period = selectedEra?.periods.find((p) => p.id === periodId);
-		if (period) {
-			setSelectedPeriod(period);
-			setSelectedEpoch(period.epochs[0]);
-			setSelectedAge(period.epochs[0].ages?.[0] || null);
+					setSelectedPeriod(undefined);
+		setSelectedEpoch(undefined);
+		setSelectedAge(undefined);
+		setSelectedAgeIds([]);
+		setSelectedMap("");
+		return;
+	}
+	const period = selectedEra?.periods.find((p) => p.id === periodId);
+	if (period) {
+		setSelectedPeriod(period);
+		setSelectedEpoch(period.epochs[0]);
+		setSelectedAge(period.epochs[0].ages?.[0] || undefined);
 			const ageIds = getAgeIds(period);
 			setSelectedAgeIds(ageIds);
 			if (period.map) {
@@ -130,17 +139,17 @@ export function GeologicalAgeCard({ enableMenu = true }: { enableMenu?: boolean 
 
 	const handleEpochChange = (epochId: string) => {
 		if (epochId === "none") {
-			setSelectedEpoch(undefined);
-			setSelectedAge(null);
-			setSelectedAgeIds([]);
-			setSelectedMap("");
-			return;
-		}
-		if (selectedPeriod) {
-			const epoch = selectedPeriod.epochs.find((e) => e.id === epochId);
-			if (epoch) {
-				setSelectedEpoch(epoch);
-				setSelectedAge(epoch.ages?.[0] || null);
+					setSelectedEpoch(undefined);
+		setSelectedAge(undefined);
+		setSelectedAgeIds([]);
+		setSelectedMap("");
+		return;
+	}
+	if (selectedPeriod) {
+		const epoch = selectedPeriod.epochs.find((e) => e.id === epochId);
+		if (epoch) {
+			setSelectedEpoch(epoch);
+			setSelectedAge(epoch.ages?.[0] || undefined);
 				const ageIds = getAgeIds(epoch);
 				setSelectedAgeIds(ageIds);
 				if (epoch.map) {
@@ -152,10 +161,10 @@ export function GeologicalAgeCard({ enableMenu = true }: { enableMenu?: boolean 
 
 	const handleAgeChange = (ageId: string) => {
 		if (ageId === "none") {
-			setSelectedAge(null);
-			setSelectedAgeIds([]);
-			setSelectedMap("");
-			return;
+					setSelectedAge(undefined);
+		setSelectedAgeIds([]);
+		setSelectedMap("");
+		return;
 		}
 		if (selectedEpoch?.ages) {
 			const age = selectedEpoch.ages.find((a) => a.id === ageId);
