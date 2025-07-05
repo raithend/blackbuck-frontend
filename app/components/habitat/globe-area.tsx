@@ -65,6 +65,10 @@ export default function GlobeArea({
 	eraGroups,
 	showMapSelector = true 
 }: GlobeAreaProps) {
+	console.log('=== GlobeArea レンダリング ===');
+	console.log('customGeographicFile:', customGeographicFile);
+	console.log('eraGroups:', eraGroups);
+	console.log('showMapSelector:', showMapSelector);
 	const { selectedMap } = useGeologicalAge();
 	const [customTexture, setCustomTexture] = useState<string | undefined>(undefined);
 	const [isGenerating, setIsGenerating] = useState(false);
@@ -73,7 +77,11 @@ export default function GlobeArea({
 	
 	// 初期地図を設定
 	useEffect(() => {
+		console.log('=== GlobeArea 初期地図設定useEffect実行 ===');
+		console.log('customTexture:', customTexture);
+		console.log('isInitialized:', isInitialized);
 		if (!customTexture && !isInitialized) {
+			console.log('初期地図を設定:', `/PALEOMAP_PaleoAtlas_Rasters_v3/${currentMap}`);
 			setCustomTexture(`/PALEOMAP_PaleoAtlas_Rasters_v3/${currentMap}`);
 			setIsInitialized(true);
 		}
@@ -82,34 +90,48 @@ export default function GlobeArea({
 
 	// 地質時代の選択に応じて地図を更新
 	useEffect(() => {
+		console.log('=== GlobeArea 地質時代選択useEffect実行 ===');
+		console.log('selectedMap:', selectedMap);
 		if (selectedMap) {
 			const mapFileName = `${selectedMap}.jpg`;
+			console.log('地図ファイル名を更新:', mapFileName);
 			setCurrentMap(mapFileName);
 		}
 	}, [selectedMap]);
 
 	// 生息地データ付きの地図画像を生成
 	useEffect(() => {
+		console.log('=== GlobeArea 生息地データ地図生成useEffect実行 ===');
+		console.log('currentMap:', currentMap);
+		console.log('customTexture:', customTexture);
+		console.log('eraGroups:', eraGroups);
+		
 		// 既に同じテクスチャが設定されている場合はスキップ
 		const expectedTexture = `/PALEOMAP_PaleoAtlas_Rasters_v3/${currentMap}`;
+		console.log('expectedTexture:', expectedTexture);
 		if (customTexture === expectedTexture) {
+			console.log('同じテクスチャが既に設定されているためスキップ');
 			return;
 		}
 		
 		// 時代グループから生息地データを平坦化
 		const dataToUse: HabitatData[] = eraGroups ? eraGroups.flatMap(eraGroup => eraGroup.elements) : [];
+		console.log('dataToUse:', dataToUse);
 		
 		// 生息地データがない場合は通常の地図画像を使用
 		if (dataToUse.length === 0) {
+			console.log('生息地データなし - 通常の地図画像を使用');
 			setCustomTexture(expectedTexture);
 			return;
 		}
 		
+		console.log('生息地データあり - 生息地付き画像を生成開始');
 		setIsGenerating(true);
 		
 		// 生息地データがある場合は生息地付き画像を生成
 		generateMapWithHabitat(currentMap, dataToUse)
 			.then(dataUrl => {
+				console.log('生息地付き画像生成成功');
 				setCustomTexture(dataUrl);
 				setIsGenerating(false);
 			})
@@ -194,14 +216,12 @@ export default function GlobeArea({
 				</div>
 			)}
 
-			{useMemo(() => (
-				customTexture ? (
-					<Globe 
-						key={`globe-${customTexture}`}
-						customTexture={customTexture}
-					/>
-				) : null
-			), [customTexture])}
+			{customTexture && (
+				<Globe 
+					customTexture={customTexture}
+					habitatPoints={eraGroups ? eraGroups.flatMap(eraGroup => eraGroup.elements) : []}
+				/>
+			)}
 		</div>
 	);
 }

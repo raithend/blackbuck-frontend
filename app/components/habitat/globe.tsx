@@ -16,6 +16,9 @@ const GlobeComponent: React.FC<GlobeProps> = ({
 	customTexture,
 	habitatPoints = []
 }) => {
+	console.log('=== GlobeComponent レンダリング ===');
+	console.log('customTexture:', customTexture);
+	console.log('habitatPoints:', habitatPoints);
 	const containerRef = useRef<HTMLDivElement>(null);
 	const [isLoading, setIsLoading] = useState(false);
 	
@@ -31,6 +34,7 @@ const GlobeComponent: React.FC<GlobeProps> = ({
 	
 	// 初期化フラグ
 	const isInitialized = useRef(false);
+	console.log('=== isInitialized 定義 ===', isInitialized.current);
 	
 	// カメラ状態の保存
 	const stateRef = useRef<{
@@ -46,7 +50,7 @@ const GlobeComponent: React.FC<GlobeProps> = ({
 	const [customMapTexture, setCustomMapTexture] = useState<string | undefined>(undefined);
 
 	// リサイズハンドラ
-	const handleResize = useCallback(() => {
+	const handleResize = () => {
 		if (!cameraRef.current || !rendererRef.current || !containerRef.current) return;
 		
 		const container = containerRef.current;
@@ -55,11 +59,13 @@ const GlobeComponent: React.FC<GlobeProps> = ({
 		cameraRef.current.aspect = width / height;
 		cameraRef.current.updateProjectionMatrix();
 		rendererRef.current.setSize(width, height);
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []);
+	};
 
 	// 初期化処理（一度だけ実行）
-	const initializeScene = useCallback(() => {
+	const initializeScene = () => {
+		console.log('=== initializeScene 呼び出し ===');
+		console.log('containerRef.current:', !!containerRef.current);
+		console.log('isInitialized.current:', isInitialized.current);
 		if (!containerRef.current || isInitialized.current) return;
 
 		// シーンの作成
@@ -127,10 +133,11 @@ const GlobeComponent: React.FC<GlobeProps> = ({
 		window.addEventListener("resize", handleResize);
 
 		isInitialized.current = true;
-	}, [handleResize]);
+		console.log('=== 初期化完了 ===');
+	};
 
 	// テクスチャの更新処理
-	const updateTexture = useCallback(async (textureUrl: string) => {
+	const updateTexture = async (textureUrl: string) => {
 		if (!globeRef.current) return;
 		
 		console.log('=== updateTexture開始 ===');
@@ -165,17 +172,22 @@ const GlobeComponent: React.FC<GlobeProps> = ({
 		} catch (error) {
 			console.error('updateTexture処理エラー:', error);
 		}
-	}, []);
+	};
 
 	// 初期化処理
 	useEffect(() => {
+		console.log('=== 初期化useEffect実行 ===');
 		initializeScene();
-	}, [initializeScene]);
+	}, []);
 
 	// カスタムテクスチャの更新処理
 	useEffect(() => {
+		console.log('=== カスタムテクスチャ更新useEffect実行 ===');
+		console.log('isInitialized.current:', isInitialized.current);
+		console.log('customMapTexture:', customMapTexture);
 		if (!isInitialized.current) return;
 		if (cameraRef.current && controlsRef.current) {
+			console.log('=== カメラ状態保存 ===');
 			stateRef.current = {
 				cameraPosition: cameraRef.current.position.clone(),
 				cameraRotation: cameraRef.current.rotation.clone(),
@@ -185,22 +197,18 @@ const GlobeComponent: React.FC<GlobeProps> = ({
 		if (customMapTexture) {
 			updateTexture(customMapTexture);
 		}
-	}, [customMapTexture, updateTexture]);
+	}, [customMapTexture]);
 
 	// カスタムテクスチャの生成処理
 	useEffect(() => {
-		// デバッグ出力を削減（開発時のみ）
-		if (process.env.NODE_ENV === 'development') {
-			console.log('=== Globe.tsx テクスチャ生成処理開始 ===');
-			console.log('customTexture:', customTexture);
-			console.log('habitatPoints:', habitatPoints);
-		}
+		console.log('=== Globe.tsx テクスチャ生成処理開始 ===');
+		console.log('customTexture:', customTexture);
+		console.log('habitatPoints:', habitatPoints);
+		console.log('customMapTexture:', customMapTexture);
 		
 		// 既に同じテクスチャが設定されている場合はスキップ
 		if (customMapTexture === customTexture) {
-			if (process.env.NODE_ENV === 'development') {
-				console.log('同じテクスチャが既に設定されているためスキップ');
-			}
+			console.log('同じテクスチャが既に設定されているためスキップ');
 			return;
 		}
 		
@@ -226,7 +234,9 @@ const GlobeComponent: React.FC<GlobeProps> = ({
 
 	// クリーンアップ処理
 	useEffect(() => {
+		console.log('=== GlobeComponent クリーンアップuseEffect実行 ===');
 		return () => {
+			console.log('=== GlobeComponent クリーンアップ実行 ===');
 			// テクスチャキャッシュのクリーンアップ
 			for (const texture of textureCache.current.values()) {
 				texture.dispose();
@@ -254,10 +264,10 @@ const GlobeComponent: React.FC<GlobeProps> = ({
 				rendererRef.current.dispose();
 			}
 
-			// イベントリスナーの削除
-			window.removeEventListener("resize", handleResize);
-		};
-	}, [handleResize]);
+					// イベントリスナーの削除
+		window.removeEventListener("resize", handleResize);
+	};
+	}, []);
 
 	return (
 		<div className="relative w-full h-full">
