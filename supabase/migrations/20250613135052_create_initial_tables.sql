@@ -1,33 +1,57 @@
 -- 新しいテーブルを作成
-create table public.users (
-  id uuid references auth.users on delete cascade primary key,
-  username varchar(255) not null unique,
-  account_id varchar(255) not null unique,
+CREATE TABLE public.users (
+  id uuid REFERENCES auth.users ON DELETE CASCADE PRIMARY KEY,
+  username varchar(255) NOT NULL UNIQUE,
+  account_id varchar(255) NOT NULL UNIQUE,
   avatar_url text,
   header_url text,
   bio text,
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
-  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+  created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
+  updated_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
+-- インデックスを作成してパフォーマンスを向上
+CREATE INDEX idx_users_account_id ON public.users(account_id);
+CREATE INDEX idx_users_username ON public.users(username);
+CREATE INDEX idx_users_created_at ON public.users(created_at);
+
 -- RLSポリシーを設定
-alter table public.users enable row level security;
+ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
 
 -- ユーザー作成のためのRLSポリシー
-create policy "Anyone can create a user record"
-  on public.users for insert
-  to public
-  with check (true);
+CREATE POLICY "Anyone can create a user record"
+  ON public.users FOR INSERT
+  TO public
+  WITH CHECK (true);
 
 -- ユーザー情報の閲覧（誰でも可能）
-create policy "Users are viewable by everyone"
-  on public.users for select
-  to public
-  using (true);
+CREATE POLICY "Users are viewable by everyone"
+  ON public.users FOR SELECT
+  TO public
+  USING (true);
 
 -- ユーザー情報の更新（本人のみ）
-create policy "Users can update their own record"
-  on public.users for update
-  to authenticated
-  using (auth.uid() = id)
-  with check (auth.uid() = id);
+CREATE POLICY "Users can update their own record"
+  ON public.users FOR UPDATE
+  TO authenticated
+  USING (auth.uid() = id)
+  WITH CHECK (auth.uid() = id);
+
+-- updated_at自動更新トリガー用関数
+CREATE OR REPLACE FUNCTION public.handle_updated_at()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY INVOKER
+SET search_path = public
+AS $$
+BEGIN
+  new.updated_at = timezone('utc'::text, now());
+  RETURN new;
+END;
+$$;
+
+-- ユーザーテーブルにupdated_atトリガーを設定
+CREATE TRIGGER handle_users_updated_at
+  BEFORE UPDATE ON public.users
+  FOR EACH ROW
+  EXECUTE FUNCTION public.handle_updated_at();

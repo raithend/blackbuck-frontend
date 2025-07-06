@@ -1,5 +1,5 @@
 -- コメントのいいねテーブルの作成
-CREATE TABLE IF NOT EXISTS comment_likes (
+CREATE TABLE comment_likes (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     comment_id UUID NOT NULL REFERENCES comments(id) ON DELETE CASCADE,

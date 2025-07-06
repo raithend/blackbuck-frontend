@@ -1,71 +1,75 @@
 -- 既存のテーブルを削除
-drop table if exists public.post_images;
+DROP TABLE IF EXISTS public.post_images;
 
 -- 新しいテーブルを作成
-create table if not exists public.post_images (
-  id uuid default gen_random_uuid() primary key,
-  post_id uuid references public.posts on delete cascade not null,
-  image_url text not null,
-  order_index integer not null,
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
-  updated_at timestamp with time zone default timezone('utc'::text, now()) not null,
-  constraint unique_post_image_order unique (post_id, order_index)
+CREATE TABLE IF NOT EXISTS public.post_images (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  post_id uuid REFERENCES public.posts ON DELETE CASCADE NOT NULL,
+  image_url text NOT NULL,
+  order_index integer NOT NULL,
+  created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
+  updated_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
+  CONSTRAINT unique_post_image_order UNIQUE (post_id, order_index)
 );
 
+-- インデックスを作成してパフォーマンスを向上
+CREATE INDEX idx_post_images_post_id ON public.post_images(post_id);
+CREATE INDEX idx_post_images_order_index ON public.post_images(order_index);
+
 -- RLSポリシーを設定
-alter table public.post_images enable row level security;
+ALTER TABLE public.post_images ENABLE ROW LEVEL SECURITY;
 
 -- 投稿画像の閲覧（誰でも可能）
-create policy "Post images are viewable by everyone"
-  on public.post_images for select
-  to public
-  using (true);
+CREATE POLICY "Post images are viewable by everyone"
+  ON public.post_images FOR SELECT
+  TO public
+  USING (true);
 
 -- ユーザーは自分の投稿の画像のみ作成可能
-create policy "Users can create images for their own posts"
-  on public.post_images for insert
-  to authenticated
-  with check (
-    exists (
-      select 1 from public.posts
-      where id = post_id
-      and user_id = auth.uid()
+CREATE POLICY "Users can create images for their own posts"
+  ON public.post_images FOR INSERT
+  TO authenticated
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM public.posts
+      WHERE id = post_id
+      AND user_id = auth.uid()
     )
-    or
-    exists (
-      select 1 from public.posts
-      where id = post_id
-      and user_id = auth.uid()
-      and created_at = updated_at
+    OR
+    EXISTS (
+      SELECT 1 FROM public.posts
+      WHERE id = post_id
+      AND user_id = auth.uid()
+      AND created_at = updated_at
     )
   );
 
 -- ユーザーは自分の投稿の画像のみ更新可能
-create policy "Users can update images for their own posts"
-  on public.post_images for update
-  to authenticated
-  using (
-    exists (
-      select 1 from public.posts
-      where id = post_id
-      and user_id = auth.uid()
+CREATE POLICY "Users can update images for their own posts"
+  ON public.post_images FOR UPDATE
+  TO authenticated
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.posts
+      WHERE id = post_id
+      AND user_id = auth.uid()
     )
   );
 
 -- ユーザーは自分の投稿の画像のみ削除可能
-create policy "Users can delete images for their own posts"
-  on public.post_images for delete
-  to authenticated
-  using (
-    exists (
-      select 1 from public.posts
-      where id = post_id
-      and user_id = auth.uid()
+CREATE POLICY "Users can delete images for their own posts"
+  ON public.post_images FOR DELETE
+  TO authenticated
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.posts
+      WHERE id = post_id
+      AND user_id = auth.uid()
     )
   );
 
 -- 更新日時を自動更新するトリガー
-create trigger handle_post_images_updated_at
-  before update on public.post_images
-  for each row
-  execute function public.handle_updated_at();
+CREATE TRIGGER handle_post_images_updated_at
+  BEFORE UPDATE ON public.post_images
+  FOR EACH ROW
+  EXECUTE FUNCTION public.handle_updated_at();

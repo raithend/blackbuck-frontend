@@ -1,10 +1,11 @@
 -- コメント画像テーブルの作成
-CREATE TABLE IF NOT EXISTS comment_images (
+CREATE TABLE comment_images (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     comment_id UUID NOT NULL REFERENCES comments(id) ON DELETE CASCADE,
     image_url TEXT NOT NULL,
     order_index INTEGER NOT NULL DEFAULT 0,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- コメント画像のインデックス
@@ -44,3 +45,9 @@ CREATE POLICY "Comment creators can delete their comment images" ON comment_imag
             AND comments.user_id = auth.uid()
         )
     );
+
+-- コメント画像テーブルにupdated_atトリガーを設定
+CREATE TRIGGER handle_comment_images_updated_at
+    BEFORE UPDATE ON comment_images
+    FOR EACH ROW
+    EXECUTE FUNCTION public.handle_updated_at();

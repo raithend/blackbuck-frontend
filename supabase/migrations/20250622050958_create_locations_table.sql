@@ -1,44 +1,47 @@
 -- locationsテーブルを作成
-create table if not exists public.locations (
-  id uuid default gen_random_uuid() primary key,
-  name text not null unique,
+CREATE TABLE IF NOT EXISTS public.locations (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  name text NOT NULL UNIQUE,
   description text,
-  avatar_url text,
   header_url text,
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
-  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+  created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
+  updated_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
+-- インデックスを作成してパフォーマンスを向上
+CREATE INDEX idx_locations_name ON public.locations(name);
+CREATE INDEX idx_locations_created_at ON public.locations(created_at);
+
 -- RLSポリシーを設定
-alter table public.locations enable row level security;
+ALTER TABLE public.locations ENABLE ROW LEVEL SECURITY;
 
 -- locationの閲覧（誰でも可能）
-create policy "Locations are viewable by everyone"
-  on public.locations for select
-  to public
-  using (true);
+CREATE POLICY "Locations are viewable by everyone"
+  ON public.locations FOR SELECT
+  TO public
+  USING (true);
 
 -- ログイン済みユーザーはlocationの作成可能
-create policy "Authenticated users can create locations"
-  on public.locations for insert
-  to authenticated
-  with check (true);
+CREATE POLICY "Authenticated users can create locations"
+  ON public.locations FOR INSERT
+  TO authenticated
+  WITH CHECK (true);
 
 -- ログイン済みユーザーはlocationの更新可能
-create policy "Authenticated users can update locations"
-  on public.locations for update
-  to authenticated
-  using (true)
-  with check (true);
+CREATE POLICY "Authenticated users can update locations"
+  ON public.locations FOR UPDATE
+  TO authenticated
+  USING (true)
+  WITH CHECK (true);
 
 -- 削除は無効化（将来的にadminのみに制限予定）
-create policy "No one can delete locations"
-  on public.locations for delete
-  to public
-  using (false);
+CREATE POLICY "No one can delete locations"
+  ON public.locations FOR DELETE
+  TO public
+  USING (false);
 
 -- 更新日時を自動更新するトリガー
-create trigger handle_locations_updated_at
-  before update on public.locations
-  for each row
-  execute function public.handle_updated_at();
+CREATE TRIGGER handle_locations_updated_at
+  BEFORE UPDATE ON public.locations
+  FOR EACH ROW
+  EXECUTE FUNCTION public.handle_updated_at();
