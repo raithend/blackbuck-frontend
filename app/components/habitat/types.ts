@@ -19,7 +19,7 @@ export interface HabitatElement {
 }
 
 export interface FabricHabitatEditorProps {
-	habitatData?: EraGroup[];
+	habitatData?: EraGroup[] | HabitatElement[];
 	onSave?: (data: EraGroup[]) => void;
 	showMapSelector?: boolean;
 	width?: number;

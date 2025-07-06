@@ -2,11 +2,11 @@ import React, { memo } from "react";
 import { Input } from "@/app/components/ui/input";
 import { Label } from "@/app/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card";
-import type{ HabitatPoint } from "./types";
+import type { HabitatElement } from "./types";
 
 interface HabitatPropertiesPanelProps {
-	selectedPoint: HabitatPoint | null;
-	onPropertyChange: (field: keyof HabitatPoint, value: string | number | undefined) => void;
+	selectedPoint: HabitatElement | null;
+	onPropertyChange: (field: keyof HabitatElement, value: string | number | undefined) => void;
 }
 
 export const HabitatPropertiesPanel = memo(function HabitatPropertiesPanel({

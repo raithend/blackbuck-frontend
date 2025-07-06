@@ -34,6 +34,18 @@ interface Classification {
 	geographic_data_creator?: string;
 }
 
+interface EraGroup {
+	era: string;
+	elements?: HabitatElement[];
+}
+
+interface HabitatElement {
+	lat: number;
+	lng: number;
+	color: string;
+	size: number;
+}
+
 // APIレスポンスの型定義
 interface ClassificationResponse {
 	classification: Classification | null;
@@ -258,7 +270,7 @@ const ClassificationContent = memo(({
 		}
 
 		// フィルタリングされたグループから要素を抽出してフラット化
-		const flattenedData = filteredEraGroups.flatMap(group => group.elements || []);
+		const flattenedData = filteredEraGroups.flatMap((group: EraGroup) => group.elements || []);
 		console.log('globeData結果:', flattenedData);
 		return flattenedData;
 	}, [filteredEraGroups]);
@@ -352,7 +364,7 @@ const ClassificationContent = memo(({
 						<div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
 							<div className="lg:col-span-3">
 								<PhylogeneticTreeArea 
-									customTreeContent={classification.phylogenetic_tree_file} 
+									customTreeContent={classification?.phylogenetic_tree_file} 
 								/>
 							</div>
 							<div className="lg:col-span-1">
@@ -405,7 +417,7 @@ const ClassificationContent = memo(({
 						<div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
 							<div className="lg:col-span-3">
 								<GlobeArea 
-									customGeographicFile={classification.geographic_data_file}
+									customGeographicFile={classification?.geographic_data_file}
 									eraGroups={filteredEraGroups || eraGroups}
 								/>
 							</div>
@@ -630,7 +642,7 @@ export default function ClassificationPage() {
 		<GeologicalAgeProvider>
 			<ClassificationContent 
 				decodedName={decodedName}
-				classification={classification}
+				classification={classification ?? null}
 				posts={posts}
 				postsLoading={postsLoading}
 				postsError={postsError}

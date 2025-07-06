@@ -2,13 +2,13 @@ import React, { memo } from "react";
 import { Button } from "@/app/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card";
 import { Trash2 } from 'lucide-react';
-import type { HabitatPoint } from "./types";
+import type { HabitatElement } from "./types";
 
 interface HabitatPointListProps {
-	habitatPoints: HabitatPoint[];
-	selectedObjectId: string | undefined;
-	onPointSelect: (pointId: string) => void;
-	onPointDelete: (pointId: string) => void;
+  habitatPoints: HabitatElement[];
+  selectedObjectId: string | undefined;
+  onPointSelect: (id: string) => void;
+  onPointDelete: (id: string) => void;
 }
 
 export const HabitatPointList = memo(function HabitatPointList({
@@ -77,11 +77,6 @@ export const HabitatPointList = memo(function HabitatPointList({
 							<div className="text-sm text-gray-600 mt-1">
 								{point.lat.toFixed(3)}, {point.lng.toFixed(3)}
 							</div>
-							{point.geologicalAge && (
-								<div className="text-xs text-blue-600 mt-1">
-									{point.geologicalAge.era} → {point.geologicalAge.period} → {point.geologicalAge.epoch} → {point.geologicalAge.age}
-								</div>
-							)}
 						</div>
 					))
 				)}

@@ -39,6 +39,19 @@ const FabricHabitatEditor = forwardRef(function FabricHabitatEditor({
 	// 地質時代コンテキストを使用
 	const { selectedMap, selectedAgeIds, setSelectedMap, setSelectedAgeIds } = useGeologicalAge();
 
+	// habitatDataをEraGroup[]からHabitatElement[]に変換
+	const flatHabitatData = useMemo(() => {
+		if (Array.isArray(habitatData) && habitatData.length > 0) {
+			// EraGroup[]の場合
+			if ('era' in habitatData[0] && 'elements' in habitatData[0]) {
+				return (habitatData as EraGroup[]).flatMap((group: EraGroup) => group.elements || []);
+			}
+			// HabitatElement[]の場合
+			return habitatData as HabitatElement[];
+		}
+		return [];
+	}, [habitatData]);
+
 	const {
 		fabricCanvasRef,
 		canvasRef,
@@ -58,7 +71,7 @@ const FabricHabitatEditor = forwardRef(function FabricHabitatEditor({
 	} = useFabricCanvas({
 		width,
 		height,
-		habitatData,
+		habitatData: flatHabitatData,
 		onMapChange,
 	});
 
@@ -403,8 +416,6 @@ const FabricHabitatEditor = forwardRef(function FabricHabitatEditor({
 		return null;
 	};
 
-
-
 	// キャンバスクリックイベントの処理
 	const handleCanvasClick = useCallback((e: any) => {
 		const currentTool = currentToolRef.current;
@@ -460,10 +471,13 @@ const FabricHabitatEditor = forwardRef(function FabricHabitatEditor({
 		}
 	}, []);
 
-	// プロパティ変更時の処理
-	const handlePropertyChange = useCallback((field: keyof HabitatElement, value: string | number | undefined) => {
-		updateSelectedPoint(habitatElements, setHabitatElements, field, value);
-	}, [habitatElements, setHabitatElements]);
+	// プロパティ変更ハンドラ
+	const handlePropertyChange = (field: string | number | symbol, value: string | number | undefined) => {
+		// keyof HabitatElement かどうか型ガード
+		if (typeof field === 'string' && field in habitatElements[0]) {
+			updateSelectedPoint(habitatElements, setHabitatElements, field as keyof HabitatElement, value);
+		}
+	};
 
 	// Canvas初期化
 	useLayoutEffect(() => {
@@ -582,11 +596,11 @@ const FabricHabitatEditor = forwardRef(function FabricHabitatEditor({
 				console.log('地図画像をCanvasに追加完了');
 
 				// 初期の生息地ポイントを追加（propsから受け取ったデータ）
-				for (const point of habitatData) {
+				for (const point of flatHabitatData) {
 					addPointToCanvas(point);
 				}
 				
-				console.log('生息地ポイント追加完了:', habitatData.length, '個');
+				console.log('生息地ポイント追加完了:', flatHabitatData.length, '個');
 				
 				setIsLoading(false);
 				console.log('地図画像の読み込みが完了しました - isLoadingをfalseに設定');
@@ -613,7 +627,7 @@ const FabricHabitatEditor = forwardRef(function FabricHabitatEditor({
 			}
 			
 			// 新しいポイントを追加
-			for (const point of habitatData) {
+			for (const point of flatHabitatData) {
 				addPointToCanvas(point);
 			}
 		}
@@ -645,13 +659,9 @@ const FabricHabitatEditor = forwardRef(function FabricHabitatEditor({
 	}, []);
 
 	useEffect(() => {
-		// habitatDataからelementsを抽出
-		const elements: HabitatElement[] = [];
-		for (const group of habitatData) {
-			elements.push(...group.elements);
-		}
-		setHabitatElements(elements);
-	}, [habitatData]);
+		// flatHabitatDataを直接使用
+		setHabitatElements(flatHabitatData);
+	}, [flatHabitatData]);
 
 	useImperativeHandle(ref, () => ({
 		getHabitatPoints: () => habitatElements
@@ -683,12 +693,12 @@ const FabricHabitatEditor = forwardRef(function FabricHabitatEditor({
 	const pointsTabContent = useMemo(() => {
 		console.log('pointsTabContent再計算 - habitatElements:', habitatElements.length);
 		return (
-			<HabitatPointList
-				habitatPoints={habitatElements}
-				selectedObjectId={getSelectedObjectId()}
-				onPointSelect={handlePointSelect}
-				onPointDelete={removeHabitatPointHandler}
-			/>
+									<HabitatPointList
+							habitatPoints={habitatElements}
+							selectedObjectId={getSelectedObjectId() || undefined}
+							onPointSelect={handlePointSelect}
+							onPointDelete={removeHabitatPointHandler}
+						/>
 		);
 	}, [habitatElements, getSelectedObjectId, handlePointSelect, removeHabitatPointHandler]);
 
