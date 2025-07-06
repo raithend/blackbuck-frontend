@@ -217,35 +217,61 @@ export function GeologicalAgeCard({ enableMenu = true }: { enableMenu?: boolean 
 	);
 
 	// 時代のID配列を取得する関数（修正版）
-	const getAgeIds = useCallback((age: GeologicalAge | Epoch | Period | Era | null): number[] => {
-		console.log('getAgeIds呼び出し - age:', age);
+	const getAgeIds = useCallback((unit: GeologicalAge | Epoch | Period | Era | null): number[] => {
+		console.log('getAgeIds呼び出し - unit:', unit);
 		
-		if (!age) return [];
+		if (!unit) return [];
 
-		// 最下位の時代（age）の場合
-		if ('ages' in age && age.ages) {
-			// epochの場合、epochのIDを返す
-			console.log('getAgeIds - epoch detected, returning epoch ID:', age.id);
-			return age.id ? [Number.parseInt(age.id)] : [];
+		// Eraの場合、そのeraに属するすべてのageのIDを取得
+		if ('periods' in unit) {
+			console.log('getAgeIds - era detected, collecting all age IDs');
+			const ageIds: number[] = [];
+			for (const period of unit.periods) {
+				for (const epoch of period.epochs) {
+					if (epoch.ages) {
+						for (const age of epoch.ages) {
+							ageIds.push(Number.parseInt(age.id));
+						}
+					}
+				}
+			}
+			console.log(`getAgeIds - era "${unit.name}" のage IDs:`, ageIds);
+			return ageIds;
 		}
-		if ('epochs' in age) {
-			// periodの場合、periodのIDを返す
-			console.log('getAgeIds - period detected, returning period ID:', age.id);
-			return age.id ? [Number.parseInt(age.id)] : [];
+
+		// Periodの場合、そのperiodに属するすべてのageのIDを取得
+		if ('epochs' in unit) {
+			console.log('getAgeIds - period detected, collecting all age IDs');
+			const ageIds: number[] = [];
+			for (const epoch of unit.epochs) {
+				if (epoch.ages) {
+					for (const age of epoch.ages) {
+						ageIds.push(Number.parseInt(age.id));
+					}
+				}
+			}
+			console.log(`getAgeIds - period "${unit.name}" のage IDs:`, ageIds);
+			return ageIds;
 		}
-		if ('periods' in age) {
-			// eraの場合、eraのIDを返す
-			console.log('getAgeIds - era detected, returning era ID:', age.id);
-			return age.id ? [Number.parseInt(age.id)] : [];
+
+		// Epochの場合、そのepochに属するすべてのageのIDを取得
+		if ('ages' in unit && unit.ages) {
+			console.log('getAgeIds - epoch detected, collecting all age IDs');
+			const ageIds: number[] = [];
+			for (const age of unit.ages) {
+				ageIds.push(Number.parseInt(age.id));
+			}
+			console.log(`getAgeIds - epoch "${unit.name}" のage IDs:`, ageIds);
+			return ageIds;
 		}
 
 		// 単一のageの場合
-		if (age.id) {
-			console.log('getAgeIds - single age detected, returning age ID:', age.id);
-			return [Number.parseInt(age.id)];
+		if (unit.id) {
+			console.log('getAgeIds - single age detected, returning age ID:', unit.id);
+			return [Number.parseInt(unit.id)];
 		}
 
-		console.log('getAgeIds - no valid age structure found');
+		console.log('getAgeIds - no valid unit structure found');
 		return [];
 	}, []);
 

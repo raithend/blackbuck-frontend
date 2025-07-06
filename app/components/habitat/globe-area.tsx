@@ -9,6 +9,7 @@ import { Label } from "@/app/components/ui/label";
 import { useGeologicalAge } from "../geological/geological-context";
 import geologicalAgesData from "@/app/data/geological-ages.json";
 import { generateMapWithHabitat } from "@/app/components/habitat/map-utils";
+import { getHabitatEraIds, hasOverlap } from "@/app/lib/globe-age-utils";
 
 import type { HabitatElement } from "./types";
 
@@ -65,23 +66,43 @@ const GlobeArea = React.memo<GlobeAreaProps>(({
 	eraGroups,
 	showMapSelector = true 
 }) => {
-	const { selectedMap } = useGeologicalAge();
+	const { selectedMap, selectedAgeIds } = useGeologicalAge();
 	const [customTexture, setCustomTexture] = useState<string | undefined>(undefined);
 	const [isGenerating, setIsGenerating] = useState(false);
 	const [currentMap, setCurrentMap] = useState("Map1a_PALEOMAP_PaleoAtlas_000.jpg");
 	const [isInitialized, setIsInitialized] = useState(false);
 	const [currentTextureKey, setCurrentTextureKey] = useState<string | undefined>(undefined);
 	
+	// 生息地情報の時代からID配列を作成
+	const habitatEraIds = useMemo(() => {
+		return getHabitatEraIds(eraGroups || []);
+	}, [eraGroups]);
+	
+	// 重複チェックとコンソール出力
+	useEffect(() => {
+		console.log('=== selectedAgeIds ===');
+		console.log('selectedAgeIds:', selectedAgeIds);
+		
+		if (habitatEraIds.length > 0 && selectedAgeIds.length > 0) {
+			const overlap = hasOverlap(habitatEraIds, selectedAgeIds);
+			console.log('生息地表示判定:', overlap);
+		}
+	}, [habitatEraIds, selectedAgeIds]);
+	
 	// テクスチャ生成のキーをメモ化
 	const textureKey = useMemo(() => {
-		if (!eraGroups || eraGroups.length === 0) {
+		// 重複がある場合のみ生息地データを使用
+		const shouldShowHabitat = hasOverlap(habitatEraIds, selectedAgeIds);
+		
+		if (!shouldShowHabitat || !eraGroups || eraGroups.length === 0) {
 			return `${currentMap}_empty`;
 		}
+		
 		const dataKey = eraGroups.flatMap(eraGroup => 
 			eraGroup.elements?.map(item => `${item.lat},${item.lng},${item.color},${item.size}`) || []
 		).join('|');
 		return `${currentMap}_${dataKey}`;
-	}, [currentMap, eraGroups]);
+	}, [currentMap, eraGroups, habitatEraIds, selectedAgeIds]);
 	
 	// 初期地図を設定
 	useEffect(() => {
@@ -108,8 +129,11 @@ const GlobeArea = React.memo<GlobeAreaProps>(({
 			return;
 		}
 		
+		// 重複がある場合のみ生息地データを使用
+		const shouldShowHabitat = hasOverlap(habitatEraIds, selectedAgeIds);
+		
 		// 時代グループから生息地データを平坦化
-		const dataToUse: HabitatData[] = eraGroups ? eraGroups.flatMap(eraGroup => {
+		const dataToUse: HabitatData[] = (shouldShowHabitat && eraGroups) ? eraGroups.flatMap(eraGroup => {
 			return eraGroup.elements || [];
 		}) : [];
 		
@@ -139,12 +163,19 @@ const GlobeArea = React.memo<GlobeAreaProps>(({
 				setCurrentTextureKey(textureKey);
 				setIsGenerating(false);
 			});
-	}, [textureKey, currentTextureKey, currentMap, eraGroups]);
+	}, [textureKey, currentTextureKey, currentMap, eraGroups, habitatEraIds, selectedAgeIds]);
 
 	// 生息地データをメモ化
 	const habitatPoints = useMemo(() => {
-		return eraGroups ? eraGroups.flatMap(eraGroup => eraGroup.elements) : [];
-	}, [eraGroups]);
+		// 重複がある場合のみ生息地データを返す
+		const shouldShowHabitat = hasOverlap(habitatEraIds, selectedAgeIds);
+		
+		if (!shouldShowHabitat || !eraGroups) {
+			return [];
+		}
+		
+		return eraGroups.flatMap(eraGroup => eraGroup.elements);
+	}, [eraGroups, habitatEraIds, selectedAgeIds]);
 
 	return (
 		<div className="h-[calc(100vh-4rem)]">
