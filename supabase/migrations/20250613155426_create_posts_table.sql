@@ -8,9 +8,17 @@ CREATE TABLE public.posts (
   content text NOT NULL,
   classification text,
   location text,
+  event text,
   created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
   updated_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL
 );
+
+-- インデックスを作成してパフォーマンスを向上
+CREATE INDEX idx_posts_user_id ON public.posts(user_id);
+CREATE INDEX idx_posts_created_at ON public.posts(created_at);
+CREATE INDEX idx_posts_classification ON public.posts(classification);
+CREATE INDEX idx_posts_location ON public.posts(location);
+CREATE INDEX idx_posts_event ON public.posts(event);
 
 -- RLSポリシーを設定
 ALTER TABLE public.posts ENABLE ROW LEVEL SECURITY;
@@ -44,9 +52,3 @@ CREATE TRIGGER handle_posts_updated_at
   BEFORE UPDATE ON public.posts
   FOR EACH ROW
   EXECUTE FUNCTION public.handle_updated_at();
-
--- インデックスを作成してパフォーマンスを向上
-CREATE INDEX idx_posts_user_id ON public.posts(user_id);
-CREATE INDEX idx_posts_created_at ON public.posts(created_at);
-CREATE INDEX idx_posts_classification ON public.posts(classification);
-CREATE INDEX idx_posts_location ON public.posts(location);

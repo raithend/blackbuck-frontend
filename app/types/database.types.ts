@@ -7,6 +7,11 @@ export type Json =
 	| Json[];
 
 export type Database = {
+	// Allows to automatically instanciate createClient with right options
+	// instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+	__InternalSupabase: {
+		PostgrestVersion: "12.2.3 (519615d)";
+	};
 	public: {
 		Tables: {
 			classifications: {
@@ -16,12 +21,9 @@ export type Database = {
 					english_name: string | null;
 					era_end: string | null;
 					era_start: string | null;
-					geographic_data_creator: string | null;
-					geographic_data_file: string | null;
+					header_url: string | null;
 					id: string;
 					name: string;
-					phylogenetic_tree_creator: string | null;
-					phylogenetic_tree_file: string | null;
 					scientific_name: string | null;
 					updated_at: string;
 				};
@@ -31,12 +33,9 @@ export type Database = {
 					english_name?: string | null;
 					era_end?: string | null;
 					era_start?: string | null;
-					geographic_data_creator?: string | null;
-					geographic_data_file?: string | null;
+					header_url?: string | null;
 					id?: string;
 					name: string;
-					phylogenetic_tree_creator?: string | null;
-					phylogenetic_tree_file?: string | null;
 					scientific_name?: string | null;
 					updated_at?: string;
 				};
@@ -46,12 +45,9 @@ export type Database = {
 					english_name?: string | null;
 					era_end?: string | null;
 					era_start?: string | null;
-					geographic_data_creator?: string | null;
-					geographic_data_file?: string | null;
+					header_url?: string | null;
 					id?: string;
 					name?: string;
-					phylogenetic_tree_creator?: string | null;
-					phylogenetic_tree_file?: string | null;
 					scientific_name?: string | null;
 					updated_at?: string;
 				};
@@ -64,6 +60,7 @@ export type Database = {
 					id: string;
 					image_url: string;
 					order_index: number;
+					updated_at: string | null;
 				};
 				Insert: {
 					comment_id: string;
@@ -71,6 +68,7 @@ export type Database = {
 					id?: string;
 					image_url: string;
 					order_index?: number;
+					updated_at?: string | null;
 				};
 				Update: {
 					comment_id?: string;
@@ -78,6 +76,7 @@ export type Database = {
 					id?: string;
 					image_url?: string;
 					order_index?: number;
+					updated_at?: string | null;
 				};
 				Relationships: [
 					{
@@ -126,7 +125,7 @@ export type Database = {
 					id: string;
 					location: string | null;
 					parent_comment_id: string | null;
-					post_id: string;
+					post_id: string | null;
 					updated_at: string | null;
 					user_id: string;
 				};
@@ -137,7 +136,7 @@ export type Database = {
 					id?: string;
 					location?: string | null;
 					parent_comment_id?: string | null;
-					post_id: string;
+					post_id?: string | null;
 					updated_at?: string | null;
 					user_id: string;
 				};
@@ -148,7 +147,7 @@ export type Database = {
 					id?: string;
 					location?: string | null;
 					parent_comment_id?: string | null;
-					post_id?: string;
+					post_id?: string | null;
 					updated_at?: string | null;
 					user_id?: string;
 				};
@@ -164,17 +163,37 @@ export type Database = {
 						foreignKeyName: "comments_post_id_fkey";
 						columns: ["post_id"];
 						isOneToOne: false;
-						referencedRelation: "post_like_counts";
-						referencedColumns: ["post_id"];
-					},
-					{
-						foreignKeyName: "comments_post_id_fkey";
-						columns: ["post_id"];
-						isOneToOne: false;
 						referencedRelation: "posts";
 						referencedColumns: ["id"];
 					},
 				];
+			};
+			events: {
+				Row: {
+					created_at: string;
+					description: string | null;
+					header_url: string | null;
+					id: string;
+					name: string;
+					updated_at: string;
+				};
+				Insert: {
+					created_at?: string;
+					description?: string | null;
+					header_url?: string | null;
+					id?: string;
+					name: string;
+					updated_at?: string;
+				};
+				Update: {
+					created_at?: string;
+					description?: string | null;
+					header_url?: string | null;
+					id?: string;
+					name?: string;
+					updated_at?: string;
+				};
+				Relationships: [];
 			};
 			follows: {
 				Row: {
@@ -200,13 +219,6 @@ export type Database = {
 						foreignKeyName: "follows_follower_id_fkey";
 						columns: ["follower_id"];
 						isOneToOne: false;
-						referencedRelation: "user_follow_counts";
-						referencedColumns: ["id"];
-					},
-					{
-						foreignKeyName: "follows_follower_id_fkey";
-						columns: ["follower_id"];
-						isOneToOne: false;
 						referencedRelation: "users";
 						referencedColumns: ["id"];
 					},
@@ -214,14 +226,42 @@ export type Database = {
 						foreignKeyName: "follows_following_id_fkey";
 						columns: ["following_id"];
 						isOneToOne: false;
-						referencedRelation: "user_follow_counts";
+						referencedRelation: "users";
 						referencedColumns: ["id"];
 					},
+				];
+			};
+			habitat_data: {
+				Row: {
+					classification_id: string | null;
+					content: string;
+					created_at: string;
+					creator: string | null;
+					id: string;
+					updated_at: string;
+				};
+				Insert: {
+					classification_id?: string | null;
+					content: string;
+					created_at?: string;
+					creator?: string | null;
+					id?: string;
+					updated_at?: string;
+				};
+				Update: {
+					classification_id?: string | null;
+					content?: string;
+					created_at?: string;
+					creator?: string | null;
+					id?: string;
+					updated_at?: string;
+				};
+				Relationships: [
 					{
-						foreignKeyName: "follows_following_id_fkey";
-						columns: ["following_id"];
+						foreignKeyName: "habitat_data_classification_id_fkey";
+						columns: ["classification_id"];
 						isOneToOne: false;
-						referencedRelation: "users";
+						referencedRelation: "classifications";
 						referencedColumns: ["id"];
 					},
 				];
@@ -250,21 +290,7 @@ export type Database = {
 						foreignKeyName: "likes_post_id_fkey";
 						columns: ["post_id"];
 						isOneToOne: false;
-						referencedRelation: "post_like_counts";
-						referencedColumns: ["post_id"];
-					},
-					{
-						foreignKeyName: "likes_post_id_fkey";
-						columns: ["post_id"];
-						isOneToOne: false;
 						referencedRelation: "posts";
-						referencedColumns: ["id"];
-					},
-					{
-						foreignKeyName: "likes_user_id_fkey";
-						columns: ["user_id"];
-						isOneToOne: false;
-						referencedRelation: "user_follow_counts";
 						referencedColumns: ["id"];
 					},
 					{
@@ -278,7 +304,6 @@ export type Database = {
 			};
 			locations: {
 				Row: {
-					avatar_url: string | null;
 					created_at: string;
 					description: string | null;
 					header_url: string | null;
@@ -287,7 +312,6 @@ export type Database = {
 					updated_at: string;
 				};
 				Insert: {
-					avatar_url?: string | null;
 					created_at?: string;
 					description?: string | null;
 					header_url?: string | null;
@@ -296,7 +320,6 @@ export type Database = {
 					updated_at?: string;
 				};
 				Update: {
-					avatar_url?: string | null;
 					created_at?: string;
 					description?: string | null;
 					header_url?: string | null;
@@ -345,6 +368,41 @@ export type Database = {
 				};
 				Relationships: [];
 			};
+			phylogenetic_trees: {
+				Row: {
+					classification_id: string | null;
+					content: string;
+					created_at: string;
+					creator: string | null;
+					id: string;
+					updated_at: string;
+				};
+				Insert: {
+					classification_id?: string | null;
+					content: string;
+					created_at?: string;
+					creator?: string | null;
+					id?: string;
+					updated_at?: string;
+				};
+				Update: {
+					classification_id?: string | null;
+					content?: string;
+					created_at?: string;
+					creator?: string | null;
+					id?: string;
+					updated_at?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: "phylogenetic_trees_classification_id_fkey";
+						columns: ["classification_id"];
+						isOneToOne: false;
+						referencedRelation: "classifications";
+						referencedColumns: ["id"];
+					},
+				];
+			};
 			post_images: {
 				Row: {
 					created_at: string;
@@ -375,13 +433,6 @@ export type Database = {
 						foreignKeyName: "post_images_post_id_fkey";
 						columns: ["post_id"];
 						isOneToOne: false;
-						referencedRelation: "post_like_counts";
-						referencedColumns: ["post_id"];
-					},
-					{
-						foreignKeyName: "post_images_post_id_fkey";
-						columns: ["post_id"];
-						isOneToOne: false;
 						referencedRelation: "posts";
 						referencedColumns: ["id"];
 					},
@@ -392,6 +443,7 @@ export type Database = {
 					classification: string | null;
 					content: string;
 					created_at: string;
+					event: string | null;
 					id: string;
 					location: string | null;
 					updated_at: string;
@@ -401,6 +453,7 @@ export type Database = {
 					classification?: string | null;
 					content: string;
 					created_at?: string;
+					event?: string | null;
 					id?: string;
 					location?: string | null;
 					updated_at?: string;
@@ -410,19 +463,13 @@ export type Database = {
 					classification?: string | null;
 					content?: string;
 					created_at?: string;
+					event?: string | null;
 					id?: string;
 					location?: string | null;
 					updated_at?: string;
 					user_id?: string;
 				};
 				Relationships: [
-					{
-						foreignKeyName: "posts_user_id_fkey";
-						columns: ["user_id"];
-						isOneToOne: false;
-						referencedRelation: "user_follow_counts";
-						referencedColumns: ["id"];
-					},
 					{
 						foreignKeyName: "posts_user_id_fkey";
 						columns: ["user_id"];
@@ -467,35 +514,6 @@ export type Database = {
 			};
 		};
 		Views: {
-			post_like_counts: {
-				Row: {
-					account_id: string | null;
-					avatar_url: string | null;
-					content: string | null;
-					created_at: string | null;
-					like_count: number | null;
-					location: string | null;
-					post_id: string | null;
-					user_id: string | null;
-					username: string | null;
-				};
-				Relationships: [
-					{
-						foreignKeyName: "posts_user_id_fkey";
-						columns: ["user_id"];
-						isOneToOne: false;
-						referencedRelation: "user_follow_counts";
-						referencedColumns: ["id"];
-					},
-					{
-						foreignKeyName: "posts_user_id_fkey";
-						columns: ["user_id"];
-						isOneToOne: false;
-						referencedRelation: "users";
-						referencedColumns: ["id"];
-					},
-				];
-			};
 			profile_photo_bubbles: {
 				Row: {
 					created_at: string | null;
@@ -538,79 +556,6 @@ export type Database = {
 				};
 				Relationships: [];
 			};
-			user_follow_counts: {
-				Row: {
-					account_id: string | null;
-					avatar_url: string | null;
-					bio: string | null;
-					created_at: string | null;
-					follower_count: number | null;
-					following_count: number | null;
-					header_url: string | null;
-					id: string | null;
-					updated_at: string | null;
-					username: string | null;
-				};
-				Relationships: [];
-			};
-			user_liked_posts: {
-				Row: {
-					content: string | null;
-					liked_at: string | null;
-					location: string | null;
-					post_account_id: string | null;
-					post_avatar_url: string | null;
-					post_created_at: string | null;
-					post_id: string | null;
-					post_user_id: string | null;
-					post_username: string | null;
-					user_id: string | null;
-				};
-				Relationships: [
-					{
-						foreignKeyName: "likes_post_id_fkey";
-						columns: ["post_id"];
-						isOneToOne: false;
-						referencedRelation: "post_like_counts";
-						referencedColumns: ["post_id"];
-					},
-					{
-						foreignKeyName: "likes_post_id_fkey";
-						columns: ["post_id"];
-						isOneToOne: false;
-						referencedRelation: "posts";
-						referencedColumns: ["id"];
-					},
-					{
-						foreignKeyName: "likes_user_id_fkey";
-						columns: ["user_id"];
-						isOneToOne: false;
-						referencedRelation: "user_follow_counts";
-						referencedColumns: ["id"];
-					},
-					{
-						foreignKeyName: "likes_user_id_fkey";
-						columns: ["user_id"];
-						isOneToOne: false;
-						referencedRelation: "users";
-						referencedColumns: ["id"];
-					},
-					{
-						foreignKeyName: "posts_user_id_fkey";
-						columns: ["post_user_id"];
-						isOneToOne: false;
-						referencedRelation: "user_follow_counts";
-						referencedColumns: ["id"];
-					},
-					{
-						foreignKeyName: "posts_user_id_fkey";
-						columns: ["post_user_id"];
-						isOneToOne: false;
-						referencedRelation: "users";
-						referencedColumns: ["id"];
-					},
-				];
-			};
 		};
 		Functions: {
 			[_ in never]: never;
@@ -624,21 +569,28 @@ export type Database = {
 	};
 };
 
-type DefaultSchema = Database[Extract<keyof Database, "public">];
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">;
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<
+	keyof Database,
+	"public"
+>];
 
 export type Tables<
 	DefaultSchemaTableNameOrOptions extends
 		| keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
-		| { schema: keyof Database },
+		| { schema: keyof DatabaseWithoutInternals },
 	TableName extends DefaultSchemaTableNameOrOptions extends {
-		schema: keyof Database;
+		schema: keyof DatabaseWithoutInternals;
 	}
-		? keyof (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-				Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+		? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+				DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
 		: never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
-	? (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-			Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends {
+	schema: keyof DatabaseWithoutInternals;
+}
+	? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+			DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
 			Row: infer R;
 		}
 		? R
@@ -656,14 +608,16 @@ export type Tables<
 export type TablesInsert<
 	DefaultSchemaTableNameOrOptions extends
 		| keyof DefaultSchema["Tables"]
-		| { schema: keyof Database },
+		| { schema: keyof DatabaseWithoutInternals },
 	TableName extends DefaultSchemaTableNameOrOptions extends {
-		schema: keyof Database;
+		schema: keyof DatabaseWithoutInternals;
 	}
-		? keyof Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+		? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
 		: never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
-	? Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends {
+	schema: keyof DatabaseWithoutInternals;
+}
+	? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
 			Insert: infer I;
 		}
 		? I
@@ -679,14 +633,16 @@ export type TablesInsert<
 export type TablesUpdate<
 	DefaultSchemaTableNameOrOptions extends
 		| keyof DefaultSchema["Tables"]
-		| { schema: keyof Database },
+		| { schema: keyof DatabaseWithoutInternals },
 	TableName extends DefaultSchemaTableNameOrOptions extends {
-		schema: keyof Database;
+		schema: keyof DatabaseWithoutInternals;
 	}
-		? keyof Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+		? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
 		: never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
-	? Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends {
+	schema: keyof DatabaseWithoutInternals;
+}
+	? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
 			Update: infer U;
 		}
 		? U
@@ -702,14 +658,16 @@ export type TablesUpdate<
 export type Enums<
 	DefaultSchemaEnumNameOrOptions extends
 		| keyof DefaultSchema["Enums"]
-		| { schema: keyof Database },
+		| { schema: keyof DatabaseWithoutInternals },
 	EnumName extends DefaultSchemaEnumNameOrOptions extends {
-		schema: keyof Database;
+		schema: keyof DatabaseWithoutInternals;
 	}
-		? keyof Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+		? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
 		: never = never,
-> = DefaultSchemaEnumNameOrOptions extends { schema: keyof Database }
-	? Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+> = DefaultSchemaEnumNameOrOptions extends {
+	schema: keyof DatabaseWithoutInternals;
+}
+	? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
 	: DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
 		? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
 		: never;
@@ -717,14 +675,16 @@ export type Enums<
 export type CompositeTypes<
 	PublicCompositeTypeNameOrOptions extends
 		| keyof DefaultSchema["CompositeTypes"]
-		| { schema: keyof Database },
+		| { schema: keyof DatabaseWithoutInternals },
 	CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
-		schema: keyof Database;
+		schema: keyof DatabaseWithoutInternals;
 	}
-		? keyof Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+		? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
 		: never = never,
-> = PublicCompositeTypeNameOrOptions extends { schema: keyof Database }
-	? Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+> = PublicCompositeTypeNameOrOptions extends {
+	schema: keyof DatabaseWithoutInternals;
+}
+	? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
 	: PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
 		? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
 		: never;

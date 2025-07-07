@@ -40,6 +40,12 @@ CREATE POLICY "Users can update basic classification data"
   TO authenticated
   USING (auth.uid() IS NOT NULL);
 
+-- 削除は無効化（将来的にadminのみに制限予定）
+CREATE POLICY "No one can delete classifications"
+  ON public.classifications FOR DELETE
+  TO public
+  USING (false);
+
 -- 更新日時を自動更新するトリガー
 CREATE TRIGGER handle_classifications_updated_at
   BEFORE UPDATE ON public.classifications
