@@ -175,10 +175,6 @@ export async function POST(request: NextRequest) {
 				description: classificationData.description,
 				era_start: classificationData.era_start,
 				era_end: classificationData.era_end,
-				phylogenetic_tree_file: classificationData.phylogenetic_tree_file,
-				geographic_data_file: classificationData.geographic_data_file,
-				phylogenetic_tree_creator: classificationData.phylogenetic_tree_creator || user.id,
-				geographic_data_creator: classificationData.geographic_data_creator || user.id,
 			})
 			.select()
 			.single();

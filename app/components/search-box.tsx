@@ -11,23 +11,16 @@ import {
 } from "@/app/components/ui/dialog";
 import { Input } from "@/app/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/components/ui/tabs";
-import { Search, User, MapPin, Tag, UserRound } from "lucide-react";
+import { Search, User as UserIcon, MapPin, Tag, UserRound } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import useSWR from "swr";
-
-interface User {
-	id: string;
-	username: string;
-	account_id: string;
-	avatar_url?: string;
-}
+import type { User } from "@/app/types/types";
 
 interface Location {
 	id: string;
 	name: string;
 	description?: string;
-	avatar_url?: string;
 }
 
 interface SearchResults {
@@ -146,7 +139,7 @@ export function SearchBox() {
 				<Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
 					<TabsList className="grid w-full grid-cols-3">
 						<TabsTrigger value="users" className="flex items-center gap-2">
-							<User className="h-4 w-4" />
+							<UserIcon className="h-4 w-4" />
 							<span>ユーザー</span>
 						</TabsTrigger>
 						<TabsTrigger value="locations" className="flex items-center gap-2">
@@ -181,9 +174,10 @@ export function SearchBox() {
 												key={user.id}
 												onClick={() => handleUserSelect(user)}
 												className="w-full flex items-center space-x-3 p-2 hover:bg-gray-100 rounded-lg transition-colors text-left"
+												type="button"
 											>
 												<Avatar className="h-8 w-8">
-													<AvatarImage src={user.avatar_url} />
+													<AvatarImage src={user.avatar_url || undefined} />
 													<AvatarFallback>
 														<UserRound className="h-4 w-4" />
 													</AvatarFallback>
@@ -232,9 +226,9 @@ export function SearchBox() {
 												key={location.id}
 												onClick={() => handleLocationSelect(location)}
 												className="w-full flex items-center space-x-3 p-2 hover:bg-gray-100 rounded-lg transition-colors text-left"
+												type="button"
 											>
 												<Avatar className="h-8 w-8">
-													<AvatarImage src={location.avatar_url} />
 													<AvatarFallback>
 														<MapPin className="h-4 w-4" />
 													</AvatarFallback>
@@ -282,9 +276,10 @@ export function SearchBox() {
 									{classificationResults.classifications.length > 0 ? (
 										classificationResults.classifications.map((classification, index) => (
 											<button
-												key={index}
+												key={`classification-${classification}`}
 												onClick={() => handleClassificationSelect(classification)}
 												className="w-full flex items-center space-x-3 p-2 hover:bg-gray-100 rounded-lg transition-colors text-left"
+												type="button"
 											>
 												<Tag className="h-4 w-4 text-gray-500" />
 												<div className="font-medium">{classification}</div>

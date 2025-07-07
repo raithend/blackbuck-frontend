@@ -20,7 +20,6 @@ export function LocationEditButton({ location }: LocationEditButtonProps) {
 	const handleSave = async (data: {
 		name: string;
 		description?: string;
-		avatar_url?: string;
 		header_url?: string;
 	}) => {
 		try {

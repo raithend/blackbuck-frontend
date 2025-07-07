@@ -266,22 +266,13 @@ export async function PUT(
 				description: body.description || "",
 				era_start: body.era_start || null,
 				era_end: body.era_end || null,
-				phylogenetic_tree_file: body.phylogenetic_tree_file || null,
-				geographic_data_file: body.geographic_data_file || null,
 				created_at: new Date().toISOString(),
 				updated_at: new Date().toISOString(),
 			} as const;
 
-			// ファイルが提供されている場合は作成者を設定
-			const finalPayload = {
-				...insertPayload,
-				...(body.phylogenetic_tree_file && { phylogenetic_tree_creator: user.id }),
-				...(body.geographic_data_file && { geographic_data_creator: user.id }),
-			};
-
 			const { data: newClassification, error: createError } = await supabase
 				.from("classifications")
-				.insert(finalPayload)
+				.insert(insertPayload)
 				.select()
 				.single();
 
@@ -299,13 +290,9 @@ export async function PUT(
 			// 既存データを取得
 			const { data: currentClassification } = await supabase
 				.from("classifications")
-				.select("phylogenetic_tree_file, geographic_data_file, phylogenetic_tree_creator, geographic_data_creator")
+				.select("id")
 				.eq("name", decodedName)
 				.single();
-
-			// 変更判定
-			const isTreeChanged = body.phylogenetic_tree_file !== undefined && body.phylogenetic_tree_file !== currentClassification?.phylogenetic_tree_file;
-			const isGeoChanged = body.geographic_data_file !== undefined && body.geographic_data_file !== currentClassification?.geographic_data_file;
 
 			const updatePayload: Record<string, unknown> = {
 				english_name: body.english_name,
@@ -313,16 +300,8 @@ export async function PUT(
 				description: body.description,
 				era_start: body.era_start,
 				era_end: body.era_end,
-				phylogenetic_tree_file: body.phylogenetic_tree_file,
-				geographic_data_file: body.geographic_data_file,
 				updated_at: new Date().toISOString(),
 			};
-			if (isTreeChanged) {
-				updatePayload.phylogenetic_tree_creator = user.id;
-			}
-			if (isGeoChanged) {
-				updatePayload.geographic_data_creator = user.id;
-			}
 
 			const { data: updatedClassification, error: updateError } = await supabase
 				.from("classifications")

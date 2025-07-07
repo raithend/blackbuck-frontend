@@ -33,10 +33,10 @@ export default function PhylogeneticTreeEditPage() {
 		const fetchTreeData = async () => {
 			setIsLoading(true);
 			try {
-				const response = await fetch(`/api/classifications/${encodeURIComponent(decodedName)}?includePosts=false`);
+				const response = await fetch(`/api/classifications/${encodeURIComponent(decodedName)}/phylogenetic-trees`);
 				if (response.ok) {
 					const data = await response.json();
-					const content = data.classification?.phylogenetic_tree_file || "";
+					const content = data.phylogeneticTree?.content || "";
 					setTreeContent(content);
 					setOriginalContent(content);
 				}
@@ -90,14 +90,14 @@ export default function PhylogeneticTreeEditPage() {
 			const supabase = createClient();
 			const { data: { session } } = await supabase.auth.getSession();
 			
-			const response = await fetch(`/api/classifications/${encodeURIComponent(decodedName)}`, {
-				method: 'PUT',
+			const response = await fetch(`/api/classifications/${encodeURIComponent(decodedName)}/phylogenetic-trees`, {
+				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
 					'Authorization': `Bearer ${session?.access_token}`,
 				},
 				body: JSON.stringify({
-					phylogenetic_tree_file: treeContent
+					content: treeContent
 				}),
 			});
 

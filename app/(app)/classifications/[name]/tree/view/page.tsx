@@ -29,10 +29,10 @@ export default function PhylogeneticTreeViewPage() {
 		const fetchTreeData = async () => {
 			setIsLoading(true);
 			try {
-				const response = await fetch(`/api/classifications/${encodeURIComponent(decodedName)}?includePosts=false`);
+				const response = await fetch(`/api/classifications/${encodeURIComponent(decodedName)}/phylogenetic-trees`);
 				if (response.ok) {
 					const data = await response.json();
-					const content = data.classification?.phylogenetic_tree_file || "";
+					const content = data.phylogeneticTree?.content || "";
 					setTreeContent(content);
 				}
 			} catch (error) {

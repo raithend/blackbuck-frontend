@@ -64,12 +64,12 @@ export default function HabitatEditPage() {
 		const fetchData = async () => {
 			setIsLoading(true);
 			try {
-				const response = await fetch(`/api/classifications/${encodeURIComponent(decodedName)}`);
+				const response = await fetch(`/api/classifications/${encodeURIComponent(decodedName)}/habitat-data`);
 				if (response.ok) {
 					const data = await response.json();
-					if (data.classification?.geographic_data_file) {
+					if (data.habitatData?.content) {
 						try {
-							const parsedData = JSON.parse(data.classification.geographic_data_file);
+							const parsedData = JSON.parse(data.habitatData.content);
 							// EraGroup[]構造のデータをそのまま使用
 							if (Array.isArray(parsedData) && parsedData.length > 0 && 'era' in parsedData[0]) {
 								setHabitatData(parsedData);
@@ -104,18 +104,18 @@ export default function HabitatEditPage() {
 			const { data: { session } } = await supabase.auth.getSession();
 			
 			// EraGroup[]構造をJSON文字列に変換
-			const geographicDataFile = JSON.stringify(habitatData);
+			const habitatContent = JSON.stringify(habitatData);
 			
 			console.log('保存する生息地データ:', habitatData);
 			
-			const response = await fetch(`/api/classifications/${encodeURIComponent(decodedName)}`, {
-				method: 'PUT',
+			const response = await fetch(`/api/classifications/${encodeURIComponent(decodedName)}/habitat-data`, {
+				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
 					'Authorization': `Bearer ${session?.access_token}`,
 				},
 				body: JSON.stringify({
-					geographic_data_file: geographicDataFile
+					content: habitatContent
 				}),
 			});
 

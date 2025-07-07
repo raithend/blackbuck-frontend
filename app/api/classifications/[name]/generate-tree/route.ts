@@ -121,15 +121,30 @@ children:
       }, { status: 400 });
     }
 
-    // 生成されたYAMLをデータベースに保存
-    const { error: updateError } = await supabase
+    // 分類IDを取得
+    const { data: classification, error: classificationError } = await supabase
       .from('classifications')
-      .update({ phylogenetic_tree_file: generatedYaml })
-      .eq('name', decodedName);
+      .select('id')
+      .eq('name', decodedName)
+      .single();
 
-    if (updateError) {
-      console.error('データベース更新エラー:', updateError);
-      return NextResponse.json({ error: 'データベースの更新に失敗しました' }, { status: 500 });
+    if (classificationError || !classification) {
+      return NextResponse.json({ error: '分類が見つかりません' }, { status: 404 });
+    }
+
+    // 生成されたYAMLをphylogenetic_treesテーブルにupsert
+    const { error: upsertError } = await supabase
+      .from('phylogenetic_trees')
+      .upsert({
+        classification_id: classification.id,
+        content: generatedYaml,
+        creator: user.id,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'classification_id' });
+
+    if (upsertError) {
+      console.error('系統樹データ保存エラー:', upsertError);
+      return NextResponse.json({ error: '系統樹データの保存に失敗しました' }, { status: 500 });
     }
 
     return NextResponse.json({ 

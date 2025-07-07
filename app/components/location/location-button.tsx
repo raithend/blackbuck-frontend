@@ -15,7 +15,6 @@ export function LocationButton() {
 	const handleSave = async (data: {
 		name: string;
 		description?: string;
-		avatar_url?: string;
 		header_url?: string;
 	}) => {
 		try {

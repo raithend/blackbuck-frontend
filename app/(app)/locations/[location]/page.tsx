@@ -125,18 +125,6 @@ export default function LocationPage() {
 
 				{/* Location Info */}
 				<div className="flex items-start gap-4">
-					{/* Avatar */}
-					{locationInfo?.avatar_url && (
-						<div className="relative w-20 h-20 rounded-full overflow-hidden flex-shrink-0">
-							<Image
-								src={locationInfo.avatar_url}
-								alt={`${location}のアバター`}
-								fill
-								className="object-cover"
-							/>
-						</div>
-					)}
-
 					<div className="flex-1">
 						<div className="flex items-center justify-between mb-2">
 							<div className="flex items-center gap-2">

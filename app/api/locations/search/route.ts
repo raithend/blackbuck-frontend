@@ -1,5 +1,6 @@
 import { createClient } from "@/app/lib/supabase-server";
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
 	try {
@@ -18,7 +19,6 @@ export async function GET(request: NextRequest) {
 				id,
 				name,
 				description,
-				avatar_url,
 				header_url,
 				created_at
 			`)

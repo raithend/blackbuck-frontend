@@ -17,22 +17,7 @@ import { GeologicalAgeProvider, useGeologicalAge } from "@/app/components/geolog
 import { useUser } from "@/app/contexts/user-context";
 import geologicalAgesData from "@/app/data/geological-ages.json";
 
-import type { PostWithUser } from "@/app/types/types";
-
-// 分類情報の型定義
-interface Classification {
-	id: string;
-	name: string;
-	english_name?: string;
-	scientific_name?: string;
-	description?: string;
-	era_start?: string;
-	era_end?: string;
-	phylogenetic_tree_file?: string;
-	geographic_data_file?: string;
-	phylogenetic_tree_creator?: string;
-	geographic_data_creator?: string;
-}
+import type { PostWithUser, Classification } from "@/app/types/types";
 
 interface EraGroup {
 	era: string;
@@ -87,6 +72,8 @@ const ClassificationContent = memo(({
 	hasPhylogeneticTree,
 	hasGeographicData,
 	eraGroups,
+	phylogeneticTreeContent,
+	habitatDataContent,
 	activeTab,
 	setActiveTab,
 	handleLikeChange,
@@ -107,6 +94,8 @@ const ClassificationContent = memo(({
 	hasPhylogeneticTree: boolean;
 	hasGeographicData: boolean;
 	eraGroups: any;
+	phylogeneticTreeContent: string | undefined;
+	habitatDataContent: string | undefined;
 	activeTab: string;
 	setActiveTab: (tab: string) => void;
 	handleLikeChange: (postId: string, likeCount: number, isLiked: boolean) => void;
@@ -364,7 +353,7 @@ const ClassificationContent = memo(({
 						<div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
 							<div className="lg:col-span-3">
 								<PhylogeneticTreeArea 
-									customTreeContent={classification?.phylogenetic_tree_file} 
+									customTreeContent={phylogeneticTreeContent} 
 								/>
 							</div>
 							<div className="lg:col-span-1">
@@ -417,7 +406,7 @@ const ClassificationContent = memo(({
 						<div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
 							<div className="lg:col-span-3">
 								<GlobeArea 
-									customGeographicFile={classification?.geographic_data_file}
+									customGeographicFile={habitatDataContent}
 									eraGroups={filteredEraGroups || eraGroups}
 								/>
 							</div>
@@ -477,8 +466,8 @@ export default function ClassificationPage() {
 	const [activeTab, setActiveTab] = useState("overview");
 	const { user } = useUser();
 
-	// 分類情報のみを取得（即座に表示可能）
-	const { data: classificationData, error: classificationError, isLoading: classificationLoading } = useSWR<{ classification: Classification | null }>(
+			// 分類情報のみを取得（即座に表示可能）
+		const { data: classificationData, error: classificationError, isLoading: classificationLoading } = useSWR<{ classification: Classification | null }>(
 		`/api/classifications/${encodeURIComponent(decodedName)}?includePosts=false`,
 		fetcher,
 		{
@@ -496,6 +485,32 @@ export default function ClassificationPage() {
 			onError: (error) => {
 				console.error('分類情報取得エラー:', error);
 			}
+		}
+	);
+
+	// 系統樹データを取得
+	const { data: phylogeneticTreeData, error: phylogeneticTreeError, isLoading: phylogeneticTreeLoading } = useSWR<{ phylogeneticTree: { content: string; creator: string } | null }>(
+		`/api/classifications/${encodeURIComponent(decodedName)}/phylogenetic-trees`,
+		fetcher,
+		{
+			revalidateOnFocus: false,
+			revalidateOnReconnect: false,
+			revalidateOnMount: true,
+			dedupingInterval: 60000,
+			refreshInterval: 0,
+		}
+	);
+
+	// 生息地データを取得
+	const { data: habitatData, error: habitatError, isLoading: habitatLoading } = useSWR<{ habitatData: { content: string; creator: string } | null }>(
+		`/api/classifications/${encodeURIComponent(decodedName)}/habitat-data`,
+		fetcher,
+		{
+			revalidateOnFocus: false,
+			revalidateOnReconnect: false,
+			revalidateOnMount: true,
+			dedupingInterval: 60000,
+			refreshInterval: 0,
 		}
 	);
 
@@ -522,23 +537,23 @@ export default function ClassificationPage() {
 		}
 	);
 
-	const classification = classificationData?.classification;
+	const classification: Classification | null = classificationData?.classification ?? null;
 	const posts = postsData?.posts || [];
 
 	// 生息地データを時代別にグループ化
 	const eraGroups = useMemo(() => {
 		console.log('=== eraGroups生成開始 ===');
-		console.log('classification:', classification);
-		console.log('classification?.geographic_data_file:', classification?.geographic_data_file);
+		console.log('habitatData:', habitatData);
+		console.log('habitatData?.habitatData?.content:', habitatData?.habitatData?.content);
 		
-		if (!classification?.geographic_data_file) {
-			console.log('geographic_data_fileが存在しないため、空配列を返す');
+		if (!habitatData?.habitatData?.content) {
+			console.log('habitatData.contentが存在しないため、空配列を返す');
 			return [];
 		}
 
 		try {
-			const data = JSON.parse(classification.geographic_data_file);
-			console.log('geographic_data_file解析結果:', data);
+			const data = JSON.parse(habitatData.habitatData.content);
+			console.log('habitatData.content解析結果:', data);
 			
 			// データが既に時代別にグループ化されているかチェック
 			if (Array.isArray(data) && data.length > 0 && data[0].era && data[0].elements) {
@@ -548,8 +563,8 @@ export default function ClassificationPage() {
 			}
 			
 			// データを時代別にグループ化
-			const grouped = data.reduce((acc: any[], point: any) => {
-				const era = point.era || '不明';
+			const grouped = data.reduce((acc: EraGroup[], point: HabitatElement) => {
+				const era = (point as any).era || '不明';
 				let group = acc.find(g => g.era === era);
 				
 				if (!group) {
@@ -557,32 +572,27 @@ export default function ClassificationPage() {
 					acc.push(group);
 				}
 				
-				group.elements.push(point);
+				group.elements?.push(point);
 				return acc;
 			}, []);
 			
 			console.log('eraGroups生成結果:', grouped);
 			return grouped;
 		} catch (error) {
-			console.error('geographic_data_file解析エラー:', error);
+			console.error('habitatData.content解析エラー:', error);
 			return [];
 		}
-	}, [classification?.geographic_data_file]);
+	}, [habitatData?.habitatData?.content]);
 
-	// 分類情報のデバッグ出力を削減
-	const debugInfo = useMemo(() => ({
-		classification,
-		hasPhylogeneticTree: classification?.phylogenetic_tree_file,
-		phylogenetic_tree_file: classification?.phylogenetic_tree_file
-	}), [classification]);
+
 
 	// 分類情報の存在チェックをメモ化
 	const classificationChecks = useMemo(() => ({
 		hasOverview: !!(classification?.description || classification?.english_name || classification?.scientific_name || classification?.era_start || classification?.era_end),
 		hasPosts: posts.length > 0,
-		hasPhylogeneticTree: !!classification?.phylogenetic_tree_file,
-		hasGeographicData: !!classification?.geographic_data_file
-	}), [classification, posts.length]);
+		hasPhylogeneticTree: !!phylogeneticTreeData?.phylogeneticTree?.content,
+		hasGeographicData: !!habitatData?.habitatData?.content
+	}), [classification, posts.length, phylogeneticTreeData?.phylogeneticTree?.content, habitatData?.habitatData?.content]);
 
 	// いいね状態変更のハンドラー
 	const handleLikeChange = useCallback((postId: string, likeCount: number, isLiked: boolean) => {
@@ -617,19 +627,12 @@ export default function ClassificationPage() {
 	}, [mutatePosts]);
 
 	// 系統樹作成者かどうかを判定
-	const isTreeCreator = !!(user && classification?.phylogenetic_tree_creator === user.id);
+	const isTreeCreator = !!(user && phylogeneticTreeData?.phylogeneticTree?.creator === user.id);
 	
 	// 生息地データ作成者かどうかを判定
-	const isGeographicDataCreator = !!(user && classification?.geographic_data_creator === user.id);
+	const isGeographicDataCreator = !!(user && habitatData?.habitatData?.creator === user.id);
 
-	// デバッグ出力（開発時のみ、初回のみ）
-	useEffect(() => {
-		if (process.env.NODE_ENV === 'development') {
-			console.log('ClassificationPage - classification:', debugInfo.classification);
-			console.log('ClassificationPage - hasPhylogeneticTree:', debugInfo.hasPhylogeneticTree);
-			console.log('ClassificationPage - phylogenetic_tree_file:', debugInfo.phylogenetic_tree_file);
-		}
-	}, [debugInfo]); // debugInfo全体に依存
+
 
 	// 分類情報の読み込み中
 	if (classificationLoading) return <div>分類情報を読み込み中...</div>;
@@ -651,6 +654,8 @@ export default function ClassificationPage() {
 				hasPhylogeneticTree={hasPhylogeneticTree}
 				hasGeographicData={hasGeographicData}
 				eraGroups={eraGroups}
+				phylogeneticTreeContent={phylogeneticTreeData?.phylogeneticTree?.content}
+				habitatDataContent={habitatData?.habitatData?.content}
 				activeTab={activeTab}
 				setActiveTab={setActiveTab}
 				handleLikeChange={handleLikeChange}

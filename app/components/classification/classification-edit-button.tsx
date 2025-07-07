@@ -6,20 +6,7 @@ import { Edit, Plus } from "lucide-react";
 import { ClassificationEditDialog } from "./classification-edit-dialog";
 import { useUser } from "@/app/contexts/user-context";
 import { useParams } from "next/navigation";
-
-interface Classification {
-	id: string;
-	name: string;
-	english_name?: string;
-	scientific_name?: string;
-	description?: string;
-	era_start?: string;
-	era_end?: string;
-	phylogenetic_tree_file?: string;
-	geographic_data_file?: string;
-	phylogenetic_tree_creator?: string;
-	geographic_data_creator?: string;
-}
+import type { Classification } from "@/app/types/types";
 
 interface ClassificationEditButtonProps {
 	classification: Classification | null;

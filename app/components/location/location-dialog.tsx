@@ -16,7 +16,6 @@ interface LocationDialogProps {
 	onSave: (data: {
 		name: string;
 		description?: string;
-		avatar_url?: string;
 		header_url?: string;
 	}) => Promise<void>;
 }
@@ -24,7 +23,6 @@ interface LocationDialogProps {
 export function LocationDialog({ location, onSave }: LocationDialogProps) {
 	const [name, setName] = useState(location?.name || "");
 	const [description, setDescription] = useState(location?.description || "");
-	const [avatarUrl, setAvatarUrl] = useState(location?.avatar_url || "");
 	const [headerUrl, setHeaderUrl] = useState(location?.header_url || "");
 	const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -34,7 +32,6 @@ export function LocationDialog({ location, onSave }: LocationDialogProps) {
 			await onSave({
 				name,
 				description: description || undefined,
-				avatar_url: avatarUrl || undefined,
 				header_url: headerUrl || undefined,
 			});
 		} catch (error) {
@@ -68,15 +65,6 @@ export function LocationDialog({ location, onSave }: LocationDialogProps) {
 						value={description}
 						onChange={(e) => setDescription(e.target.value)}
 						rows={3}
-					/>
-				</div>
-				<div>
-					<label className="text-sm font-medium">アバター画像URL</label>
-					<Input
-						placeholder="https://example.com/avatar.jpg"
-						value={avatarUrl}
-						onChange={(e) => setAvatarUrl(e.target.value)}
-						type="url"
 					/>
 				</div>
 				<div>

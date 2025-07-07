@@ -15,20 +15,7 @@ import { Input } from "@/app/components/ui/input";
 import { Label } from "@/app/components/ui/label";
 import { Textarea } from "@/app/components/ui/textarea";
 import { Upload, File, X } from "lucide-react";
-
-interface Classification {
-	id: string;
-	name: string;
-	english_name?: string;
-	scientific_name?: string;
-	description?: string;
-	era_start?: string;
-	era_end?: string;
-	phylogenetic_tree_file?: string;
-	geographic_data_file?: string;
-	phylogenetic_tree_creator?: string;
-	geographic_data_creator?: string;
-}
+import type { Classification } from "@/app/types/types";
 
 interface ClassificationEditDialogProps {
 	classification: Classification | null;
@@ -49,8 +36,6 @@ export function ClassificationEditDialog({
 		description: classification?.description || "",
 		era_start: classification?.era_start || "",
 		era_end: classification?.era_end || "",
-		phylogenetic_tree_creator: classification?.phylogenetic_tree_creator || "",
-		geographic_data_creator: classification?.geographic_data_creator || "",
 	});
 
 	const [treeFile, setTreeFile] = useState<File | null>(null);
@@ -113,8 +98,6 @@ export function ClassificationEditDialog({
 			// 分類情報を更新または作成
 			await onSave({
 				...formData,
-				phylogenetic_tree_file: phylogeneticTreeContent,
-				geographic_data_file: geographicDataContent,
 			});
 
 			onOpenChange(false);
@@ -179,7 +162,7 @@ export function ClassificationEditDialog({
 							<Label htmlFor="english_name">英語名</Label>
 							<Input
 								id="english_name"
-								value={formData.english_name}
+								value={formData.english_name || ""}
 								onChange={(e) => handleInputChange("english_name", e.target.value)}
 								placeholder="英語名を入力"
 							/>
@@ -188,7 +171,7 @@ export function ClassificationEditDialog({
 							<Label htmlFor="scientific_name">学名</Label>
 							<Input
 								id="scientific_name"
-								value={formData.scientific_name}
+								value={formData.scientific_name || ""}
 								onChange={(e) => handleInputChange("scientific_name", e.target.value)}
 								placeholder="学名を入力"
 							/>
@@ -200,7 +183,7 @@ export function ClassificationEditDialog({
 							<Label htmlFor="era_start">時代（開始）</Label>
 							<Input
 								id="era_start"
-								value={formData.era_start}
+								value={formData.era_start || ""}
 								onChange={(e) => handleInputChange("era_start", e.target.value)}
 								placeholder="例: 中生代"
 							/>
@@ -209,7 +192,7 @@ export function ClassificationEditDialog({
 							<Label htmlFor="era_end">時代（終了）</Label>
 							<Input
 								id="era_end"
-								value={formData.era_end}
+								value={formData.era_end || ""}
 								onChange={(e) => handleInputChange("era_end", e.target.value)}
 								placeholder="例: 新生代"
 							/>
@@ -220,7 +203,7 @@ export function ClassificationEditDialog({
 						<Label htmlFor="description">説明</Label>
 						<Textarea
 							id="description"
-							value={formData.description}
+							value={formData.description || ""}
 							onChange={(e) => handleInputChange("description", e.target.value)}
 							placeholder="分類の説明を入力"
 							rows={3}
