@@ -13,9 +13,9 @@ import { Input } from "@/app/components/ui/input";
 import { Label } from "@/app/components/ui/label";
 import { createClient } from "@/app/lib/supabase-browser";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
-import { validatePassword } from "@/app/lib/password-validation";
+import { validatePassword, passwordZod } from "@/app/lib/password-validation";
 
 type SignUpParams = {
 	email: string;
@@ -28,6 +28,28 @@ export function SignUpForm() {
 	const [error, setError] = useState<string | null>(null);
 	const [isLoading, setIsLoading] = useState(false);
 	const [password, setPassword] = useState("");
+	const [passwordWarning, setPasswordWarning] = useState<string | null>(null);
+	const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+	// パスワード入力監視
+	useEffect(() => {
+		if (timerRef.current) clearTimeout(timerRef.current);
+		if (!password) {
+			setPasswordWarning(null);
+			return;
+		}
+		timerRef.current = setTimeout(() => {
+			const result = passwordZod.safeParse(password);
+			if (!result.success) {
+				setPasswordWarning(result.error.issues[0]?.message || "パスワードが要件を満たしていません");
+			} else {
+				setPasswordWarning(null);
+			}
+		}, 1000);
+		return () => {
+			if (timerRef.current) clearTimeout(timerRef.current);
+		};
+	}, [password]);
 
 	const signUp = async ({ email, password, name }: SignUpParams) => {
 		const supabase = createClient();
@@ -147,8 +169,10 @@ export function SignUpForm() {
 						<p className="text-xs text-gray-500">
 							パスワードは8文字以上で入力してください
 						</p>
+						{passwordWarning && (
+							<p className="text-xs text-red-500">{passwordWarning}</p>
+						)}
 					</div>
-
 
 					{error && (
 						<Alert variant="destructive">
