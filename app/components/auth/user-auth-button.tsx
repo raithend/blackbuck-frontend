@@ -30,9 +30,10 @@ export function UserAuthButton() {
 
 	if (!user) {
 		return (
-			<Button variant="ghost" size="sm" onClick={() => router.push("/login")}>
-				ログイン
-			</Button>
+			<div className="flex gap-2">
+				<Button variant="ghost" size="sm" onClick={() => router.push("/login")}>ログイン</Button>
+				<Button variant="outline" size="sm" onClick={() => router.push("/signup")}>サインアップ</Button>
+			</div>
 		);
 	}
 
