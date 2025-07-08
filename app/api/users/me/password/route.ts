@@ -44,8 +44,15 @@ export async function PUT(request: NextRequest) {
 		const { currentPassword, newPassword } = validationResult.data;
 
 		// 現在のパスワードを確認（メールとパスワードでサインインを試行）
+		if (!user.email) {
+			return NextResponse.json(
+				{ error: "メールアドレスが見つかりません" },
+				{ status: 400 },
+			);
+		}
+
 		const { error: signInError } = await supabase.auth.signInWithPassword({
-			email: user.email!,
+			email: user.email,
 			password: currentPassword,
 		});
 

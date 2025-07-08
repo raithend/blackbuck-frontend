@@ -77,10 +77,10 @@ export async function GET(
 
 		// いいね数を集計
 		const likeCountMap = new Map<string, number>();
-		likeCounts?.forEach(like => {
+		for (const like of likeCounts || []) {
 			const count = likeCountMap.get(like.post_id) || 0;
 			likeCountMap.set(like.post_id, count + 1);
-		});
+		}
 
 		// 投稿データを整形
 		const formattedPosts = likedPosts?.map(like => ({
