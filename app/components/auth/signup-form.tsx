@@ -15,6 +15,7 @@ import { createClient } from "@/app/lib/supabase-browser";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import { validatePassword } from "@/app/lib/password-validation";
 
 type SignUpParams = {
 	email: string;
@@ -76,20 +77,13 @@ export function SignUpForm() {
 		const password = formData.get("password") as string;
 		const name = formData.get("name") as string;
 
-		// パスワードバリデーション
-		if (password.length < 8) {
-			setError("パスワードは8文字以上で入力してください");
+		// 共通バリデーション
+		const passwordError = validatePassword(password);
+		if (passwordError) {
+			setError(passwordError);
 			setIsLoading(false);
 			return;
 		}
-
-		if (password.length > 128) {
-			setError("パスワードは128文字以下で入力してください");
-			setIsLoading(false);
-			return;
-		}
-
-
 
 		try {
 			const { session } = await signUp({ email, password, name });

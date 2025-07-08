@@ -9,14 +9,12 @@ import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { passwordZod } from "@/app/lib/password-validation";
 
 // パスワード変更用のスキーマ
 const changePasswordFormSchema = z.object({
 	currentPassword: z.string().min(1, "現在のパスワードを入力してください"),
-	newPassword: z
-		.string()
-		.min(8, "パスワードは8文字以上で入力してください")
-		.max(128, "パスワードは128文字以下で入力してください"),
+	newPassword: passwordZod,
 });
 
 type ChangePasswordFormData = z.infer<typeof changePasswordFormSchema>;
