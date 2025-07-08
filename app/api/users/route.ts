@@ -1,5 +1,6 @@
 import { createClient } from "@/app/lib/supabase-server";
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 async function generateAccountId(email: string): Promise<string> {
 	const supabase = await createClient();
