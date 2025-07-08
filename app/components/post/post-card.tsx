@@ -1,4 +1,5 @@
 import { CommentButton } from "@/app/components/comment/comment-button";
+import { Button } from "@/app/components/ui/button";
 import {
 	Avatar,
 	AvatarFallback,
@@ -50,7 +51,7 @@ const formatDateSafely = (dateString: string | undefined) => {
 	
 	try {
 		const date = new Date(dateString);
-		if (isNaN(date.getTime())) {
+		if (Number.isNaN(date.getTime())) {
 			return "日時不明";
 		}
 		return formatDistanceToNow(date, { locale: ja });
@@ -154,9 +155,9 @@ export function PostCard({ post, onLikeChange, onPostUpdate, onPostDelete }: Pos
 					{isOwnPost && (
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
-								<button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+								<Button variant="ghost" size="icon" className="h-8 w-8">
 									<MoreHorizontal className="h-4 w-4 text-gray-500" />
-								</button>
+								</Button>
 							</DropdownMenuTrigger>
 							<DropdownMenuContent align="end">
 								<Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>

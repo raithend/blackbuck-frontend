@@ -1,5 +1,6 @@
 import { createClient } from "@/app/lib/supabase-server";
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 // 投稿一覧取得
 export async function GET(request: NextRequest) {
@@ -8,8 +9,8 @@ export async function GET(request: NextRequest) {
 		
 		// クエリパラメータを取得
 		const { searchParams } = new URL(request.url);
-		const limit = parseInt(searchParams.get('limit') || '20');
-		const offset = parseInt(searchParams.get('offset') || '0');
+		const limit = Number.parseInt(searchParams.get('limit') || '20');
+		const offset = Number.parseInt(searchParams.get('offset') || '0');
 
 		// 投稿を取得（ユーザー情報と画像情報を含む）
 		const { data: posts, error: postsError } = await supabase
@@ -66,10 +67,10 @@ export async function GET(request: NextRequest) {
 
 		// いいね数を集計
 		const likeCountMap = new Map<string, number>();
-		likeCounts?.forEach(like => {
+		for (const like of likeCounts || []) {
 			const count = likeCountMap.get(like.post_id) || 0;
 			likeCountMap.set(like.post_id, count + 1);
-		});
+		}
 
 		// 投稿データを整形
 		const formattedPosts = posts?.map(post => ({

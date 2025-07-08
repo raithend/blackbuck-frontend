@@ -116,19 +116,21 @@ export function PostEditDialog({ post, onEdit, onClose }: PostEditDialogProps) {
 						<label className="text-sm font-medium">既存の画像</label>
 						<div className="grid grid-cols-2 gap-2">
 							{existingImages.map((imageUrl, index) => (
-								<div key={index} className="relative">
+								<div key={imageUrl} className="relative">
 									<img
 										src={imageUrl}
 										alt={`既存画像 ${index + 1}`}
 										className="w-full h-24 object-cover rounded"
 									/>
-									<button
+									<Button
 										type="button"
 										onClick={() => removeExistingImage(imageUrl)}
-										className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
+										variant="destructive"
+										size="icon"
+										className="absolute top-1 right-1 h-6 w-6 text-xs"
 									>
 										×
-									</button>
+									</Button>
 								</div>
 							))}
 						</div>
