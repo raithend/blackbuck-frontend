@@ -51,7 +51,7 @@ export function ClassificationEditButton({
 			} else {
 				// 新しい分類情報を作成
 				console.log("新しい分類情報を作成します", decodedName);
-				const response = await fetch(`/api/classifications`, {
+				const response = await fetch("/api/classifications", {
 					method: "POST",
 					headers: {
 						"Authorization": `Bearer ${session.access_token}`,
