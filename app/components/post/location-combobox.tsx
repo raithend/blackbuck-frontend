@@ -18,11 +18,11 @@ import { cn } from "@/app/lib/utils";
 import { Check, ChevronsUpDown } from "lucide-react";
 import * as React from "react";
 
-import { aquarium } from "./location.ts.d/aquarium";
-import { famousLocations } from "./location.ts.d/famous-locations";
-import { museum } from "./location.ts.d/museum";
-import { prefecture } from "./location.ts.d/prefecture";
-import { zoo } from "./location.ts.d/zoo";
+import { aquarium } from "./locations.ts.d/aquarium";
+import { famousLocations } from "./locations.ts.d/famous-locations";
+import { museum } from "./locations.ts.d/museum";
+import { prefecture } from "./locations.ts.d/prefecture";
+import { zoo } from "./locations.ts.d/zoo";
 
 const locations = famousLocations;
 
