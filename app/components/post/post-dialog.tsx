@@ -2,6 +2,7 @@
 
 import { ImageUpload } from "@/app/components/post/image-upload";
 import { LocationCombobox } from "@/app/components/post/location-combobox";
+import { EventCombobox } from "@/app/components/post/event-combobox";
 import { Button } from "@/app/components/ui/button";
 import {
 	DialogContent,
@@ -17,6 +18,7 @@ interface PostDialogProps {
 	onPost: (data: {
 		content?: string;
 		location?: string;
+		event?: string;
 		classification?: string;
 		imageUrls: string[];
 	}) => Promise<void>;
@@ -25,6 +27,7 @@ interface PostDialogProps {
 export function PostDialog({ onPost }: PostDialogProps) {
 	const [content, setContent] = useState("");
 	const [location, setLocation] = useState("");
+	const [event, setEvent] = useState("");
 	const [classification, setClassification] = useState("");
 	const [imageFiles, setImageFiles] = useState<File[]>([]);
 	const [isSubmitting, setIsSubmitting] = useState(false);
@@ -66,6 +69,7 @@ export function PostDialog({ onPost }: PostDialogProps) {
 			await onPost({
 				content,
 				location,
+				event,
 				classification,
 				imageUrls,
 			});
@@ -88,6 +92,7 @@ export function PostDialog({ onPost }: PostDialogProps) {
 					onChange={(e) => setContent(e.target.value)}
 				/>
 				<LocationCombobox value={location} onChange={setLocation} />
+				<EventCombobox value={event} onChange={setEvent} />
 				<Input
 					type="text"
 					placeholder="分類"

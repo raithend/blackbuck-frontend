@@ -29,6 +29,7 @@ interface Post {
 	classification: string | null;
 	content: string;
 	created_at: string;
+	event: string | null;
 	location: string | null;
 	updated_at: string;
 	user_id: string;
@@ -42,6 +43,7 @@ interface FormattedPost {
 	classification: string | null;
 	content: string;
 	created_at: string;
+	event: string | null;
 	location: string | null;
 	updated_at: string;
 	user_id: string;

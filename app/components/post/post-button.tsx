@@ -14,6 +14,7 @@ export function PostButton() {
 	const handlePost = async (data: {
 		content?: string;
 		location?: string;
+		event?: string;
 		classification?: string;
 		imageUrls: string[];
 	}) => {
@@ -38,6 +39,7 @@ export function PostButton() {
 				body: JSON.stringify({
 					content: data.content || "",
 					location: data.location || "",
+					event: data.event || "",
 					classification: data.classification || "",
 					image_urls: data.imageUrls,
 				}),

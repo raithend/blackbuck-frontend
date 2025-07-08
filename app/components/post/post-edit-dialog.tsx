@@ -18,6 +18,7 @@ interface PostEditDialogProps {
 	onEdit: (postId: string, data: {
 		content?: string;
 		location?: string;
+		event?: string;
 		classification?: string;
 		imageUrls: string[];
 	}) => Promise<void>;
@@ -27,6 +28,7 @@ interface PostEditDialogProps {
 export function PostEditDialog({ post, onEdit, onClose }: PostEditDialogProps) {
 	const [content, setContent] = useState(post.content || "");
 	const [location, setLocation] = useState(post.location || "");
+	const [event, setEvent] = useState(post.event || "");
 	const [classification, setClassification] = useState(post.classification || "");
 	const [imageFiles, setImageFiles] = useState<File[]>([]);
 	const [existingImages, setExistingImages] = useState<string[]>(
@@ -38,6 +40,7 @@ export function PostEditDialog({ post, onEdit, onClose }: PostEditDialogProps) {
 	useEffect(() => {
 		setContent(post.content || "");
 		setLocation(post.location || "");
+		setEvent(post.event || "");
 		setClassification(post.classification || "");
 		setExistingImages(post.post_images?.map(img => img.image_url) || []);
 	}, [post]);
@@ -75,6 +78,7 @@ export function PostEditDialog({ post, onEdit, onClose }: PostEditDialogProps) {
 			await onEdit(post.id, {
 				content,
 				location,
+				event,
 				classification,
 				imageUrls: allImageUrls,
 			});
@@ -103,6 +107,12 @@ export function PostEditDialog({ post, onEdit, onClose }: PostEditDialogProps) {
 					onChange={(e) => setContent(e.target.value)}
 				/>
 				<LocationCombobox value={location} onChange={setLocation} />
+				<Input
+					type="text"
+					placeholder="イベント"
+					value={event}
+					onChange={(e) => setEvent(e.target.value)}
+				/>
 				<Input
 					type="text"
 					placeholder="分類"

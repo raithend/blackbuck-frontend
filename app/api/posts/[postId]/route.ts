@@ -46,7 +46,7 @@ export async function PUT(
 		}
 
 		// リクエストボディを取得
-		const { content, location, classification, imageUrls } = await request.json();
+		const { content, location, classification, event, imageUrls } = await request.json();
 
 		// 投稿を更新
 		const { error: updateError } = await supabase
@@ -55,6 +55,7 @@ export async function PUT(
 				content,
 				location,
 				classification,
+				event,
 				updated_at: new Date().toISOString(),
 			})
 			.eq("id", postId);

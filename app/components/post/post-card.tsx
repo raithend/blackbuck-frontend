@@ -76,6 +76,7 @@ export function PostCard({ post, onLikeChange, onPostUpdate, onPostDelete }: Pos
 	const handleEditSubmit = async (postId: string, data: {
 		content?: string;
 		location?: string;
+		event?: string;
 		classification?: string;
 		imageUrls: string[];
 	}) => {
@@ -212,6 +213,7 @@ export function PostCard({ post, onLikeChange, onPostUpdate, onPostDelete }: Pos
 						<div className="grid gap-1">
 							<div>{post.content}</div>
 							<div>{post.location}</div>
+							<div>{post.event}</div>
 							<div>{post.classification}</div>
 						</div>
 						<div className="flex justify-between items-center">

@@ -77,6 +77,7 @@ export async function GET(request: NextRequest) {
 			id: post.id,
 			content: post.content,
 			location: post.location,
+			event: post.event,
 			classification: post.classification,
 			created_at: post.created_at,
 			updated_at: post.updated_at,
@@ -130,7 +131,7 @@ export async function POST(request: NextRequest) {
 		}
 
 		const body = await request.json();
-		const { content, classification, location, image_urls } = body;
+		const { content, classification, location, event, image_urls } = body;
 
 		// 投稿内容または画像のいずれかが必要
 		if (!content && (!image_urls || image_urls.length === 0)) {
@@ -148,6 +149,7 @@ export async function POST(request: NextRequest) {
 				content: content || "",
 				classification,
 				location,
+				event,
 			})
 			.select()
 			.single();

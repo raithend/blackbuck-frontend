@@ -69,6 +69,7 @@ export const createPostSchema = z.object({
 export const updatePostSchema = z.object({
 	content: z.string().min(1).optional(),
 	location: z.string().nullable().optional(),
+	event: z.string().nullable().optional(),
 	classification: z.string().nullable().optional(),
 	images: z.array(z.string().url()).optional(),
 });
