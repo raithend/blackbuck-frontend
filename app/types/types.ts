@@ -19,6 +19,8 @@ export type PostWithUser = Post & {
 
 export type Location = Database["public"]["Tables"]["locations"]["Row"];
 
+export type Event = Database["public"]["Tables"]["events"]["Row"];
+
 export type Classification = Database["public"]["Tables"]["classifications"]["Row"];
 
 export type PhotoBubble = Database["public"]["Tables"]["photo_bubbles"]["Row"];
