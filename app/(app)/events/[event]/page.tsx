@@ -1,6 +1,7 @@
 "use client";
 
 import { PostCards } from "@/app/components/post/post-cards";
+import { EventEditButton } from "@/app/components/event/event-edit-button";
 import type { PostWithUser, Event } from "@/app/types/types";
 import { useParams } from "next/navigation";
 import useSWR from "swr";
@@ -130,6 +131,7 @@ export default function EventPage() {
 								<Calendar className="w-5 h-5 text-gray-500" />
 								<h1 className="text-3xl font-bold">{event}</h1>
 							</div>
+							{eventInfo && <EventEditButton event={eventInfo} />}
 						</div>
 						
 						{eventInfo?.description ? (

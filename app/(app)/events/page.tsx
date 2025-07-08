@@ -3,6 +3,7 @@
 import { Button } from "@/app/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card";
 import { Input } from "@/app/components/ui/input";
+import { EventButton } from "@/app/components/event/event-button";
 import { Search } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
@@ -69,6 +70,7 @@ export default function EventsPage() {
 			<div className="mb-8">
 				<div className="flex justify-between items-center mb-2">
 					<h1 className="text-3xl font-bold">イベント別投稿一覧</h1>
+					<EventButton />
 				</div>
 				<p className="text-gray-600">
 					イベントを選択して、そのイベントに関連する投稿を閲覧できます

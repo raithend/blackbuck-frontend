@@ -11,9 +11,12 @@ export async function GET(request: NextRequest) {
 		const { searchParams } = new URL(request.url);
 		const limit = Number.parseInt(searchParams.get('limit') || '20');
 		const offset = Number.parseInt(searchParams.get('offset') || '0');
+		const event = searchParams.get('event');
+		const location = searchParams.get('location');
+		const classification = searchParams.get('classification');
 
-		// 投稿を取得（ユーザー情報と画像情報を含む）
-		const { data: posts, error: postsError } = await supabase
+		// クエリビルダーを作成
+		let query = supabase
 			.from("posts")
 			.select(`
 				*,
@@ -27,7 +30,21 @@ export async function GET(request: NextRequest) {
 					id,
 					image_url
 				)
-			`)
+			`);
+
+		// フィルタリング条件を追加
+		if (event) {
+			query = query.eq('event', event);
+		}
+		if (location) {
+			query = query.eq('location', location);
+		}
+		if (classification) {
+			query = query.eq('classification', classification);
+		}
+
+		// 投稿を取得
+		const { data: posts, error: postsError } = await query
 			.order("created_at", { ascending: false })
 			.range(offset, offset + limit - 1);
 
