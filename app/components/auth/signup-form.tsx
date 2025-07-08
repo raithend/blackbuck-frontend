@@ -27,7 +27,6 @@ export function SignUpForm() {
 	const [error, setError] = useState<string | null>(null);
 	const [isLoading, setIsLoading] = useState(false);
 	const [password, setPassword] = useState("");
-	const [confirmPassword, setConfirmPassword] = useState("");
 
 	const signUp = async ({ email, password, name }: SignUpParams) => {
 		const supabase = createClient();
@@ -90,11 +89,7 @@ export function SignUpForm() {
 			return;
 		}
 
-		if (password !== confirmPassword) {
-			setError("パスワードが一致しません");
-			setIsLoading(false);
-			return;
-		}
+
 
 		try {
 			const { session } = await signUp({ email, password, name });
@@ -159,54 +154,7 @@ export function SignUpForm() {
 							パスワードは8文字以上で入力してください
 						</p>
 					</div>
-					<div className="space-y-2">
-						<Label htmlFor="confirm-password">パスワード（確認）</Label>
-						<Input 
-							id="confirm-password" 
-							type="password" 
-							value={confirmPassword}
-							onChange={(e) => setConfirmPassword(e.target.value)}
-							placeholder="パスワードを再入力"
-							required 
-						/>
-					</div>
 
-					{/* パスワード一致チェック */}
-					{password && confirmPassword && password !== confirmPassword && (
-						<p className="text-sm text-red-500">
-							パスワードが一致しません
-						</p>
-					)}
-
-					{/* パスワード強度チェック */}
-					{password && (
-						<div className="space-y-1">
-							<p className="text-xs text-gray-500">パスワード強度:</p>
-							<div className="flex space-x-1">
-								<div 
-									className={`h-1 flex-1 rounded ${
-										password.length >= 8 ? 'bg-green-500' : 'bg-gray-300'
-									}`}
-								/>
-								<div 
-									className={`h-1 flex-1 rounded ${
-										password.length >= 12 ? 'bg-green-500' : 'bg-gray-300'
-									}`}
-								/>
-								<div 
-									className={`h-1 flex-1 rounded ${
-										password.length >= 16 ? 'bg-green-500' : 'bg-gray-300'
-									}`}
-								/>
-							</div>
-							<p className="text-xs text-gray-500">
-								{password.length < 8 && "8文字以上で入力してください"}
-								{password.length >= 8 && password.length < 12 && "弱い"}
-								{password.length >= 12 && password.length < 16 && "普通"}
-								{password.length >= 16 && "強い"}
-							</p>
-						</div>
-					)}
 
 					{error && (
 						<Alert variant="destructive">
@@ -216,7 +164,7 @@ export function SignUpForm() {
 					<Button 
 						type="submit" 
 						className="w-full" 
-						disabled={isLoading || !password || !confirmPassword || password !== confirmPassword || password.length < 8}
+						disabled={isLoading || !password || password.length < 8}
 					>
 						{isLoading ? "登録中..." : "新規登録"}
 					</Button>

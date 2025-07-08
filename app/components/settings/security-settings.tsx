@@ -17,10 +17,6 @@ const changePasswordFormSchema = z.object({
 		.string()
 		.min(8, "パスワードは8文字以上で入力してください")
 		.max(128, "パスワードは128文字以下で入力してください"),
-	confirmPassword: z.string().min(1, "パスワードを再入力してください"),
-}).refine((data) => data.newPassword === data.confirmPassword, {
-	message: "パスワードが一致しません",
-	path: ["confirmPassword"],
 });
 
 type ChangePasswordFormData = z.infer<typeof changePasswordFormSchema>;
@@ -83,16 +79,7 @@ export function SecuritySettings() {
 		}
 	};
 
-	// パスワード強度を計算
-	const getPasswordStrength = (password: string) => {
-		if (!password) return { level: 0, text: "" };
-		if (password.length < 8) return { level: 0, text: "8文字以上で入力してください" };
-		if (password.length < 12) return { level: 1, text: "弱い" };
-		if (password.length < 16) return { level: 2, text: "普通" };
-		return { level: 3, text: "強い" };
-	};
 
-	const passwordStrength = getPasswordStrength(newPassword);
 
 	return (
 		<div className="space-y-6">
@@ -133,47 +120,7 @@ export function SecuritySettings() {
 						)}
 					</div>
 
-					{/* 新しいパスワード（確認） */}
-					<div className="space-y-2">
-						<Label htmlFor="confirm-password">新しいパスワード（確認）</Label>
-						<Input 
-							id="confirm-password" 
-							type="password" 
-							{...register("confirmPassword")}
-							placeholder="新しいパスワードを再入力"
-							disabled={isLoading}
-						/>
-						{errors.confirmPassword && (
-							<p className="text-sm text-red-500">{errors.confirmPassword.message}</p>
-						)}
-					</div>
 
-					{/* パスワード強度チェック */}
-					{newPassword && (
-						<div className="space-y-1">
-							<p className="text-xs text-gray-500">パスワード強度:</p>
-							<div className="flex space-x-1">
-								<div 
-									className={`h-1 flex-1 rounded ${
-										passwordStrength.level >= 1 ? 'bg-green-500' : 'bg-gray-300'
-									}`}
-								/>
-								<div 
-									className={`h-1 flex-1 rounded ${
-										passwordStrength.level >= 2 ? 'bg-green-500' : 'bg-gray-300'
-									}`}
-								/>
-								<div 
-									className={`h-1 flex-1 rounded ${
-										passwordStrength.level >= 3 ? 'bg-green-500' : 'bg-gray-300'
-									}`}
-								/>
-							</div>
-							<p className="text-xs text-gray-500">
-								{passwordStrength.text}
-							</p>
-						</div>
-					)}
 
 					{/* 変更ボタン */}
 					<Button 
