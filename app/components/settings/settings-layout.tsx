@@ -20,7 +20,7 @@ export function SettingsLayout() {
 
 	if (!isClient) {
 		return (
-			<div className="w-full space-y-6">
+			<div className="container mx-auto px-4 py-8 w-full space-y-6">
 				<div className="space-y-4">
 					<h2 className="text-xl font-semibold">設定</h2>
 					<div className="h-10 w-full animate-pulse rounded-md bg-muted"></div>
@@ -30,21 +30,23 @@ export function SettingsLayout() {
 	}
 
 	return (
-		<Tabs defaultValue="account" className="w-full">
-			<TabsList className="grid w-full grid-cols-3">
-				<TabsTrigger value="account">アカウント</TabsTrigger>
-				<TabsTrigger value="security">セキュリティ</TabsTrigger>
-				<TabsTrigger value="help">ヘルプ</TabsTrigger>
-			</TabsList>
-			<TabsContent value="account">
-				<AccountSettings />
-			</TabsContent>
-			<TabsContent value="security">
-				<SecuritySettings />
-			</TabsContent>
-			<TabsContent value="help">
-				<HelpSupport />
-			</TabsContent>
-		</Tabs>
+		<div className="container mx-auto px-4 py-8">
+			<Tabs defaultValue="account" className="w-full">
+				<TabsList className="grid w-full grid-cols-3">
+					<TabsTrigger value="account">アカウント</TabsTrigger>
+					<TabsTrigger value="security">セキュリティ</TabsTrigger>
+					<TabsTrigger value="help">ヘルプ</TabsTrigger>
+				</TabsList>
+				<TabsContent value="account">
+					<AccountSettings />
+				</TabsContent>
+				<TabsContent value="security">
+					<SecuritySettings />
+				</TabsContent>
+				<TabsContent value="help">
+					<HelpSupport />
+				</TabsContent>
+			</Tabs>
+		</div>
 	);
 }
