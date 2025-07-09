@@ -2,6 +2,7 @@
 
 import { LogoutButton } from "@/app/components/auth/logout-button";
 import { ModeRadioGroup } from "@/app/components/settings/mode-radio-group";
+import { DeleteAccountDialog } from "@/app/components/settings/delete-account-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/app/components/ui/avatar";
 import { Button } from "@/app/components/ui/button";
 import { Input } from "@/app/components/ui/input";
@@ -23,6 +24,7 @@ export function AccountSettings() {
 	const [isHeaderSaving, setIsHeaderSaving] = useState(false);
 	const [isAvatarSaving, setIsAvatarSaving] = useState(false);
 	const [hasNetworkError, setHasNetworkError] = useState(false);
+	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
 	// ユーザー情報が取得されたらフォームに設定
 	useEffect(() => {
@@ -404,8 +406,17 @@ export function AccountSettings() {
 				<p className="text-sm text-gray-500">
 					アカウントを削除すると、すべてのデータが永久に削除されます。この操作は元に戻せません。
 				</p>
-				<Button variant="destructive">アカウントを削除</Button>
+				<Button 
+					variant="destructive" 
+					onClick={() => setIsDeleteDialogOpen(true)}
+				>
+					アカウントを削除
+				</Button>
 			</div>
+			<DeleteAccountDialog 
+				isOpen={isDeleteDialogOpen}
+				onClose={() => setIsDeleteDialogOpen(false)}
+			/>
 		</div>
 	);
 }
