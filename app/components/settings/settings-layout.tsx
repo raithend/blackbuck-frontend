@@ -23,7 +23,7 @@ export function SettingsLayout() {
 			<div className="container mx-auto px-4 py-8 w-full space-y-6">
 				<div className="space-y-4">
 					<h2 className="text-xl font-semibold">設定</h2>
-					<div className="h-10 w-full animate-pulse rounded-md bg-muted"></div>
+					<div className="h-10 w-full animate-pulse rounded-md bg-muted" />
 				</div>
 			</div>
 		);

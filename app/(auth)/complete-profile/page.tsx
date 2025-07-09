@@ -12,8 +12,10 @@ import {
 import { Input } from "@/app/components/ui/input";
 import { Label } from "@/app/components/ui/label";
 import { completeProfile, getSession } from "@/app/lib/auth";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
+import { createClient } from "@/app/lib/supabase-browser";
+
 
 function CompleteProfileContent() {
 	const [accountId, setAccountId] = useState("");
@@ -24,18 +26,68 @@ function CompleteProfileContent() {
 		"checking" | "available" | "unavailable" | null
 	>(null);
 	const router = useRouter();
+	const searchParams = useSearchParams();
 
-	// セッションの確認
+	// セッションの確認 & setSession
 	useEffect(() => {
-		const checkSession = async () => {
-			try {
-				await getSession();
-			} catch (error) {
-				router.push("/login?error=セッションが無効です");
-			}
-		};
-		checkSession();
-	}, [router]);
+		const access_token = searchParams.get("access_token");
+		const refresh_token = searchParams.get("refresh_token");
+		const code = searchParams.get("code");
+		
+		console.log("Complete profile page - params:", { 
+			hasAccessToken: !!access_token, 
+			hasRefreshToken: !!refresh_token,
+			hasCode: !!code
+		});
+		
+		if (access_token && refresh_token) {
+			console.log("setSession: access_token, refresh_tokenをセットします");
+			const supabase = createClient();
+			supabase.auth.setSession({ access_token, refresh_token }).then((result) => {
+				console.log("Session set result:", result);
+				// クエリを消してリロード
+				router.replace("/complete-profile");
+			}).catch((error) => {
+				console.error("Session set error:", error);
+			});
+		} else if (code) {
+			console.log("Processing auth code:", code);
+			const supabase = createClient();
+			
+			// PKCEエラーを回避するため、認証状態を確認
+			supabase.auth.getSession().then(({ data: { session } }) => {
+				if (session) {
+					console.log("Session already exists");
+				} else {
+					console.log("No existing session, trying code exchange");
+					// コード交換を試行
+					supabase.auth.exchangeCodeForSession(code).then((result) => {
+						console.log("Code exchange result:", result);
+						if (result.error) {
+							console.error("Code exchange error:", result.error);
+							// PKCEエラーの場合、ユーザーに再ログインを促す
+							if (result.error.message.includes("code verifier")) {
+								console.log("PKCE error detected, redirecting to login");
+								router.replace(`/login?error=${encodeURIComponent("認証リンクが無効です。再度ログインしてください。")}`);
+							} else {
+								router.replace(`/login?error=${encodeURIComponent(result.error.message)}`);
+							}
+						} else if (result.data.session) {
+							console.log("Code exchange successful");
+						} else {
+							console.log("No session in result");
+							router.replace(`/login?error=${encodeURIComponent("セッションの設定に失敗しました")}`);
+						}
+					}).catch((error) => {
+						console.error("Code exchange catch error:", error);
+						router.replace(`/login?error=${encodeURIComponent("認証に失敗しました")}`);
+					});
+				}
+			});
+		} else {
+			console.log("setSession: トークンがURLにありません");
+		}
+	}, [searchParams, router]);
 
 	// account_idのバリデーション
 	useEffect(() => {

@@ -1,31 +1,35 @@
-"use server";
-
-import { createClient } from "@/app/lib/supabase-server";
-import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
 	const requestUrl = new URL(request.url);
 	const code = requestUrl.searchParams.get("code");
+	const error = requestUrl.searchParams.get("error");
+	const error_description = requestUrl.searchParams.get("error_description");
 
-	if (code) {
-		const supabase = await createClient();
-		const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+	console.log("Auth callback called with:", { 
+		code: code ? "present" : "missing",
+		error,
+		error_description
+	});
 
-		if (error) {
-			return NextResponse.redirect(
-				`${requestUrl.origin}/login?error=${error.message}`,
-			);
-		}
-
-		if (data.session) {
-			// プロフィール入力ページにリダイレクト
-			return NextResponse.redirect(`${requestUrl.origin}/complete-profile`);
-		}
+	// エラーがある場合はログインページにリダイレクト
+	if (error) {
+		console.error("Auth error:", error, error_description);
+		return NextResponse.redirect(
+			`${requestUrl.origin}/login?error=${encodeURIComponent(error_description || error)}`,
+		);
 	}
 
+	// 認証コードがある場合は、クライアントサイドで処理するようにリダイレクト
+	if (code) {
+		const redirectUrl = `${requestUrl.origin}/complete-profile?code=${encodeURIComponent(code)}`;
+		console.log("Redirecting to complete-profile with code:", redirectUrl);
+		return NextResponse.redirect(redirectUrl);
+	}
+
+	console.log("No code, redirecting to login");
 	// エラー時はログインページにリダイレクト
 	return NextResponse.redirect(
-		`${requestUrl.origin}/login?error=認証に失敗しました`,
+		`${requestUrl.origin}/login?error=${encodeURIComponent("認証に失敗しました")}`,
 	);
 }

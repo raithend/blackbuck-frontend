@@ -1,9 +1,11 @@
 import { createClient } from "@/app/lib/supabase-server";
-import { NextRequest } from "next/server";
+import type { NextRequest } from "next/server";
+import type { User, SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/app/types/database.types";
 
 export interface AuthResult {
-	user: any;
-	supabase: any;
+	user: User;
+	supabase: SupabaseClient<Database>;
 }
 
 export async function authenticateUser(request: NextRequest): Promise<AuthResult> {
@@ -22,18 +24,18 @@ export async function authenticateUser(request: NextRequest): Promise<AuthResult
 		}
 
 		return { user, supabase };
-	} else {
-		// アクセストークンがない場合はセッション認証を試行
-		const supabase = await createClient();
-		const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-		if (authError || !user) {
-			console.error('Auth error:', authError);
-			throw new Error("認証が必要です");
-		}
-
-		return { user, supabase };
 	}
+	
+	// アクセストークンがない場合はセッション認証を試行
+	const supabase = await createClient();
+	const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+	if (authError || !user) {
+		console.error('Auth error:', authError);
+		throw new Error("認証が必要です");
+	}
+
+	return { user, supabase };
 }
 
 export async function authenticateUserWithToken(request: NextRequest): Promise<AuthResult> {
