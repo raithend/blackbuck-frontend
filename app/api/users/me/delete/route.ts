@@ -1,6 +1,8 @@
 import { createClient } from "@/app/lib/supabase-server";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/app/types/database.types";
 
 export async function DELETE(request: NextRequest) {
 	try {
@@ -134,8 +136,13 @@ export async function DELETE(request: NextRequest) {
 			);
 		}
 
-		// 15. Supabase Authのユーザーを削除
-		const { error: deleteAuthUserError } = await supabase.auth.admin.deleteUser(user.id);
+		// 15. Supabase Authのユーザーを削除（管理者権限が必要なため、サービスロールキーを使用）
+		const adminSupabase = createSupabaseClient<Database>(
+			process.env.NEXT_PUBLIC_SUPABASE_URL!,
+			process.env.SUPABASE_SERVICE_ROLE_KEY!,
+		);
+		
+		const { error: deleteAuthUserError } = await adminSupabase.auth.admin.deleteUser(user.id);
 		
 		if (deleteAuthUserError) {
 			console.error("認証ユーザー削除エラー:", deleteAuthUserError);

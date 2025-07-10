@@ -16,9 +16,14 @@ if (!supabaseServiceKey) {
 }
 
 export const createClient = async (accessToken?: string) => {
+	const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+	if (!anonKey) {
+		throw new Error("Missing NEXT_PUBLIC_SUPABASE_ANON_KEY");
+	}
+	
 	const supabase = createSupabaseClient<Database>(
 		supabaseUrl,
-		supabaseServiceKey,
+		accessToken ? supabaseServiceKey : anonKey,
 		{
 			auth: {
 				autoRefreshToken: true,
