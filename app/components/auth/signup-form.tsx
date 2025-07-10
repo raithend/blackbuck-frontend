@@ -38,7 +38,7 @@ export function SignUpForm() {
 				data: {
 					name,
 				},
-				emailRedirectTo: `${window.location.origin}/auth/callback`,
+				emailRedirectTo: `${window.location.origin}/auth/verify`,
 			},
 		});
 

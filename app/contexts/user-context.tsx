@@ -67,7 +67,8 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 		// セッション変更の監視
 		const {
 			data: { subscription },
-		} = supabase.auth.onAuthStateChange((_event, session) => {
+		} = supabase.auth.onAuthStateChange((event, session) => {
+			console.log("Auth state change:", event, session ? "session exists" : "no session");
 			setSession(session);
 			setIsSessionLoading(false);
 		});
