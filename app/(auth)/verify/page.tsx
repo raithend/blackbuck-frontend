@@ -3,11 +3,11 @@
 import { createClient } from "@/app/lib/supabase-browser";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { Spinner } from "@radix-ui/themes";
 
 export default function VerifyPage() {
 	const router = useRouter();
 	const searchParams = useSearchParams();
-	const [isProcessing, setIsProcessing] = useState(true);
 	const [message, setMessage] = useState("認証を確認中...");
 
 	useEffect(() => {
@@ -62,7 +62,7 @@ export default function VerifyPage() {
 	return (
 		<div className="flex min-h-screen items-center justify-center">
 			<div className="text-center">
-				<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4" />
+				<Spinner size="3" className="mx-auto mb-4" />
 				<p className="text-gray-600">{message}</p>
 			</div>
 		</div>

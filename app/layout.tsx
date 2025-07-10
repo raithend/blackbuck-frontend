@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/app/components/theme-provider";
 import { UserProvider } from "@/app/contexts/user-context";
+import { Theme } from "@radix-ui/themes";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -25,7 +26,9 @@ export default function RootLayout({
 					enableSystem
 					disableTransitionOnChange
 				>
-					<UserProvider>{children}</UserProvider>
+					<Theme>
+						<UserProvider>{children}</UserProvider>
+					</Theme>
 				</ThemeProvider>
 			</body>
 		</html>
