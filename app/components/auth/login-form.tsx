@@ -16,6 +16,7 @@ import { useUser } from "@/app/contexts/user-context";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import { GoogleLoginButton } from "./google-login-button";
 
 type SignInParams = {
 	email: string;
@@ -123,10 +124,23 @@ export function LoginForm() {
 						</div>
 					)}
 				</CardContent>
-				<CardFooter>
+				<CardFooter className="flex flex-col space-y-3">
 					<Button type="submit" className="w-full" disabled={isLoading}>
 						{isLoading ? "ログイン中..." : "ログイン"}
 					</Button>
+					<div className="relative w-full">
+						<div className="absolute inset-0 flex items-center">
+							<span className="w-full border-t" />
+						</div>
+						<div className="relative flex justify-center text-xs uppercase">
+							<span className="bg-background px-2 text-muted-foreground">
+								または
+							</span>
+						</div>
+					</div>
+					<GoogleLoginButton className="w-full">
+						Googleでログイン
+					</GoogleLoginButton>
 				</CardFooter>
 			</form>
 		</Card>

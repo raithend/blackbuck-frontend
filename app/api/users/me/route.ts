@@ -33,6 +33,39 @@ export async function GET(request: NextRequest) {
 			.eq("id", user.id)
 			.single();
 
+		// プロフィールが存在しない場合、自動的に作成
+		if (profileError && profileError.code === 'PGRST116') {
+			console.log("プロフィールが存在しないため、自動作成します:", user.id);
+			
+			// OAuthユーザーの場合、名前を取得
+			const name = user.user_metadata?.name || user.user_metadata?.full_name || user.email?.split('@')[0] || 'ユーザー';
+			const accountId = user.email || `user_${user.id}`;
+			
+			// プロフィールを作成
+			const { data: newProfile, error: createError } = await supabase
+				.from("users")
+				.insert({
+					id: user.id,
+					username: name,
+					account_id: accountId,
+					created_at: new Date().toISOString(),
+					updated_at: new Date().toISOString(),
+				})
+				.select()
+				.single();
+
+			if (createError) {
+				console.error("プロフィール作成エラー:", createError);
+				return NextResponse.json(
+					{ error: createError.message },
+					{ status: 500 },
+				);
+			}
+
+			console.log("プロフィール作成成功:", newProfile);
+			return NextResponse.json({ user: newProfile });
+		}
+
 		if (profileError) {
 			console.error("プロフィール取得エラー:", profileError);
 			return NextResponse.json(
