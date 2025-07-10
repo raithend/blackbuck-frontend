@@ -88,6 +88,8 @@ export function FollowButton({
 				throw new Error("認証トークンが取得できません");
 			}
 
+			console.log("フォロー操作開始:", { url, method, targetAccountId });
+
 			const response = await fetch(url, {
 				method,
 				headers: {
@@ -96,10 +98,16 @@ export function FollowButton({
 				},
 			});
 
+			console.log("フォロー操作レスポンス:", { status: response.status, ok: response.ok });
+
 			if (!response.ok) {
 				const errorData = await response.json();
+				console.error("フォロー操作エラー詳細:", errorData);
 				throw new Error(errorData.error || "操作に失敗しました");
 			}
+
+			const result = await response.json();
+			console.log("フォロー操作成功:", result);
 
 			setIsFollowing(!isFollowing);
 			toast.success(
@@ -107,7 +115,8 @@ export function FollowButton({
 			);
 		} catch (error) {
 			console.error("フォロー操作エラー:", error);
-			toast.error(error instanceof Error ? error.message : "操作に失敗しました");
+			const errorMessage = error instanceof Error ? error.message : "操作に失敗しました";
+			toast.error(errorMessage);
 		} finally {
 			setIsLoading(false);
 		}

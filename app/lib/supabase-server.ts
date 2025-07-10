@@ -23,7 +23,7 @@ export const createClient = async (accessToken?: string) => {
 	
 	const supabase = createSupabaseClient<Database>(
 		supabaseUrl,
-		accessToken ? supabaseServiceKey : anonKey,
+		anonKey, // 常にanon keyを使用
 		{
 			auth: {
 				autoRefreshToken: true,
@@ -40,6 +40,18 @@ export const createClient = async (accessToken?: string) => {
 			},
 		},
 	);
+
+	// アクセストークンが提供されている場合、セッションを設定
+	if (accessToken) {
+		const { data: { session }, error } = await supabase.auth.setSession({
+			access_token: accessToken,
+			refresh_token: "",
+		});
+		
+		if (error) {
+			console.error("セッション設定エラー:", error);
+		}
+	}
 
 	return supabase;
 };
