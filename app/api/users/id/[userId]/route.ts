@@ -1,27 +1,32 @@
 import { createClient } from "@/app/lib/supabase-server";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { handleUserFetchError } from "@/app/lib/user-api-utils";
+import { handleUserFetchError, isValidUUID } from "@/app/lib/user-api-utils";
 
 export async function GET(
 	request: NextRequest,
-	{ params }: { params: Promise<{ accountId: string }> }
+	{ params }: { params: Promise<{ userId: string }> }
 ) {
 	try {
-		const { accountId } = await params;
+		const { userId } = await params;
 
-		if (!accountId) {
-			return NextResponse.json({ error: "Account ID is required" }, { status: 400 });
+		if (!userId) {
+			return NextResponse.json({ error: "User ID is required" }, { status: 400 });
+		}
+
+		// UUID形式の検証
+		if (!isValidUUID(userId)) {
+			return NextResponse.json({ error: "Invalid UUID format" }, { status: 400 });
 		}
 
 		// Supabaseクライアントを作成（認証不要でユーザー情報を取得）
 		const supabase = await createClient();
 
-		// account_idフィールドでユーザーを検索
+		// idフィールドでユーザーを検索
 		const { data: user, error } = await supabase
 			.from("users")
 			.select("*")
-			.eq("account_id", accountId)
+			.eq("id", userId)
 			.single();
 
 		// 共通エラーハンドリング

@@ -10,6 +10,8 @@ import { useGeologicalAge } from "../geological/geological-context";
 import geologicalAgesData from "@/app/data/geological-ages.json";
 import { generateMapWithHabitat } from "@/app/components/habitat/map-utils";
 import { getHabitatEraIds, hasOverlap } from "@/app/lib/globe-age-utils";
+import { CreatorCard } from "../creator/creator-card";
+import type { User } from "@/app/types/types";
 
 import type { HabitatElement } from "./types";
 
@@ -25,6 +27,7 @@ interface GlobeAreaProps {
 	customGeographicFile?: string;
 	eraGroups?: EraGroup[]; // 時代グループデータ
 	showMapSelector?: boolean; // 地図選択機能を表示するかどうか
+	creator?: User; // 作成者情報
 }
 
 // geological-ages.jsonから地図情報を取得する関数
@@ -64,7 +67,8 @@ const getMapImages = () => {
 const GlobeArea = React.memo<GlobeAreaProps>(({ 
 	customGeographicFile, 
 	eraGroups,
-	showMapSelector = true 
+	showMapSelector = true,
+	creator 
 }) => {
 	const { selectedMap, selectedAgeIds } = useGeologicalAge();
 	const [customTexture, setCustomTexture] = useState<string | undefined>(undefined);
@@ -178,7 +182,7 @@ const GlobeArea = React.memo<GlobeAreaProps>(({
 	}, [eraGroups, habitatEraIds, selectedAgeIds]);
 
 	return (
-		<div className="h-[calc(100vh-4rem)]">
+		<div className="h-[calc(100vh-4rem)] relative">
 			{showMapSelector && (
 				<div className="absolute top-4 left-4 z-20 bg-white/90 backdrop-blur-sm rounded-lg p-4 shadow-lg">
 					<div className="space-y-2">
@@ -255,6 +259,13 @@ const GlobeArea = React.memo<GlobeAreaProps>(({
 						customTexture={customTexture}
 					habitatPoints={habitatPoints}
 					/>
+			)}
+			
+			{/* 作成者表示 */}
+			{creator && (
+				<div className="absolute bottom-4 right-4 z-10">
+					<CreatorCard user={creator} />
+				</div>
 			)}
 		</div>
 	);

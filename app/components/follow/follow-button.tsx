@@ -31,6 +31,14 @@ export function FollowButton({
 		const fetchFollowStatus = async () => {
 			if (!user || isInitialized || user?.account_id === targetAccountId) return;
 
+			// UUID形式の場合はフォロー状態を取得しない
+			const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(targetAccountId);
+			if (isUuid) {
+				console.warn('UUID形式のアカウントIDではフォロー状態を取得しません:', targetAccountId);
+				setIsInitialized(true);
+				return;
+			}
+
 			try {
 				// 認証トークンを取得
 				const { createClient } = await import("@/app/lib/supabase-browser");
@@ -70,6 +78,14 @@ export function FollowButton({
 	const handleFollowToggle = async () => {
 		if (!user) {
 			toast.error("ログインが必要です");
+			return;
+		}
+
+		// UUID形式の場合はフォロー操作を無効化
+		const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(targetAccountId);
+		if (isUuid) {
+			console.warn('UUID形式のアカウントIDではフォロー操作を無効化します:', targetAccountId);
+			toast.error("このユーザーはフォローできません");
 			return;
 		}
 

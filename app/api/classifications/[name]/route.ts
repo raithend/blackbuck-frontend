@@ -107,14 +107,16 @@ export async function GET(
 			console.log('データベース内の全分類名:', classifications);
 			console.log('分類名の数:', classifications.length);
 
-			// 2. Claude APIに分類名と配列を送信して階層関係を考慮した分類を取得
-			const message = await anthropic.messages.create({
-				model: "claude-opus-4-20250514",
-				max_tokens: 1000,
-				messages: [
-					{
-						role: "user",
-						content: `あなたは生物分類の専門家です。以下の分類名のリストから、「${decodedName}」に属する生物名のみを抽出してください。
+			// 2. Claude APIに分類名と配列を送信して階層関係を考慮した分類を取得（リトライ機能付き）
+			const callClaudeAPI = async (retryCount = 0): Promise<any> => {
+				try {
+					const message = await anthropic.messages.create({
+						model: "claude-opus-4-20250514",
+						max_tokens: 1000,
+						messages: [
+							{
+								role: "user",
+								content: `あなたは生物分類の専門家です。以下の分類名のリストから、「${decodedName}」に属する生物名のみを抽出してください。
 
 必ず以下の形式のJSONで返答してください：
 {"matchedClassifications": ["分類名1", "分類名2", ...]}
@@ -124,9 +126,26 @@ export async function GET(
 
 分類名リスト：
 ${JSON.stringify(classifications)}`,
-					},
-				],
-			});
+							},
+						],
+					});
+					return message;
+				} catch (error: any) {
+					console.error(`Claude API呼び出しエラー (試行 ${retryCount + 1}):`, error);
+					
+					// 過負荷エラー（529）またはレート制限エラーの場合、リトライ
+					if ((error.status === 529 || error.status === 429) && retryCount < 3) {
+						console.log(`リトライ中... (${retryCount + 1}/3)`);
+						await new Promise(resolve => setTimeout(resolve, 2000 * (retryCount + 1))); // 指数バックオフ
+						return callClaudeAPI(retryCount + 1);
+					}
+					
+					// 最大リトライ回数に達した場合、エラーを投げる
+					throw error;
+				}
+			};
+
+			const message = await callClaudeAPI();
 
 			// Claude APIの応答をパース
 			const response =

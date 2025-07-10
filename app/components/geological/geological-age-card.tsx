@@ -56,11 +56,7 @@ interface Era extends BaseGeologicalUnit {
 // すべての地質年代単位のユニオン型
 type GeologicalUnit = GeologicalAge | Epoch | Period | Era;
 
-// 型ガード関数
-function isGeologicalAge(unit: GeologicalUnit): unit is GeologicalAge {
-	return !('ages' in unit) && !('epochs' in unit) && !('periods' in unit);
-}
-
+// 型ガード関数（使用されていないものは削除）
 function isEpoch(unit: GeologicalUnit): unit is Epoch {
 	return 'ages' in unit && !('epochs' in unit) && !('periods' in unit);
 }
