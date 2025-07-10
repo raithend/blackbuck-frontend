@@ -54,6 +54,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 	const [session, setSession] = useState<Session | null>(null);
 	const [isSessionLoading, setIsSessionLoading] = useState(true);
 	const [hasNetworkError, setHasNetworkError] = useState(false);
+	const [lastSessionUserId, setLastSessionUserId] = useState<string | null>(null);
 
 	useEffect(() => {
 		const supabase = createClient();
@@ -61,6 +62,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 		// 初期セッションの取得
 		supabase.auth.getSession().then(({ data: { session } }) => {
 			setSession(session);
+			setLastSessionUserId(session?.user?.id || null);
 			setIsSessionLoading(false);
 		});
 
@@ -70,6 +72,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 		} = supabase.auth.onAuthStateChange((event, session) => {
 			console.log("Auth state change:", event, session ? "session exists" : "no session");
 			setSession(session);
+			setLastSessionUserId(session?.user?.id || null);
 			setIsSessionLoading(false);
 		});
 
@@ -85,7 +88,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 			revalidateOnFocus: false, // フォーカス時の再検証を無効化
 			revalidateOnReconnect: true, // 再接続時は再検証
 			shouldRetryOnError: false, // エラー時の再試行を無効化（既存データを保持するため）
-			dedupingInterval: 60000, // 60秒間の重複リクエストを防ぐ（30秒から延長）
+			dedupingInterval: 5000, // 5秒間の重複リクエストを防ぐ（短時間での重複を防ぐ）
 			keepPreviousData: true, // 前のデータを保持
 			refreshInterval: 0, // 自動更新を無効化
 			revalidateIfStale: false, // 古いデータでも再検証しない
@@ -95,17 +98,23 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 	const user = data?.user ?? null;
 	const loading = isSessionLoading;
 
-	// セッション変更時にユーザーデータを強制的に更新
+	// セッション変更時の処理を最適化（手動更新を最小限に）
 	useEffect(() => {
-		if (session?.user && !isSessionLoading) {
-			// セッションが変更された場合のみmutateを呼び出す
-			if (!user || user.id !== session.user.id) {
-				mutate();
+		if (!isSessionLoading) {
+			const currentUserId = session?.user?.id || null;
+			
+			// セッションのユーザーIDが変更された場合のみ更新
+			if (lastSessionUserId !== currentUserId) {
+				if (currentUserId && (!user || user.id !== currentUserId)) {
+					console.log("Session user ID changed, updating user data");
+					mutate();
+				} else if (!currentUserId && user) {
+					console.log("Session cleared, clearing user data");
+					mutate({ user: null }, false);
+				}
 			}
-		} else if (!session && !isSessionLoading) {
-			mutate({ user: null }, false);
 		}
-	}, [session, isSessionLoading, mutate, user]);
+	}, [session, isSessionLoading, mutate, user, lastSessionUserId]);
 
 	// ネットワークエラーの監視
 	useEffect(() => {

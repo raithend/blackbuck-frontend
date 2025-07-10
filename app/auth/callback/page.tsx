@@ -8,7 +8,7 @@ import { useUser } from "@/app/contexts/user-context";
 
 export default function AuthCallbackPage() {
 	const router = useRouter();
-	const { refreshUser } = useUser();
+	const { user, loading } = useUser();
 	const [message, setMessage] = useState("認証を確認中...");
 
 	useEffect(() => {
@@ -35,11 +35,11 @@ export default function AuthCallbackPage() {
 				}
 
 				if (data.session) {
-					console.log("Auth successful, updating user context");
-					setMessage("認証完了！ユーザー情報を更新中...");
+					console.log("Auth successful, waiting for user context update");
+					setMessage("認証完了！ユーザー情報を確認中...");
 					
-					// ユーザーコンテキストを更新
-					await refreshUser();
+					// ユーザーコンテキストの更新を待つ（SWRが自動的に処理）
+					// 手動でrefreshUserを呼び出す必要はない
 					
 					setMessage("認証完了！ホームページに移動します...");
 					setTimeout(() => {
@@ -62,7 +62,7 @@ export default function AuthCallbackPage() {
 		};
 
 		handleAuthCallback();
-	}, [router, refreshUser]);
+	}, [router]);
 
 	return (
 		<div className="flex min-h-screen items-center justify-center">

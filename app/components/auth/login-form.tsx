@@ -12,7 +12,6 @@ import {
 import { Input } from "@/app/components/ui/input";
 import { Label } from "@/app/components/ui/label";
 import { createClient } from "@/app/lib/supabase-browser";
-import { useUser } from "@/app/contexts/user-context";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -25,7 +24,6 @@ type SignInParams = {
 
 export function LoginForm() {
 	const router = useRouter();
-	const { refreshUser } = useUser();
 	const [error, setError] = useState<string | null>(null);
 	const [isLoading, setIsLoading] = useState(false);
 
@@ -59,8 +57,7 @@ export function LoginForm() {
 		try {
 			await signIn({ email, password });
 			
-			// ユーザーコンテキストを更新
-			await refreshUser();
+			// SWRの自動更新に任せるため、手動でrefreshUserを呼び出す必要はない
 			
 			// 成功メッセージを表示
 			toast.success("ログインに成功しました");

@@ -1,22 +1,23 @@
 "use client";
 
 import { Button } from "@/app/components/ui/button";
-import { useUser } from "@/app/contexts/user-context";
-import { signOut } from "@/app/lib/auth";
+import { createClient } from "@/app/lib/supabase-browser";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 
 interface LogoutButtonProps {
-	variant?:
-		| "default"
-		| "destructive"
-		| "outline"
-		| "secondary"
-		| "ghost"
-		| "link";
+	variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
 	size?: "default" | "sm" | "lg" | "icon";
 }
+
+const signOut = async () => {
+	const supabase = createClient();
+	const { error } = await supabase.auth.signOut();
+	if (error) {
+		throw error;
+	}
+};
 
 export function LogoutButton({
 	variant = "default",
@@ -24,13 +25,12 @@ export function LogoutButton({
 }: LogoutButtonProps) {
 	const [isLoading, setIsLoading] = useState(false);
 	const router = useRouter();
-	const { refreshUser } = useUser();
 
 	const handleLogout = async () => {
 		setIsLoading(true);
 		try {
 			await signOut();
-			await refreshUser();
+			// SWRの自動更新に任せるため、手動でrefreshUserを呼び出す必要はない
 			router.push("/login");
 			toast.success("ログアウトしました");
 		} catch (error) {
