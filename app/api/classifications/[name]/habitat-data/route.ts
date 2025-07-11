@@ -38,10 +38,18 @@ export async function GET(
 			});
 		}
 
-		// 生息地データを取得
+		// 生息地データを取得（ユーザー情報も含む）
 		const { data: habitatData, error: habitatError } = await supabase
 			.from("habitat_data")
-			.select("*")
+			.select(`
+				*,
+				users!habitat_data_creator_fkey (
+					id,
+					account_id,
+					username,
+					avatar_url
+				)
+			`)
 			.eq("classification_id", classification.id)
 			.single();
 

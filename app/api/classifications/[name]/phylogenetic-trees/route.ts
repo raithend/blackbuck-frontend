@@ -38,10 +38,18 @@ export async function GET(
 			});
 		}
 
-		// 系統樹データを取得
+		// 系統樹データを取得（ユーザー情報も含む）
 		const { data: phylogeneticTree, error: treeError } = await supabase
 			.from("phylogenetic_trees")
-			.select("*")
+			.select(`
+				*,
+				users!phylogenetic_trees_creator_fkey (
+					id,
+					account_id,
+					username,
+					avatar_url
+				)
+			`)
 			.eq("classification_id", classification.id)
 			.single();
 

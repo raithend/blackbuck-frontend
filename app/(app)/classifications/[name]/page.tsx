@@ -520,53 +520,11 @@ export default function ClassificationPage() {
 		}
 	);
 
-	// 作成者情報取得用のAPI URLを決定する関数（UUIDは除外）
-	const getCreatorApiUrl = (creatorId: string) => {
-		const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(creatorId);
-		
-		// UUIDの場合は作成者情報を取得しない
-		if (isUuid) {
-			console.warn('UUID形式の作成者IDは取得しません:', creatorId);
-			return null;
-		}
-		
-		// 文字列の場合はaccount_id用APIを使用
-		return `/api/users/account/${creatorId}`;
-	};
+	// 系統樹作成者のユーザー情報（APIから直接取得）
+	const phylogeneticTreeCreator = (phylogeneticTreeData?.phylogeneticTree as any)?.users;
 
-	// 系統樹作成者のユーザー情報を取得（文字列形式のみ）
-	const { data: phylogeneticTreeCreatorData } = useSWR<{ user: any }>(
-		phylogeneticTreeData?.phylogeneticTree?.creator && 
-		phylogeneticTreeData.phylogeneticTree.creator !== 'unknown' ? 
-		getCreatorApiUrl(phylogeneticTreeData.phylogeneticTree.creator) : null,
-		fetcher,
-		{
-			revalidateOnFocus: false,
-			revalidateOnReconnect: false,
-			dedupingInterval: 60000,
-			refreshInterval: 0,
-			onError: (error) => {
-				console.warn('系統樹作成者情報取得エラー:', error);
-			}
-		}
-	);
-
-	// 生息地データ作成者のユーザー情報を取得（文字列形式のみ）
-	const { data: habitatDataCreatorData } = useSWR<{ user: any }>(
-		habitatData?.habitatData?.creator && 
-		habitatData.habitatData.creator !== 'unknown' ? 
-		getCreatorApiUrl(habitatData.habitatData.creator) : null,
-		fetcher,
-		{
-			revalidateOnFocus: false,
-			revalidateOnReconnect: false,
-			dedupingInterval: 60000,
-			refreshInterval: 0,
-			onError: (error) => {
-				console.warn('生息地データ作成者情報取得エラー:', error);
-			}
-		}
-	);
+	// 生息地データ作成者のユーザー情報（APIから直接取得）
+	const habitatDataCreator = (habitatData?.habitatData as any)?.users;
 
 	// 投稿情報を別途取得（Claude API使用のため時間がかかる）
 	const { data: postsData, error: postsError, isLoading: postsLoading, mutate: mutatePosts } = useSWR<{ posts: PostWithUser[] }>(
@@ -686,8 +644,6 @@ export default function ClassificationPage() {
 	// 生息地データ作成者かどうかを判定
 	const isGeographicDataCreator = !!(user && habitatData?.habitatData?.creator === user.id);
 
-
-
 	// 分類情報の読み込み中
 	if (classificationLoading) return <div>分類情報を読み込み中...</div>;
 	if (classificationError) return <div>分類情報の取得でエラーが発生しました</div>;
@@ -716,11 +672,11 @@ export default function ClassificationPage() {
 				handlePostUpdate={handlePostUpdate}
 				handlePostDelete={handlePostDelete}
 				mutatePosts={mutatePosts}
+				user={user}
 				isTreeCreator={isTreeCreator}
 				isGeographicDataCreator={isGeographicDataCreator}
-				user={user}
-				phylogeneticTreeCreator={phylogeneticTreeCreatorData?.user || undefined}
-				habitatDataCreator={habitatDataCreatorData?.user || undefined}
+				phylogeneticTreeCreator={phylogeneticTreeCreator}
+				habitatDataCreator={habitatDataCreator}
 			/>
 		</GeologicalAgeProvider>
 	);
