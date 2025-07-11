@@ -15,27 +15,37 @@ export async function authenticateUser(request: NextRequest): Promise<AuthResult
 
 	if (accessToken) {
 		// アクセストークンがある場合はそれを使用
-		const supabase = await createClient(accessToken);
-		const { data: { user }, error: userError } = await supabase.auth.getUser();
+		try {
+			const supabase = await createClient(accessToken);
+			const { data: { user }, error: userError } = await supabase.auth.getUser();
 
-		if (userError || !user) {
-			console.error("ユーザー取得エラー:", userError);
+			if (userError || !user) {
+				console.error("ユーザー取得エラー:", userError);
+				throw new Error("認証が必要です");
+			}
+
+			return { user, supabase };
+		} catch (error) {
+			console.error("アクセストークン認証エラー:", error);
+			throw new Error("認証が必要です");
+		}
+	}
+	
+	// アクセストークンがない場合はセッション認証を試行
+	try {
+		const supabase = await createClient();
+		const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+		if (authError || !user) {
+			console.error('Auth error:', authError);
 			throw new Error("認証が必要です");
 		}
 
 		return { user, supabase };
-	}
-	
-	// アクセストークンがない場合はセッション認証を試行
-	const supabase = await createClient();
-	const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-	if (authError || !user) {
-		console.error('Auth error:', authError);
+	} catch (error) {
+		console.error("セッション認証エラー:", error);
 		throw new Error("認証が必要です");
 	}
-
-	return { user, supabase };
 }
 
 export async function authenticateUserWithToken(request: NextRequest): Promise<AuthResult> {

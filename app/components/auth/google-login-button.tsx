@@ -20,32 +20,35 @@ export function GoogleLoginButton({ className, children }: GoogleLoginButtonProp
 	const handleGoogleLogin = async () => {
 		setIsLoading(true);
 		
+		const redirectUrl = `${window.location.origin}/callback`;
+		
 		try {
 			const supabase = createClient();
-			
-			console.log('Starting Google OAuth with PKCE...');
-			console.log('Redirect URL:', `${window.location.origin}/callback`);
 			
 			const { data, error } = await supabase.auth.signInWithOAuth({
 				provider: 'google',
 				options: {
-					redirectTo: `${window.location.origin}/callback`,
+					redirectTo: redirectUrl,
 					queryParams: {
 						access_type: 'offline',
 						prompt: 'consent',
 					},
 				},
 			});
+			
+
 
 			if (error) {
 				console.error('Supabase OAuth error:', error);
+				console.error('Error details:', {
+					message: error.message,
+					status: error.status,
+					name: error.name
+				});
 				throw error;
 			}
 
 			// OAuthフローが開始されました
-			console.log('Google OAuth started successfully:', data);
-			console.log('OAuth URL:', data.url);
-			
 			// PKCEフローでは、ブラウザが自動的にリダイレクトされます
 			
 		} catch (error: any) {

@@ -43,13 +43,20 @@ export const createClient = async (accessToken?: string) => {
 
 	// アクセストークンが提供されている場合、セッションを設定
 	if (accessToken) {
-		const { data: { session }, error } = await supabase.auth.setSession({
-			access_token: accessToken,
-			refresh_token: "",
-		});
-		
-		if (error) {
-			console.error("セッション設定エラー:", error);
+		try {
+			// セッション設定を試行
+			const { data: { session }, error } = await supabase.auth.setSession({
+				access_token: accessToken,
+				refresh_token: "",
+			});
+			
+			if (error) {
+				console.error("セッション設定エラー:", error);
+				// エラーが発生してもクライアントを返す（認証は別途チェック）
+			}
+		} catch (error) {
+			console.error("セッション設定中にエラーが発生:", error);
+			// エラーが発生してもクライアントを返す
 		}
 	}
 
