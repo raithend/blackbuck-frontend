@@ -1,6 +1,3 @@
--- 既存のテーブルを削除
-DROP TABLE IF EXISTS public.post_images;
-
 -- 新しいテーブルを作成
 CREATE TABLE IF NOT EXISTS public.post_images (
   id uuid DEFAULT gen_random_uuid() PRIMARY KEY,

@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS comments (
     content TEXT NOT NULL,
     location TEXT,
     classification TEXT,
-    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
     post_id UUID REFERENCES posts(id) ON DELETE SET NULL,
     parent_comment_id UUID REFERENCES comments(id) ON DELETE SET NULL, -- コメントの返信用
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),

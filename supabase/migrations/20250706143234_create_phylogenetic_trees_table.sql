@@ -3,7 +3,7 @@ CREATE TABLE public.phylogenetic_trees (
   id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
   classification_id uuid REFERENCES public.classifications(id) ON DELETE SET NULL,
   content text NOT NULL, -- 系統樹ファイル（yml形式のテキスト）
-  creator uuid REFERENCES auth.users(id) ON DELETE CASCADE, -- 系統樹ファイル作成者
+  creator uuid REFERENCES public.users(id) ON DELETE CASCADE, -- 系統樹ファイル作成者
   created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
   updated_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL
 );

@@ -1,11 +1,8 @@
--- 既存のテーブルを削除
-DROP TABLE IF EXISTS public.photo_bubbles;
-
 -- フォトバブルテーブルの作成
 CREATE TABLE public.photo_bubbles (
   id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
   name text NOT NULL, -- Tooltipに表示する名前
-  user_id uuid REFERENCES auth.users ON DELETE CASCADE NOT NULL, -- 作成者のID（必須）
+  user_id uuid REFERENCES public.users ON DELETE CASCADE NOT NULL, -- 作成者のID（必須）
   page_url text NOT NULL, -- 表示するページのURL（必須）
   image_url text NOT NULL, -- 表示する画像のURL（必須）
   target_url text, -- リンク先のURL（オプション）

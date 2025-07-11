@@ -3,7 +3,7 @@ CREATE TABLE public.habitat_data (
   id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
   classification_id uuid REFERENCES public.classifications(id) ON DELETE SET NULL,
   content text NOT NULL, -- 地理データファイル（json形式のテキスト）
-  creator uuid REFERENCES auth.users(id) ON DELETE CASCADE, -- 地理データファイル作成者
+  creator uuid REFERENCES public.users(id) ON DELETE CASCADE, -- 地理データファイル作成者
   created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
   updated_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL
 );
