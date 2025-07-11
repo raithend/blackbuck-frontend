@@ -24,12 +24,12 @@ export function GoogleLoginButton({ className, children }: GoogleLoginButtonProp
 			const supabase = createClient();
 			
 			console.log('Starting Google OAuth with PKCE...');
-			console.log('Redirect URL:', `${window.location.origin}/auth/callback`);
+			console.log('Redirect URL:', `${window.location.origin}/callback`);
 			
 			const { data, error } = await supabase.auth.signInWithOAuth({
 				provider: 'google',
 				options: {
-					redirectTo: `${window.location.origin}/auth/callback`,
+					redirectTo: `${window.location.origin}/callback`,
 					queryParams: {
 						access_type: 'offline',
 						prompt: 'consent',

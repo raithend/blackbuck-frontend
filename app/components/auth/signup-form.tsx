@@ -29,9 +29,12 @@ export function SignUpForm() {
 	const [error, setError] = useState<string | null>(null);
 	const [isLoading, setIsLoading] = useState(false);
 	const [password, setPassword] = useState("");
+	const [retryCount, setRetryCount] = useState(0);
 
 	const signUp = async ({ email, password, name }: SignUpParams) => {
 		const supabase = createClient();
+		
+		// サインアップ処理
 		const { data, error } = await supabase.auth.signUp({
 			email,
 			password,
@@ -39,7 +42,7 @@ export function SignUpForm() {
 				data: {
 					name,
 				},
-				emailRedirectTo: `${window.location.origin}/auth/verify`,
+				emailRedirectTo: `${window.location.origin}/verify`,
 			},
 		});
 
@@ -50,6 +53,9 @@ export function SignUpForm() {
 		if (!data.user) {
 			throw new Error("ユーザーが作成されませんでした");
 		}
+
+		// 少し待機してからユーザープロフィールを作成（APIレート制限を回避）
+		await new Promise(resolve => setTimeout(resolve, 1000));
 
 		// ユーザープロフィールを作成
 		const response = await fetch("/api/users", {
@@ -71,6 +77,12 @@ export function SignUpForm() {
 
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
+		
+		// 既に送信中の場合、重複送信を防ぐ
+		if (isLoading) {
+			return;
+		}
+		
 		setError(null);
 		setIsLoading(true);
 
@@ -92,8 +104,6 @@ export function SignUpForm() {
 			return;
 		}
 
-
-
 		try {
 			const { session } = await signUp({ email, password, name });
 			if (session) {
@@ -103,10 +113,29 @@ export function SignUpForm() {
 				// メール認証が必要な場合は確認ページに遷移
 				router.push("/signup-confirmation");
 			}
-		} catch (error) {
+		} catch (error: any) {
 			console.error("サインアップエラー:", error);
-			setError("アカウントの作成に失敗しました");
-			toast.error("アカウントの作成に失敗しました");
+			
+			// レート制限エラーの特別な処理
+			if (error.message?.includes("rate limit") || error.message?.includes("429") || error.message?.includes("email rate limit exceeded")) {
+				const retryMessage = retryCount > 0 
+					? `（${retryCount}回目の再試行）` 
+					: "";
+				setError(
+					`APIレート制限に達しました。${retryMessage}\n\n` +
+					`• 数分待ってから再度お試しください\n` +
+					`• 別のメールアドレスで試すこともできます\n` +
+					`• Googleアカウントでの登録を推奨します（下のボタン）`
+				);
+				toast.error("APIレート制限に達しました。Googleログインをお試しください。");
+				setRetryCount(prev => prev + 1);
+			} else if (error.message?.includes("already registered")) {
+				setError("このメールアドレスは既に登録されています。ログインページからサインインしてください。");
+				toast.error("このメールアドレスは既に登録されています");
+			} else {
+				setError("アカウントの作成に失敗しました。もう一度お試しください。");
+				toast.error("アカウントの作成に失敗しました");
+			}
 		} finally {
 			setIsLoading(false);
 		}
@@ -158,19 +187,37 @@ export function SignUpForm() {
 						</p>
 					</div>
 
-
 					{error && (
 						<Alert variant="destructive">
-							<AlertDescription>{error}</AlertDescription>
+							<AlertDescription className="whitespace-pre-line">
+								{error}
+							</AlertDescription>
 						</Alert>
 					)}
+					
 					<Button 
 						type="submit" 
 						className="w-full" 
 						disabled={isLoading || !password || password.length < 8}
 					>
-						{isLoading ? "登録中..." : "新規登録"}
+						{isLoading ? (
+							<div className="flex items-center space-x-2">
+								<div className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
+								<span>登録中...</span>
+							</div>
+						) : (
+							"新規登録"
+						)}
 					</Button>
+					
+					{/* レート制限エラーが発生した場合、Googleログインを推奨 */}
+					{error && (error.includes("レート制限") || error.includes("rate limit") || error.includes("429") || error.includes("email rate limit exceeded")) && (
+						<Alert className="border-orange-200 bg-orange-50">
+							<AlertDescription className="text-orange-800">
+								💡 推奨: Googleアカウントでの登録がより簡単で確実です
+							</AlertDescription>
+						</Alert>
+					)}
 					
 					<div className="relative w-full">
 						<div className="absolute inset-0 flex items-center">
