@@ -42,7 +42,7 @@ export function PostDialog({ onPost }: PostDialogProps) {
 			headers.Authorization = `Bearer ${session.access_token}`;
 		}
 
-		const response = await fetch("/api/upload", {
+		const response = await fetch("/api/upload/posts", {
 			method: "POST",
 			headers,
 			body: formData,

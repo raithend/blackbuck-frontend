@@ -99,4 +99,10 @@ export const UPLOAD_CONFIGS = {
 		directory: "photo-bubbles",
 		requireAuth: true,
 	},
+	posts: {
+		maxSize: 10 * 1024 * 1024, // 10MB
+		allowedTypes: ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"] as string[],
+		directory: "posts",
+		requireAuth: true,
+	},
 } as const; 

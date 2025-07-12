@@ -12,11 +12,6 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'blackbuck-bucket.s3.ap-northeast-1.amazonaws.com',
-        pathname: '/uploads/**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'blackbuck-bucket.s3.ap-northeast-1.amazonaws.com',
         pathname: '/photo-bubbles/**',
       },
       {
@@ -33,6 +28,11 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'blackbuck-bucket.s3.ap-northeast-1.amazonaws.com',
         pathname: '/profiles/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'blackbuck-bucket.s3.ap-northeast-1.amazonaws.com',
+        pathname: '/posts/**',
       },
     ],
   },

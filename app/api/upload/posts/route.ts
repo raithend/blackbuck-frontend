@@ -54,7 +54,25 @@ export async function POST(request: NextRequest) {
 			);
 		}
 
-		const key = `uploads/${Date.now()}-${file.name}`;
+		// ファイルサイズチェック（10MB以下）
+		if (file.size > 10 * 1024 * 1024) {
+			return NextResponse.json(
+				{ error: "ファイルサイズは10MB以下にしてください" },
+				{ status: 400 }
+			);
+		}
+
+		// ファイル形式チェック
+		const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+		if (!allowedTypes.includes(file.type)) {
+			return NextResponse.json(
+				{ error: "対応していないファイル形式です" },
+				{ status: 400 }
+			);
+		}
+
+		// 投稿画像専用のディレクトリに保存
+		const key = `posts/${Date.now()}-${file.name}`;
 		const command = new PutObjectCommand({
 			Bucket: process.env.AWS_S3_BUCKET!,
 			Key: key,
@@ -64,6 +82,7 @@ export async function POST(request: NextRequest) {
 		const signedUrl = await getSignedUrl(s3Client, command, {
 			expiresIn: 3600,
 		});
+
 		const uploadResponse = await fetch(signedUrl, {
 			method: "PUT",
 			body: file,
@@ -80,8 +99,8 @@ export async function POST(request: NextRequest) {
 		return NextResponse.json({ url });
 	} catch (error) {
 		return NextResponse.json(
-			{ error: "ファイルのアップロードに失敗しました" },
+			{ error: "投稿画像のアップロードに失敗しました" },
 			{ status: 500 }
 		);
 	}
-}
+} 
