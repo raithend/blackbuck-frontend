@@ -82,16 +82,7 @@ const GlobeArea = React.memo<GlobeAreaProps>(({
 		return getHabitatEraIds(eraGroups || []);
 	}, [eraGroups]);
 	
-	// 重複チェックとコンソール出力
-	useEffect(() => {
-		console.log('=== selectedAgeIds ===');
-		console.log('selectedAgeIds:', selectedAgeIds);
-		
-		if (habitatEraIds.length > 0 && selectedAgeIds.length > 0) {
-			const overlap = hasOverlap(habitatEraIds, selectedAgeIds);
-			console.log('生息地表示判定:', overlap);
-		}
-	}, [habitatEraIds, selectedAgeIds]);
+
 	
 	// テクスチャ生成のキーをメモ化
 	const textureKey = useMemo(() => {
@@ -116,7 +107,7 @@ const GlobeArea = React.memo<GlobeAreaProps>(({
 		}
 	}, [customTexture, currentMap, isInitialized]);
 	
-	const [showDebug, setShowDebug] = useState(false); // デバッグ表示フラグ
+
 
 	// 地質時代の選択に応じて地図を更新
 	useEffect(() => {
@@ -199,60 +190,12 @@ const GlobeArea = React.memo<GlobeAreaProps>(({
 								))}
 							</SelectContent>
 						</Select>
-						<Button 
-							variant="outline" 
-							size="sm" 
-							onClick={() => setShowDebug(!showDebug)}
-						>
-							{showDebug ? 'デバッグ非表示' : 'デバッグ表示'}
-						</Button>
+
 					</div>
 				</div>
 			)}
 			
-			{/* デバッグ表示 */}
-			{showDebug && (
-				<div className="absolute top-4 right-4 z-20 bg-white/90 backdrop-blur-sm rounded-lg p-4 shadow-lg max-w-md max-h-96 overflow-y-auto">
-					<h3 className="font-semibold mb-2">デバッグ: 生成された画像</h3>
-					{customTexture && (
-						<Image 
-							src={customTexture} 
-							alt="生成された地図画像" 
-							width={400}
-							height={300}
-							className="w-full h-auto border border-gray-300 rounded"
-						/>
-					)}
-					<div className="mt-2 text-sm text-gray-600">
-						<p>生息地データ: {eraGroups ? eraGroups.flatMap(g => g.elements).length : 0}件</p>
-						<p>地図: {currentMap}</p>
-						<p>画像パス: {customTexture}</p>
-						<p>フォーマット: PNG（高画質）</p>
-						{customTexture?.startsWith('data:image/') && (
-							<p>生成画像サイズ: {customTexture.length > 100 ? '高解像度' : '標準'}</p>
-						)}
-						{eraGroups && (
-							<div className="mt-2">
-								<h4 className="font-medium">生息地データ詳細:</h4>
-								{eraGroups.map((eraGroup) => (
-									<div key={`era-${eraGroup.era}`} className="text-xs mt-1 p-1 bg-blue-100 rounded">
-										<p className="font-medium">時代: {eraGroup.era}</p>
-										{eraGroup.elements.map((habitat) => (
-											<div key={`habitat-${eraGroup.era}-${habitat.lat}-${habitat.lng}`} className="text-xs mt-1 p-1 bg-gray-100 rounded ml-2">
-												<p>ポイント: {habitat.id || 'unknown'}</p>
-												<p>緯度: {habitat.lat}, 経度: {habitat.lng}</p>
-												<p>色: {habitat.color || 'red'}</p>
-												<p>サイズ: {habitat.size || 0.05}</p>
-												{habitat.maxR && <p>範囲: {habitat.maxR}km</p>}
-											</div>
-										))}
-									</div>
-								))}
-							</div>
-						)}
-					</div>
-				</div>
-			)}
+
 
 			{customTexture && (
 					<Globe 
