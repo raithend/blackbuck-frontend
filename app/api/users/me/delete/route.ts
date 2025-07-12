@@ -3,6 +3,7 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/app/types/database.types";
+import { deleteMultipleFromS3 } from "@/app/lib/s3-utils";
 
 export async function DELETE(request: NextRequest) {
 	try {
@@ -50,7 +51,24 @@ export async function DELETE(request: NextRequest) {
 			.delete()
 			.eq("account_id", accountId);
 
-		// 2. コメント画像を削除
+		// 2. コメント画像のURLを取得してS3から削除
+		const { data: commentImages, error: commentImagesError } = await supabase
+			.from("comment_images")
+			.select("image_url")
+			.eq("account_id", accountId);
+
+		if (commentImagesError) {
+			console.error("コメント画像URL取得エラー:", commentImagesError);
+		}
+
+		// S3からコメント画像を削除
+		if (commentImages && commentImages.length > 0) {
+			const imageUrls = commentImages.map(img => img.image_url);
+			const deleteResults = await deleteMultipleFromS3(imageUrls);
+			console.log("アカウント削除時のコメント画像S3削除結果:", deleteResults);
+		}
+
+		// コメント画像レコードを削除
 		await supabase
 			.from("comment_images")
 			.delete()
@@ -68,7 +86,24 @@ export async function DELETE(request: NextRequest) {
 			.delete()
 			.eq("account_id", accountId);
 
-		// 5. 投稿画像を削除
+		// 5. 投稿画像のURLを取得してS3から削除
+		const { data: postImages, error: postImagesError } = await supabase
+			.from("post_images")
+			.select("image_url")
+			.eq("account_id", accountId);
+
+		if (postImagesError) {
+			console.error("投稿画像URL取得エラー:", postImagesError);
+		}
+
+		// S3から投稿画像を削除
+		if (postImages && postImages.length > 0) {
+			const imageUrls = postImages.map(img => img.image_url);
+			const deleteResults = await deleteMultipleFromS3(imageUrls);
+			console.log("アカウント削除時の投稿画像S3削除結果:", deleteResults);
+		}
+
+		// 投稿画像レコードを削除
 		await supabase
 			.from("post_images")
 			.delete()
@@ -86,7 +121,29 @@ export async function DELETE(request: NextRequest) {
 			.delete()
 			.or(`follower_id.eq.${accountId},following_id.eq.${accountId}`);
 
-		// 8. フォトバブルを削除
+		// 8. フォトバブルのURLを取得してS3から削除
+		const { data: photoBubbles, error: photoBubblesError } = await supabase
+			.from("photo_bubbles")
+			.select("image_url")
+			.eq("account_id", accountId);
+
+		if (photoBubblesError) {
+			console.error("フォトバブルURL取得エラー:", photoBubblesError);
+		}
+
+		// S3からフォトバブル画像を削除
+		if (photoBubbles && photoBubbles.length > 0) {
+			const imageUrls = photoBubbles
+				.filter(bubble => bubble.image_url) // image_urlがnullでないもののみ
+				.map(bubble => bubble.image_url);
+			
+			if (imageUrls.length > 0) {
+				const deleteResults = await deleteMultipleFromS3(imageUrls);
+				console.log("アカウント削除時のフォトバブルS3削除結果:", deleteResults);
+			}
+		}
+
+		// フォトバブルレコードを削除
 		await supabase
 			.from("photo_bubbles")
 			.delete()

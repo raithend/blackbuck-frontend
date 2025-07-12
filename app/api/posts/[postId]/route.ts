@@ -1,6 +1,7 @@
 import { createClient } from "@/app/lib/supabase-server";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import { deleteMultipleFromS3 } from "@/app/lib/s3-utils";
 
 export async function PUT(
 	request: NextRequest,
@@ -67,11 +68,30 @@ export async function PUT(
 			);
 		}
 
+		// 既存の画像URLを取得
+		const { data: existingImages, error: imageFetchError } = await supabase
+			.from("post_images")
+			.select("image_url")
+			.eq("post_id", postId);
+
+		if (imageFetchError) {
+			console.error("既存画像URL取得エラー:", imageFetchError);
+		}
+
 		// 既存の画像を削除
 		const { error: deleteImagesError } = await supabase
 			.from("post_images")
 			.delete()
 			.eq("post_id", postId);
+
+		// S3から既存の画像を削除
+		if (existingImages && existingImages.length > 0) {
+			const imageUrls = existingImages.map(img => img.image_url);
+			const deleteResults = await deleteMultipleFromS3(imageUrls);
+			
+			// 削除結果をログ出力（デバッグ用）
+			console.log("投稿編集時のS3削除結果:", deleteResults);
+		}
 
 		// 新しい画像を挿入
 		if (imageUrls && imageUrls.length > 0) {
@@ -156,7 +176,23 @@ export async function DELETE(
 			);
 		}
 
-		// 関連する画像を削除
+		// 投稿に関連する画像URLを取得
+		const { data: postImages, error: imageFetchError } = await supabaseWithAuth
+			.from("post_images")
+			.select("image_url")
+			.eq("post_id", postId);
+
+		if (imageFetchError) {
+			console.error("画像URL取得エラー:", imageFetchError);
+		}
+
+		// S3から画像を削除
+		if (postImages && postImages.length > 0) {
+			const imageUrls = postImages.map(img => img.image_url);
+			await deleteMultipleFromS3(imageUrls);
+		}
+
+		// 関連する画像レコードを削除
 		const { error: imageError } = await supabaseWithAuth
 			.from("post_images")
 			.delete()

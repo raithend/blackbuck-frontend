@@ -1,6 +1,7 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { createClient } from "@/app/lib/supabase-server";
+import { deleteFromS3, extractKeyFromS3Url } from "@/app/lib/s3-utils";
 
 export async function GET(request: NextRequest) {
 	try {
@@ -226,6 +227,29 @@ export async function DELETE(request: NextRequest) {
 				{ error: "ID is required" },
 				{ status: 400 },
 			);
+		}
+
+		// フォトバブルの画像URLを取得
+		const { data: photoBubble, error: fetchError } = await supabaseWithAuth
+			.from("photo_bubbles")
+			.select("image_url")
+			.eq("id", id)
+			.eq("user_id", user.id)
+			.single();
+
+		if (fetchError) {
+			console.error("フォトバブル取得エラー:", fetchError);
+		}
+
+		// S3から画像を削除
+		if (photoBubble?.image_url) {
+			try {
+				const key = extractKeyFromS3Url(photoBubble.image_url);
+				const deleteResult = await deleteFromS3(key);
+				console.log("フォトバブルS3削除結果:", deleteResult);
+			} catch (error) {
+				console.error("フォトバブルS3削除エラー:", error);
+			}
 		}
 
 		// photo_bubblesテーブルから削除
