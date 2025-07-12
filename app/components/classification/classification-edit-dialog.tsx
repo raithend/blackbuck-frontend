@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useDropzone } from "react-dropzone";
 import { Button } from "@/app/components/ui/button";
 import {
 	Dialog,
@@ -14,7 +13,6 @@ import {
 import { Input } from "@/app/components/ui/input";
 import { Label } from "@/app/components/ui/label";
 import { Textarea } from "@/app/components/ui/textarea";
-import { Upload, File, X } from "lucide-react";
 import type { Classification } from "@/app/types/types";
 
 interface ClassificationEditDialogProps {
@@ -38,40 +36,7 @@ export function ClassificationEditDialog({
 		era_end: classification?.era_end || "",
 	});
 
-	const [treeFile, setTreeFile] = useState<File | null>(null);
-	const [geographicFile, setGeographicFile] = useState<File | null>(null);
 	const [isLoading, setIsLoading] = useState(false);
-
-	// 系統樹ファイル用のドロップゾーン
-	const {
-		getRootProps: getTreeRootProps,
-		getInputProps: getTreeInputProps,
-		isDragActive: isTreeDragActive,
-	} = useDropzone({
-		accept: {
-			'application/json': ['.json'],
-			'text/yaml': ['.yml', '.yaml'],
-		},
-		maxFiles: 1,
-		onDrop: (acceptedFiles) => {
-			setTreeFile(acceptedFiles[0]);
-		},
-	});
-
-	// 地理データファイル用のドロップゾーン
-	const {
-		getRootProps: getGeographicRootProps,
-		getInputProps: getGeographicInputProps,
-		isDragActive: isGeographicDragActive,
-	} = useDropzone({
-		accept: {
-			'image/*': ['.jpg', '.jpeg', '.png', '.gif'],
-		},
-		maxFiles: 1,
-		onDrop: (acceptedFiles) => {
-			setGeographicFile(acceptedFiles[0]);
-		},
-	});
 
 	const handleInputChange = (field: keyof Classification, value: string) => {
 		setFormData((prev) => ({
@@ -83,18 +48,6 @@ export function ClassificationEditDialog({
 	const handleSave = async () => {
 		setIsLoading(true);
 		try {
-			// ファイル内容を読み込み
-			let phylogeneticTreeContent: string | undefined;
-			let geographicDataContent: string | undefined;
-
-			if (treeFile) {
-				phylogeneticTreeContent = await readFileAsText(treeFile);
-			}
-
-			if (geographicFile) {
-				geographicDataContent = await readFileAsBase64(geographicFile);
-			}
-
 			// 分類情報を更新または作成
 			await onSave({
 				...formData,
@@ -106,39 +59,6 @@ export function ClassificationEditDialog({
 		} finally {
 			setIsLoading(false);
 		}
-	};
-
-	// ファイルをテキストとして読み込む
-	const readFileAsText = (file: File): Promise<string> => {
-		return new Promise((resolve, reject) => {
-			const reader = new FileReader();
-			reader.onload = () => resolve(reader.result as string);
-			reader.onerror = reject;
-			reader.readAsText(file);
-		});
-	};
-
-	// ファイルをBase64として読み込む
-	const readFileAsBase64 = (file: File): Promise<string> => {
-		return new Promise((resolve, reject) => {
-			const reader = new FileReader();
-			reader.onload = () => {
-				const result = reader.result as string;
-				// data:image/jpeg;base64, の部分を除去
-				const base64 = result.split(',')[1];
-				resolve(base64);
-			};
-			reader.onerror = reject;
-			reader.readAsDataURL(file);
-		});
-	};
-
-	const removeTreeFile = () => {
-		setTreeFile(null);
-	};
-
-	const removeGeographicFile = () => {
-		setGeographicFile(null);
 	};
 
 	return (
@@ -210,85 +130,7 @@ export function ClassificationEditDialog({
 						/>
 					</div>
 
-					<div className="space-y-4">
-						<div className="space-y-2">
-							<Label>系統樹ファイル</Label>
-							<div
-								{...getTreeRootProps()}
-								className={`border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition-colors ${
-									isTreeDragActive
-										? "border-blue-500 bg-blue-50"
-										: "border-gray-300 hover:border-gray-400"
-								}`}
-							>
-								<input {...getTreeInputProps()} />
-								{treeFile ? (
-									<div className="flex items-center justify-between">
-										<div className="flex items-center space-x-2">
-											<File className="h-4 w-4" />
-											<span>{treeFile.name}</span>
-										</div>
-										<Button
-											type="button"
-											variant="ghost"
-											size="sm"
-											onClick={removeTreeFile}
-										>
-											<X className="h-4 w-4" />
-										</Button>
-									</div>
-								) : (
-									<div>
-										<Upload className="mx-auto h-8 w-8 text-gray-400 mb-2" />
-										<p className="text-sm text-gray-600">
-											{isTreeDragActive
-												? "ファイルをドロップしてください"
-												: "JSONまたはYAMLファイルをドラッグ&ドロップまたはクリックして選択"}
-										</p>
-									</div>
-								)}
-							</div>
-						</div>
 
-						<div className="space-y-2">
-							<Label>地理データファイル</Label>
-							<div
-								{...getGeographicRootProps()}
-								className={`border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition-colors ${
-									isGeographicDragActive
-										? "border-blue-500 bg-blue-50"
-										: "border-gray-300 hover:border-gray-400"
-								}`}
-							>
-								<input {...getGeographicInputProps()} />
-								{geographicFile ? (
-									<div className="flex items-center justify-between">
-										<div className="flex items-center space-x-2">
-											<File className="h-4 w-4" />
-											<span>{geographicFile.name}</span>
-										</div>
-										<Button
-											type="button"
-											variant="ghost"
-											size="sm"
-											onClick={removeGeographicFile}
-										>
-											<X className="h-4 w-4" />
-										</Button>
-									</div>
-								) : (
-									<div>
-										<Upload className="mx-auto h-8 w-8 text-gray-400 mb-2" />
-										<p className="text-sm text-gray-600">
-											{isGeographicDragActive
-												? "ファイルをドロップしてください"
-												: "画像ファイルをドラッグ&ドロップまたはクリックして選択"}
-										</p>
-									</div>
-								)}
-							</div>
-						</div>
-					</div>
 				</div>
 
 				<DialogFooter>
