@@ -9,12 +9,7 @@ import { useUser } from "@/app/contexts/user-context";
 import useSWR from "swr";
 import { useEffect, useState } from "react";
 
-// 静的パス生成のための関数
-export async function generateStaticParams() {
-	// 動的ルートのため、空の配列を返す
-	// 実際のユーザーIDは実行時に決定される
-	return [];
-}
+
 
 // フェッチャー関数
 const fetcher = async (url: string) => {
