@@ -70,7 +70,21 @@ export async function GET(
 			);
 		}
 
-		const supabase = await createClient();
+		// 認証ヘッダーを確認
+		const authHeader = request.headers.get("Authorization");
+		let supabase;
+		let user = null;
+
+		if (authHeader?.startsWith("Bearer ")) {
+			const token = authHeader.split(" ")[1];
+			// 認証トークン付きでSupabaseクライアントを作成
+			supabase = await createClient(token);
+			const { data: { user: authUser } } = await supabase.auth.getUser();
+			user = authUser;
+		} else {
+			// 認証なしでSupabaseクライアントを作成
+			supabase = await createClient();
+		}
 
 		// 分類情報を取得（存在しない場合はnull）
 		const { data: classification, error: classificationError } = await supabase
@@ -200,12 +214,25 @@ ${JSON.stringify(classifications)}`,
 					console.log('取得された投稿の数:', postsData?.length || 0);
 					console.log('取得された投稿の分類名:', postsData?.map(post => post.classification).filter(Boolean));
 
+					// 認証済みユーザーの場合、いいね状態を取得
+					let userLikes: string[] = [];
+					if (user) {
+						const { data: likes, error: likesError } = await supabase
+							.from("likes")
+							.select("post_id")
+							.eq("user_id", user.id);
+
+						if (!likesError) {
+							userLikes = likes?.map(like => like.post_id) || [];
+						}
+					}
+
 					// 投稿データを整形
 					posts = postsData?.map((post: Post) => ({
 						...post,
 						user: post.users, // usersをuserにリネーム
 						likeCount: post.likes?.length || 0,
-						isLiked: false, // フロントエンドで設定
+						isLiked: userLikes.includes(post.id),
 						images: post.post_images?.sort((a: PostImage, b: PostImage) => a.order_index - b.order_index) || [],
 					})) || [];
 				}
