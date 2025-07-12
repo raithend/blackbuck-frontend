@@ -41,7 +41,16 @@ interface ClassificationResponse {
 const fetcher = async (url: string) => {
 	console.log('API呼び出し開始:', url);
 	try {
-		const response = await fetch(url);
+		// 認証トークンを取得
+		const supabase = await import("@/app/lib/supabase-browser").then(m => m.createClient());
+		const { data: { session } } = await supabase.auth.getSession();
+		
+		const headers: HeadersInit = {};
+		if (session?.access_token) {
+			headers.Authorization = `Bearer ${session.access_token}`;
+		}
+		
+		const response = await fetch(url, { headers });
 		console.log('APIレスポンスステータス:', response.status);
 		if (!response.ok) {
 			throw new Error('Failed to fetch data');
