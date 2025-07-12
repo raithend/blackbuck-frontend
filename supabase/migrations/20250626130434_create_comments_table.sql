@@ -1,14 +1,16 @@
 -- コメントテーブルの作成
 CREATE TABLE IF NOT EXISTS comments (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    content TEXT NOT NULL,
-    location TEXT,
-    classification TEXT,
-    user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
-    post_id UUID REFERENCES posts(id) ON DELETE SET NULL,
-    parent_comment_id UUID REFERENCES comments(id) ON DELETE SET NULL, -- コメントの返信用
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+    content text NOT NULL,
+    location text,
+    event text,
+    classification text,
+    shot_date date CHECK (shot_date <= CURRENT_DATE),
+    user_id uuid NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+    post_id uuid REFERENCES posts(id) ON DELETE SET NULL,
+    parent_comment_id uuid REFERENCES comments(id) ON DELETE SET NULL, -- コメントの返信用
+    created_at timestamp with time zone DEFAULT now(),
+    updated_at timestamp with time zone DEFAULT now()
 );
 
 -- インデックスの作成（パフォーマンス向上のため）

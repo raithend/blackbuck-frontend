@@ -6,6 +6,7 @@ CREATE TABLE public.posts (
   classification text,
   location text,
   event text,
+  shot_date date CHECK (shot_date <= CURRENT_DATE),
   created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
   updated_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL
 );

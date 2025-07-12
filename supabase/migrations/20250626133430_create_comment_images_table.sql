@@ -1,11 +1,11 @@
 -- コメント画像テーブルの作成
 CREATE TABLE comment_images (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    comment_id UUID NOT NULL REFERENCES comments(id) ON DELETE CASCADE,
-    image_url TEXT NOT NULL,
-    order_index INTEGER NOT NULL DEFAULT 0,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+    comment_id uuid NOT NULL REFERENCES comments(id) ON DELETE CASCADE,
+    image_url text NOT NULL,
+    order_index integer NOT NULL DEFAULT 0,
+    created_at timestamp with time zone DEFAULT now(),
+    updated_at timestamp with time zone DEFAULT now()
 );
 
 -- コメント画像のインデックス
