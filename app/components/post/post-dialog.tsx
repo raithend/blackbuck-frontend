@@ -1,8 +1,8 @@
 "use client";
 
 import { ImageUpload } from "@/app/components/post/image-upload";
-import { LocationCombobox } from "@/app/components/post/location-combobox";
-import { EventCombobox } from "@/app/components/post/event-combobox";
+import { LocationDropdownMenu } from "@/app/components/post/location-dropdown-menu";
+import { EventDropdownMenu } from "@/app/components/post/event-dropdown-menu";
 import { Button } from "@/app/components/ui/button";
 import {
 	DialogContent,
@@ -91,8 +91,8 @@ export function PostDialog({ onPost }: PostDialogProps) {
 					value={content}
 					onChange={(e) => setContent(e.target.value)}
 				/>
-				<LocationCombobox value={location} onChange={setLocation} />
-				<EventCombobox value={event} onChange={setEvent} />
+				<LocationDropdownMenu value={location} onChange={setLocation} />
+				<EventDropdownMenu value={event} onChange={setEvent} />
 				<Input
 					type="text"
 					placeholder="分類"

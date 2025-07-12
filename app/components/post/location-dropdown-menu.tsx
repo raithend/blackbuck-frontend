@@ -16,12 +16,12 @@ import { famousLocations } from "./locations.ts.d/famous-locations";
 
 const locations = famousLocations;
 
-interface LocationComboboxProps {
+interface LocationDropdownMenuProps {
 	value?: string;
 	onChange?: (value: string) => void;
 }
 
-export function LocationCombobox({ value, onChange }: LocationComboboxProps) {
+export function LocationDropdownMenu({ value, onChange }: LocationDropdownMenuProps) {
 	const [open, setOpen] = React.useState(false);
 	const [searchQuery, setSearchQuery] = React.useState("");
 	const [customLocation, setCustomLocation] = React.useState("");

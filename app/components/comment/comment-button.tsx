@@ -1,7 +1,7 @@
 "use client";
 
 import { ImageUpload } from "@/app/components/post/image-upload";
-import { LocationCombobox } from "@/app/components/post/location-combobox";
+import { LocationDropdownMenu } from "@/app/components/post/location-dropdown-menu";
 import {
 	Avatar,
 	AvatarFallback,
@@ -141,7 +141,7 @@ export function CommentButton({ postId, commentCount = 0 }: CommentProps) {
 						onChange={(e) => setContent(e.target.value)}
 						className="min-h-[100px]"
 					/>
-					<LocationCombobox value={location} onChange={setLocation} />
+					<LocationDropdownMenu value={location} onChange={setLocation} />
 					<Input
 						type="text"
 						placeholder="分類"
