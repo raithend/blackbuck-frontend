@@ -13,6 +13,7 @@ export type Post = Database["public"]["Tables"]["posts"]["Row"] & {
 export type PostWithUser = Post & {
 	user: User;
 	likeCount?: number;
+	commentCount?: number;
 	isLiked?: boolean;
 	likedAt?: string;
 };

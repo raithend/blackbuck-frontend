@@ -8,8 +8,6 @@ export async function POST(
 	{ params }: { params: Promise<{ postId: string }> }
 ) {
 	try {
-		const supabase = await createClient();
-		
 		// 認証トークンの取得
 		const authHeader = request.headers.get("Authorization");
 		if (!authHeader?.startsWith("Bearer ")) {
@@ -21,8 +19,11 @@ export async function POST(
 
 		const token = authHeader.split(" ")[1];
 
+		// 認証トークン付きでSupabaseクライアントを作成
+		const supabase = await createClient(token);
+
 		// トークンの検証
-		const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+		const { data: { user }, error: authError } = await supabase.auth.getUser();
 		if (authError || !user) {
 			return NextResponse.json(
 				{ error: "認証が必要です" },
@@ -96,8 +97,6 @@ export async function DELETE(
 	{ params }: { params: Promise<{ postId: string }> }
 ) {
 	try {
-		const supabase = await createClient();
-		
 		// 認証トークンの取得
 		const authHeader = request.headers.get("Authorization");
 		if (!authHeader?.startsWith("Bearer ")) {
@@ -109,8 +108,11 @@ export async function DELETE(
 
 		const token = authHeader.split(" ")[1];
 
+		// 認証トークン付きでSupabaseクライアントを作成
+		const supabase = await createClient(token);
+
 		// トークンの検証
-		const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+		const { data: { user }, error: authError } = await supabase.auth.getUser();
 		if (authError || !user) {
 			return NextResponse.json(
 				{ error: "認証が必要です" },
@@ -152,10 +154,24 @@ export async function GET(
 	{ params }: { params: Promise<{ postId: string }> }
 ) {
 	try {
-		const supabase = await createClient();
-		
 		// paramsをawait
 		const { postId } = await params;
+
+		// 認証ヘッダーを確認
+		const authHeader = request.headers.get("Authorization");
+		let supabase;
+		let user = null;
+
+		if (authHeader?.startsWith("Bearer ")) {
+			const token = authHeader.split(" ")[1];
+			// 認証トークン付きでSupabaseクライアントを作成
+			supabase = await createClient(token);
+			const { data: { user: authUser } } = await supabase.auth.getUser();
+			user = authUser;
+		} else {
+			// 認証なしでSupabaseクライアントを作成
+			supabase = await createClient();
+		}
 
 		// いいね数を取得
 		const { data: likeCount, error: countError } = await supabase
@@ -172,23 +188,17 @@ export async function GET(
 		}
 
 		// 認証済みユーザーの場合、いいね状態も取得
-		const authHeader = request.headers.get("Authorization");
 		let isLiked = false;
 
-		if (authHeader?.startsWith("Bearer ")) {
-			const token = authHeader.split(" ")[1];
-			const { data: { user } } = await supabase.auth.getUser(token);
-			
-			if (user) {
-				const { data: userLike, error: userLikeError } = await supabase
-					.from("likes")
-					.select("id")
-					.eq("user_id", user.id)
-					.eq("post_id", postId)
-					.single();
+		if (user) {
+			const { data: userLike, error: userLikeError } = await supabase
+				.from("likes")
+				.select("id")
+				.eq("user_id", user.id)
+				.eq("post_id", postId)
+				.single();
 
-				isLiked = !!userLike;
-			}
+			isLiked = !!userLike;
 		}
 
 		return NextResponse.json({

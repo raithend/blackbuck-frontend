@@ -224,7 +224,7 @@ export function PostCard({ post, onLikeChange, onPostUpdate, onPostDelete }: Pos
 									initialIsLiked={post.isLiked || false}
 									onLikeChange={handleLikeChange}
 								/>
-								<CommentButton postId={post.id.toString()} />
+								<CommentButton postId={post.id.toString()} commentCount={post.commentCount || 0} />
 							</div>
 							<div className="text-sm text-gray-500 text-right">
 								<div>最終更新：{formatDateSafely(post.updated_at)}</div>

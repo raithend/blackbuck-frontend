@@ -23,9 +23,10 @@ import { useState } from "react";
 
 interface CommentProps {
 	postId: string;
+	commentCount?: number;
 }
 
-export function CommentButton({ postId }: CommentProps) {
+export function CommentButton({ postId, commentCount = 0 }: CommentProps) {
 	const [content, setContent] = useState("");
 	const [location, setLocation] = useState("");
 	const [classification, setClassification] = useState("");
@@ -110,6 +111,11 @@ export function CommentButton({ postId }: CommentProps) {
 				<Button variant="ghost" size="sm" className="flex items-center gap-2">
 					<MessageCircle className="h-4 w-4" />
 					<span>コメント</span>
+					{commentCount > 0 && (
+						<span className="text-sm text-gray-600 min-w-[1rem] text-center">
+							{commentCount}
+						</span>
+					)}
 				</Button>
 			</DialogTrigger>
 			<DialogContent className="max-w-md">

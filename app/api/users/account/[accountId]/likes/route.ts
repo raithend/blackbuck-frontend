@@ -82,6 +82,25 @@ export async function GET(
 			likeCountMap.set(like.post_id, count + 1);
 		}
 
+		// 各投稿のコメント数を取得
+		const { data: commentCounts, error: commentCountsError } = await supabase
+			.from("comments")
+			.select("post_id")
+			.in("post_id", postIds);
+
+		if (commentCountsError) {
+			console.error("コメント数取得エラー:", commentCountsError);
+		}
+
+		// コメント数を集計
+		const commentCountMap = new Map<string, number>();
+		for (const comment of commentCounts || []) {
+			if (comment.post_id) {
+				const count = commentCountMap.get(comment.post_id) || 0;
+				commentCountMap.set(comment.post_id, count + 1);
+			}
+		}
+
 		// 投稿データを整形
 		const formattedPosts = likedPosts?.map(like => ({
 			id: like.posts.id,
@@ -91,6 +110,7 @@ export async function GET(
 			created_at: like.posts.created_at,
 			updated_at: like.posts.updated_at,
 			likeCount: likeCountMap.get(like.posts.id) || 0,
+			commentCount: commentCountMap.get(like.posts.id) || 0,
 			isLiked: true, // いいねした投稿なので常にtrue
 			likedAt: like.created_at,
 			user: {
