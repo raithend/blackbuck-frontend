@@ -22,8 +22,11 @@ export async function PUT(
 
 		const token = authHeader.split(" ")[1];
 
+		// 認証されたSupabaseクライアントを作成
+		const supabaseWithAuth = await createClient(token);
+
 		// トークンの検証
-		const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+		const { data: { user }, error: authError } = await supabaseWithAuth.auth.getUser();
 		if (authError || !user) {
 			return NextResponse.json(
 				{ error: "認証が必要です" },
@@ -32,7 +35,7 @@ export async function PUT(
 		}
 
 		// 投稿の所有者チェック
-		const { data: post, error: postError } = await supabase
+		const { data: post, error: postError } = await supabaseWithAuth
 			.from("posts")
 			.select("user_id")
 			.eq("id", postId)
@@ -50,7 +53,7 @@ export async function PUT(
 		const { content, location, classification, event, imageUrls } = await request.json();
 
 		// 投稿を更新
-		const { error: updateError } = await supabase
+		const { error: updateError } = await supabaseWithAuth
 			.from("posts")
 			.update({
 				content,
@@ -69,7 +72,7 @@ export async function PUT(
 		}
 
 		// 既存の画像URLを取得
-		const { data: existingImages, error: imageFetchError } = await supabase
+		const { data: existingImages, error: imageFetchError } = await supabaseWithAuth
 			.from("post_images")
 			.select("image_url")
 			.eq("post_id", postId);
@@ -79,7 +82,7 @@ export async function PUT(
 		}
 
 		// 既存の画像を削除
-		const { error: deleteImagesError } = await supabase
+		const { error: deleteImagesError } = await supabaseWithAuth
 			.from("post_images")
 			.delete()
 			.eq("post_id", postId);
@@ -101,7 +104,7 @@ export async function PUT(
 				order_index: index,
 			}));
 
-			const { error: insertImagesError } = await supabase
+			const { error: insertImagesError } = await supabaseWithAuth
 				.from("post_images")
 				.insert(imageData);
 
