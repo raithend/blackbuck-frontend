@@ -18,7 +18,7 @@ export default function ConfirmSignupEmail({ username, confirmUrl }: ConfirmSign
       <Head />
       <Container style={{ maxWidth: 480, margin: '0 auto', padding: 24, fontFamily: 'sans-serif', background: '#fff', borderRadius: 8, boxShadow: '0 2px 8px #eee' }}>
         <Section>
-          <Text style={{ fontSize: 24, fontWeight: 'bold', marginBottom: 16 }}>会員登録の確認</Text>
+          <Text style={{ fontSize: 24, fontWeight: 'bold', marginBottom: 16 }}>会員登録のご確認</Text>
           <Text style={{ fontSize: 16, marginBottom: 16 }}>
             {username ? `${username}様、` : ''}Blackbuckをご利用いただきありがとうございます。<br />
             下のボタンをクリックして、メールアドレスの確認を完了してください。
