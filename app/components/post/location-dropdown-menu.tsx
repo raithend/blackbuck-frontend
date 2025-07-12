@@ -56,7 +56,7 @@ export function LocationDropdownMenu({ value, onChange }: LocationDropdownMenuPr
 					<ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
 				</Button>
 			</DropdownMenuTrigger>
-			<DropdownMenuContent className="w-80 p-4 space-y-4">
+			<DropdownMenuContent className="w-[var(--radix-dropdown-menu-trigger-width)] p-4 space-y-4">
 				{/* 検索ボックス */}
 				<div className="space-y-2">
 					<label className="text-sm font-medium">撮影地を検索</label>
@@ -85,7 +85,7 @@ export function LocationDropdownMenu({ value, onChange }: LocationDropdownMenuPr
 				{/* 事前定義された撮影地リスト */}
 				<div className="space-y-2">
 					<label className="text-sm font-medium">よく使われる撮影地</label>
-					<ScrollArea className="h-60">
+					<ScrollArea className="h-48">
 						<div className="space-y-1">
 							{filteredLocations.length > 0 ? (
 								filteredLocations.map((location) => (

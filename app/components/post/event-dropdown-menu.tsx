@@ -16,12 +16,12 @@ import { famousEvents } from "./events.ts.d/famous-events";
 
 const events = famousEvents;
 
-interface EventComboboxProps {
+interface EventDropdownMenuProps {
 	value?: string;
 	onChange?: (value: string) => void;
 }
 
-export function EventCombobox({ value, onChange }: EventComboboxProps) {
+export function EventDropdownMenu({ value, onChange }: EventDropdownMenuProps) {
 	const [open, setOpen] = React.useState(false);
 	const [searchQuery, setSearchQuery] = React.useState("");
 	const [customEvent, setCustomEvent] = React.useState("");
@@ -56,7 +56,7 @@ export function EventCombobox({ value, onChange }: EventComboboxProps) {
 					<ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
 				</Button>
 			</DropdownMenuTrigger>
-			<DropdownMenuContent className="w-80 p-4 space-y-4">
+			<DropdownMenuContent className="w-[var(--radix-dropdown-menu-trigger-width)] p-4 space-y-4">
 				{/* 検索ボックス */}
 				<div className="space-y-2">
 					<label className="text-sm font-medium">イベントを検索</label>
@@ -85,7 +85,7 @@ export function EventCombobox({ value, onChange }: EventComboboxProps) {
 				{/* 事前定義されたイベントリスト */}
 				<div className="space-y-2">
 					<label className="text-sm font-medium">よく使われるイベント</label>
-					<ScrollArea className="h-60">
+					<ScrollArea className="h-48">
 						<div className="space-y-1">
 							{filteredEvents.length > 0 ? (
 								filteredEvents.map((event) => (
