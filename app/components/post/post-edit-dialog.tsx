@@ -2,6 +2,7 @@
 
 import { ImageUpload } from "@/app/components/post/image-upload";
 import { LocationCombobox } from "@/app/components/post/location-combobox";
+import { EventCombobox } from "@/app/components/post/event-combobox";
 import { Button } from "@/app/components/ui/button";
 import {
 	DialogContent,
@@ -107,12 +108,7 @@ export function PostEditDialog({ post, onEdit, onClose }: PostEditDialogProps) {
 					onChange={(e) => setContent(e.target.value)}
 				/>
 				<LocationCombobox value={location} onChange={setLocation} />
-				<Input
-					type="text"
-					placeholder="イベント"
-					value={event}
-					onChange={(e) => setEvent(e.target.value)}
-				/>
+				<EventCombobox value={event} onChange={setEvent} />
 				<Input
 					type="text"
 					placeholder="分類"
