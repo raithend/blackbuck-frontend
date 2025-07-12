@@ -163,7 +163,7 @@ export function SearchBox() {
 					<span>検索...</span>
 				</Button>
 			</DialogTrigger>
-			<DialogContent className="max-w-md">
+			<DialogContent className="max-w-2xl h-[600px]">
 				<DialogHeader>
 					<DialogTitle>検索</DialogTitle>
 				</DialogHeader>
@@ -199,28 +199,26 @@ export function SearchBox() {
 						</div>
 
 						{/* 検索結果 */}
-						{classificationQuery.trim() && classificationResults?.classifications && (
-							<div className="space-y-2">
-								<h4 className="text-sm font-medium">検索結果</h4>
-								<div className="max-h-48 overflow-y-auto space-y-2">
-									{classificationResults.classifications.length > 0 ? (
-										classificationResults.classifications.map((classification) => (
-											<button
-												key={`classification-${classification}`}
-												onClick={() => handleClassificationSelect(classification)}
-												className="w-full flex items-center space-x-3 p-2 hover:bg-gray-100 rounded-lg transition-colors text-left"
-												type="button"
-											>
-												<Tag className="h-4 w-4 text-gray-500" />
-												<div className="font-medium">{classification}</div>
-											</button>
-										))
-									) : (
-										<div className="text-sm text-gray-500 p-2">分類が見つかりません</div>
-									)}
-								</div>
+						<div className="space-y-2">
+							<h4 className="text-sm font-medium">検索結果</h4>
+							<div className="h-80 overflow-y-auto space-y-2">
+								{classificationQuery.trim() && classificationResults?.classifications ? (
+									classificationResults.classifications.slice(0, 5).map((classification) => (
+										<button
+											key={`classification-${classification}`}
+											onClick={() => handleClassificationSelect(classification)}
+											className="w-full flex items-center space-x-3 p-2 hover:bg-gray-100 rounded-lg transition-colors text-left"
+											type="button"
+										>
+											<Tag className="h-4 w-4 text-gray-500" />
+											<div className="font-medium">{classification}</div>
+										</button>
+									))
+								) : (
+									<div className="text-sm text-gray-500 p-2">分類を検索してください</div>
+								)}
 							</div>
-						)}
+						</div>
 
 						<Button 
 							onClick={handleClassificationSearch}
@@ -243,37 +241,35 @@ export function SearchBox() {
 						</div>
 
 						{/* 検索結果 */}
-						{locationQuery.trim() && locationResults?.locations && (
-							<div className="space-y-2">
-								<h4 className="text-sm font-medium">検索結果</h4>
-								<div className="max-h-48 overflow-y-auto space-y-2">
-									{locationResults.locations.length > 0 ? (
-										locationResults.locations.map((location) => (
-											<button
-												key={location.id}
-												onClick={() => handleLocationSelect(location)}
-												className="w-full flex items-center space-x-3 p-2 hover:bg-gray-100 rounded-lg transition-colors text-left"
-												type="button"
-											>
-												<Avatar className="h-8 w-8">
-													<AvatarFallback>
-														<MapPin className="h-4 w-4" />
-													</AvatarFallback>
-												</Avatar>
-												<div>
-													<div className="font-medium">{location.name}</div>
-													{location.description && (
-														<div className="text-sm text-gray-500">{location.description}</div>
-													)}
-												</div>
-											</button>
-										))
-									) : (
-										<div className="text-sm text-gray-500 p-2">場所が見つかりません</div>
-									)}
-								</div>
+						<div className="space-y-2">
+							<h4 className="text-sm font-medium">検索結果</h4>
+							<div className="h-80 overflow-y-auto space-y-2">
+								{locationQuery.trim() && locationResults?.locations ? (
+									locationResults.locations.slice(0, 5).map((location) => (
+										<button
+											key={location.id}
+											onClick={() => handleLocationSelect(location)}
+											className="w-full flex items-center space-x-3 p-2 hover:bg-gray-100 rounded-lg transition-colors text-left"
+											type="button"
+										>
+											<Avatar className="h-8 w-8">
+												<AvatarFallback>
+													<MapPin className="h-4 w-4" />
+												</AvatarFallback>
+											</Avatar>
+											<div>
+												<div className="font-medium">{location.name}</div>
+												{location.description && (
+													<div className="text-sm text-gray-500">{location.description}</div>
+												)}
+											</div>
+										</button>
+									))
+								) : (
+									<div className="text-sm text-gray-500 p-2">場所を検索してください</div>
+								)}
 							</div>
-						)}
+						</div>
 
 						<Button 
 							onClick={handleLocationSearch}
@@ -296,37 +292,35 @@ export function SearchBox() {
 						</div>
 
 						{/* 検索結果 */}
-						{eventQuery.trim() && eventResults?.events && (
-							<div className="space-y-2">
-								<h4 className="text-sm font-medium">検索結果</h4>
-								<div className="max-h-48 overflow-y-auto space-y-2">
-									{eventResults.events.length > 0 ? (
-										eventResults.events.map((event) => (
-											<button
-												key={event.id}
-												onClick={() => handleEventSelect(event)}
-												className="w-full flex items-center space-x-3 p-2 hover:bg-gray-100 rounded-lg transition-colors text-left"
-												type="button"
-											>
-												<Avatar className="h-8 w-8">
-													<AvatarFallback>
-														<Calendar className="h-4 w-4" />
-													</AvatarFallback>
-												</Avatar>
-												<div>
-													<div className="font-medium">{event.name}</div>
-													{event.description && (
-														<div className="text-sm text-gray-500">{event.description}</div>
-													)}
-												</div>
-											</button>
-										))
-									) : (
-										<div className="text-sm text-gray-500 p-2">イベントが見つかりません</div>
-									)}
-								</div>
+						<div className="space-y-2">
+							<h4 className="text-sm font-medium">検索結果</h4>
+							<div className="h-80 overflow-y-auto space-y-2">
+								{eventQuery.trim() && eventResults?.events ? (
+									eventResults.events.slice(0, 5).map((event) => (
+										<button
+											key={event.id}
+											onClick={() => handleEventSelect(event)}
+											className="w-full flex items-center space-x-3 p-2 hover:bg-gray-100 rounded-lg transition-colors text-left"
+											type="button"
+										>
+											<Avatar className="h-8 w-8">
+												<AvatarFallback>
+													<Calendar className="h-4 w-4" />
+												</AvatarFallback>
+											</Avatar>
+											<div>
+												<div className="font-medium">{event.name}</div>
+												{event.description && (
+													<div className="text-sm text-gray-500">{event.description}</div>
+												)}
+											</div>
+										</button>
+									))
+								) : (
+									<div className="text-sm text-gray-500 p-2">イベントを検索してください</div>
+								)}
 							</div>
-						)}
+						</div>
 
 						<Button 
 							onClick={handleEventSearch}
@@ -349,36 +343,34 @@ export function SearchBox() {
 						</div>
 						
 						{/* 検索結果 */}
-						{userQuery.trim() && userResults?.users && (
-							<div className="space-y-2">
-								<h4 className="text-sm font-medium">検索結果</h4>
-								<div className="max-h-48 overflow-y-auto space-y-2">
-									{userResults.users.length > 0 ? (
-										userResults.users.map((user) => (
-											<button
-												key={user.id}
-												onClick={() => handleUserSelect(user)}
-												className="w-full flex items-center space-x-3 p-2 hover:bg-gray-100 rounded-lg transition-colors text-left"
-												type="button"
-											>
-												<Avatar className="h-8 w-8">
-													<AvatarImage src={user.avatar_url || undefined} />
-													<AvatarFallback>
-														<UserRound className="h-4 w-4" />
-													</AvatarFallback>
-												</Avatar>
-												<div>
-													<div className="font-medium">{user.username}</div>
-													<div className="text-sm text-gray-500">{user.account_id}</div>
-												</div>
-											</button>
-										))
-									) : (
-										<div className="text-sm text-gray-500 p-2">ユーザーが見つかりません</div>
-									)}
-								</div>
+						<div className="space-y-2">
+							<h4 className="text-sm font-medium">検索結果</h4>
+							<div className="h-80 overflow-y-auto space-y-2">
+								{userQuery.trim() && userResults?.users ? (
+									userResults.users.slice(0, 5).map((user) => (
+										<button
+											key={user.id}
+											onClick={() => handleUserSelect(user)}
+											className="w-full flex items-center space-x-3 p-2 hover:bg-gray-100 rounded-lg transition-colors text-left"
+											type="button"
+										>
+											<Avatar className="h-8 w-8">
+												<AvatarImage src={user.avatar_url || undefined} />
+												<AvatarFallback>
+													<UserRound className="h-4 w-4" />
+												</AvatarFallback>
+											</Avatar>
+											<div>
+												<div className="font-medium">{user.username}</div>
+												<div className="text-sm text-gray-500">{user.account_id}</div>
+											</div>
+										</button>
+									))
+								) : (
+									<div className="text-sm text-gray-500 p-2">ユーザーを検索してください</div>
+								)}
 							</div>
-						)}
+						</div>
 
 						<Button 
 							onClick={handleUserSearch}
