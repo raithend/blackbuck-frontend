@@ -9,7 +9,7 @@ import {
 import { Input } from "@/app/components/ui/input";
 import { ScrollArea } from "@/app/components/ui/scroll-area";
 import { cn } from "@/app/lib/utils";
-import { Check, ChevronsUpDown, MapPin, Plus } from "lucide-react";
+import { Check, ChevronsUpDown, MapPin, Plus, X } from "lucide-react";
 import * as React from "react";
 
 import { famousLocations } from "./locations.ts.d/famous-locations";
@@ -46,16 +46,17 @@ export function LocationDropdownMenu({ value, onChange }: LocationDropdownMenuPr
 	};
 
 	return (
-		<DropdownMenu open={open} onOpenChange={setOpen}>
-			<DropdownMenuTrigger asChild>
-				<Button
-					variant="outline"
-					className="w-full justify-between"
-				>
-					{value || "撮影地を選択"}
-					<ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-				</Button>
-			</DropdownMenuTrigger>
+		<div className="flex">
+			<DropdownMenu open={open} onOpenChange={setOpen}>
+				<DropdownMenuTrigger asChild>
+					<Button
+						variant="outline"
+						className="flex-1 justify-between"
+					>
+						{value || "撮影地を選択"}
+						<ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+					</Button>
+				</DropdownMenuTrigger>
 			<DropdownMenuContent className="w-[var(--radix-dropdown-menu-trigger-width)] p-4 space-y-4">
 				{/* 検索ボックス */}
 				<div className="space-y-2">
@@ -115,5 +116,15 @@ export function LocationDropdownMenu({ value, onChange }: LocationDropdownMenuPr
 				</div>
 			</DropdownMenuContent>
 		</DropdownMenu>
+			<Button
+				variant="ghost"
+				size="icon"
+				onClick={() => onChange?.("")}
+				className="shrink-0"
+				disabled={!value}
+			>
+				<X className="h-4 w-4" />
+			</Button>
+		</div>
 	);
 }
