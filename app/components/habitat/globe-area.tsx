@@ -3,9 +3,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Image from "next/image";
 import Globe from "./globe";
-import { Button } from "@/app/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select";
-import { Label } from "@/app/components/ui/label";
+
 import { useGeologicalAge } from "../geological/geological-context";
 import geologicalAgesData from "@/app/data/geological-ages.json";
 import { generateMapWithHabitat } from "@/app/components/habitat/map-utils";
@@ -26,54 +24,20 @@ interface EraGroup {
 interface GlobeAreaProps {
 	customGeographicFile?: string;
 	eraGroups?: EraGroup[]; // 時代グループデータ
-	showMapSelector?: boolean; // 地図選択機能を表示するかどうか
 	creator?: User; // 作成者情報
 }
 
-// geological-ages.jsonから地図情報を取得する関数
-const getMapImages = () => {
-	const mapImages: { name: string; file: string }[] = [];
-	
-	// すべてのera, period, epoch, ageからmap情報を収集
-	for (const era of geologicalAgesData.eras) {
-		if (era.map) {
-			mapImages.push({ name: era.name, file: `${era.map}.jpg` });
-		}
-		for (const period of era.periods) {
-			if (period.map) {
-				mapImages.push({ name: period.name, file: `${period.map}.jpg` });
-			}
-			for (const epoch of period.epochs) {
-				if (epoch.map) {
-					mapImages.push({ name: epoch.name, file: `${epoch.map}.jpg` });
-				}
-				if (epoch.ages) {
-					for (const age of epoch.ages) {
-						if (age.map) {
-							mapImages.push({ name: age.name, file: `${age.map}.jpg` });
-						}
-					}
-				}
-			}
-		}
-	}
-	
-	// 重複を除去して返す
-	return mapImages.filter((map, index, self) => 
-		index === self.findIndex(m => m.file === map.file)
-	);
-};
+
 
 const GlobeArea = React.memo<GlobeAreaProps>(({ 
 	customGeographicFile, 
 	eraGroups,
-	showMapSelector = true,
 	creator 
 }) => {
 	const { selectedMap, selectedAgeIds } = useGeologicalAge();
 	const [customTexture, setCustomTexture] = useState<string | undefined>(undefined);
 	const [isGenerating, setIsGenerating] = useState(false);
-	const [currentMap, setCurrentMap] = useState("Map1a_PALEOMAP_PaleoAtlas_000.jpg");
+
 	const [isInitialized, setIsInitialized] = useState(false);
 	const [currentTextureKey, setCurrentTextureKey] = useState<string | undefined>(undefined);
 	
@@ -90,32 +54,26 @@ const GlobeArea = React.memo<GlobeAreaProps>(({
 		const shouldShowHabitat = hasOverlap(habitatEraIds, selectedAgeIds);
 		
 		if (!shouldShowHabitat || !eraGroups || eraGroups.length === 0) {
-			return `${currentMap}_empty`;
+			return `${selectedMap}_empty`;
 		}
 		
 		const dataKey = eraGroups.flatMap(eraGroup => 
 			eraGroup.elements?.map(item => `${item.lat},${item.lng},${item.color},${item.size}`) || []
 		).join('|');
-		return `${currentMap}_${dataKey}`;
-	}, [currentMap, eraGroups, habitatEraIds, selectedAgeIds]);
+		return `${selectedMap}_${dataKey}`;
+	}, [selectedMap, eraGroups, habitatEraIds, selectedAgeIds]);
 	
 	// 初期地図を設定
 	useEffect(() => {
 		if (!customTexture && !isInitialized) {
-			setCustomTexture(`/PALEOMAP_PaleoAtlas_Rasters_v3/${currentMap}`);
+			setCustomTexture(`/PALEOMAP_PaleoAtlas_Rasters_v3/${selectedMap}.jpg`);
 			setIsInitialized(true);
 		}
-	}, [customTexture, currentMap, isInitialized]);
+	}, [customTexture, selectedMap, isInitialized]);
 	
 
 
-	// 地質時代の選択に応じて地図を更新
-	useEffect(() => {
-		if (selectedMap) {
-			const mapFileName = `${selectedMap}.jpg`;
-			setCurrentMap(mapFileName);
-		}
-	}, [selectedMap]);
+
 
 	// 生息地データ付きの地図画像を生成（最適化版）
 	useEffect(() => {
@@ -134,7 +92,7 @@ const GlobeArea = React.memo<GlobeAreaProps>(({
 		
 		// 生息地データがない場合は通常の地図画像を使用
 		if (dataToUse.length === 0) {
-			const expectedTexture = `/PALEOMAP_PaleoAtlas_Rasters_v3/${currentMap}`;
+			const expectedTexture = `/PALEOMAP_PaleoAtlas_Rasters_v3/${selectedMap}.jpg`;
 			setCustomTexture(expectedTexture);
 			setCurrentTextureKey(textureKey);
 			return;
@@ -143,7 +101,7 @@ const GlobeArea = React.memo<GlobeAreaProps>(({
 		setIsGenerating(true);
 		
 		// 生息地データがある場合は生息地付き画像を生成
-		generateMapWithHabitat(currentMap, dataToUse)
+		generateMapWithHabitat(`${selectedMap}.jpg`, dataToUse)
 			.then(dataUrl => {
 				setCustomTexture(dataUrl);
 				setCurrentTextureKey(textureKey);
@@ -153,12 +111,12 @@ const GlobeArea = React.memo<GlobeAreaProps>(({
 				const errorMessage = error.message ? error.message : error.toString();
 				console.error('地図画像の生成に失敗しました:', errorMessage.length > 20 ? `${errorMessage.substring(0, 20)}...` : errorMessage);
 				// エラー時は通常の地図画像を使用
-				const expectedTexture = `/PALEOMAP_PaleoAtlas_Rasters_v3/${currentMap}`;
+				const expectedTexture = `/PALEOMAP_PaleoAtlas_Rasters_v3/${selectedMap}.jpg`;
 				setCustomTexture(expectedTexture);
 				setCurrentTextureKey(textureKey);
 				setIsGenerating(false);
 			});
-	}, [textureKey, currentTextureKey, currentMap, eraGroups, habitatEraIds, selectedAgeIds]);
+	}, [textureKey, currentTextureKey, selectedMap, eraGroups, habitatEraIds, selectedAgeIds]);
 
 	// 生息地データをメモ化
 	const habitatPoints = useMemo(() => {
@@ -174,29 +132,6 @@ const GlobeArea = React.memo<GlobeAreaProps>(({
 
 	return (
 		<div className="h-[calc(100vh-4rem)] relative">
-			{showMapSelector && (
-				<div className="absolute top-4 left-4 z-20 bg-white/90 backdrop-blur-sm rounded-lg p-4 shadow-lg">
-					<div className="space-y-2">
-						<Label htmlFor="map-select">時代を選択</Label>
-						<Select value={currentMap} onValueChange={setCurrentMap}>
-							<SelectTrigger id="map-select" className="w-48">
-								<SelectValue />
-							</SelectTrigger>
-							<SelectContent>
-								{getMapImages().map((map) => (
-									<SelectItem key={map.file} value={map.file}>
-										{map.name}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
-
-					</div>
-				</div>
-			)}
-			
-
-
 			{customTexture && (
 					<Globe 
 						customTexture={customTexture}
