@@ -66,7 +66,8 @@ export function CommentButton({ postId, commentCount = 0 }: CommentProps) {
 	};
 
 	const handleSubmit = async () => {
-		if (!content.trim()) {
+		// コメント内容または画像のいずれかが必要
+		if ((!content || content.trim() === "") && imageFiles.length === 0) {
 			return;
 		}
 
@@ -93,7 +94,7 @@ export function CommentButton({ postId, commentCount = 0 }: CommentProps) {
 					"Content-Type": "application/json",
 				},
 				body: JSON.stringify({
-					content: content.trim(),
+					content: content || "",
 					location: location || undefined,
 					event: event || undefined,
 					classification: classification || undefined,
@@ -174,7 +175,7 @@ export function CommentButton({ postId, commentCount = 0 }: CommentProps) {
 						</Button>
 						<Button 
 							onClick={handleSubmit}
-							disabled={isSubmitting || !content.trim()}
+							disabled={isSubmitting || ((!content || content.trim() === "") && imageFiles.length === 0)}
 						>
 							{isSubmitting ? "投稿中..." : "投稿"}
 						</Button>

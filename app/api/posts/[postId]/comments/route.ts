@@ -50,9 +50,10 @@ export async function POST(
 		// リクエストボディを取得
 		const { content, location, event, classification, imageUrls } = await request.json();
 
-		if (!content || content.trim() === "") {
+		// コメント内容または画像のいずれかが必要
+		if ((!content || content.trim() === "") && (!imageUrls || imageUrls.length === 0)) {
 			return NextResponse.json(
-				{ error: "コメント内容は必須です" },
+				{ error: "コメント内容または画像のいずれかが必要です" },
 				{ status: 400 }
 			);
 		}
@@ -61,7 +62,7 @@ export async function POST(
 		const { data: comment, error: commentError } = await supabaseWithAuth
 			.from("comments")
 			.insert({
-				content: content.trim(),
+				content: content ? content.trim() : "",
 				location: location || null,
 				event: event || null,
 				classification: classification || null,
