@@ -3,6 +3,7 @@
 import { PostCards } from "@/app/components/post/post-cards";
 import { ProfileHeader } from "@/app/components/profile/profile-header";
 import { UserCards } from "@/app/components/follow/user-cards";
+import { CommentCards } from "@/app/components/comment/comment-cards";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/components/ui/tabs";
 import { PostWithUser, User } from "@/app/types/types";
 import { useUser } from "@/app/contexts/user-context";
@@ -152,6 +153,19 @@ export default function UserProfilePage({ params }: { params: Promise<{ accountI
 		}
 	);
 
+	// コメントを取得
+	const { data: commentsData, error: commentsError, isLoading: commentsLoading, mutate: mutateComments } = useSWR<{ comments: any[] }>(
+		accountId ? `/api/users/account/${accountId}/comments` : null,
+		authFetcher,
+		{
+			revalidateOnFocus: false,
+			revalidateOnReconnect: true,
+			shouldRetryOnError: false,
+			dedupingInterval: 30000,
+			keepPreviousData: true,
+		}
+	);
+
 	// ネットワークエラー時の再試行ボタン
 	const handleRetry = () => {
 		mutateUser();
@@ -162,6 +176,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ accountI
 		mutateFollowing();
 		mutateFollowers();
 		mutateLikedPosts();
+		mutateComments();
 	};
 
 	// いいね状態変更のハンドラー
@@ -250,6 +265,40 @@ export default function UserProfilePage({ params }: { params: Promise<{ accountI
 		}, false);
 	};
 
+	// コメント更新のハンドラー
+	const handleCommentUpdate = (commentId: string) => {
+		// コメントデータを再取得
+		mutateComments();
+	};
+
+	// コメント削除のハンドラー
+	const handleCommentDelete = (commentId: string) => {
+		// コメントデータから削除
+		mutateComments((currentData) => {
+			if (!currentData) return currentData;
+			return {
+				...currentData,
+				comments: currentData.comments.filter(comment => comment.id !== commentId)
+			};
+		}, false);
+	};
+
+	// コメントいいね状態変更のハンドラー
+	const handleCommentLikeChange = (commentId: string, likeCount: number, isLiked: boolean) => {
+		// コメントデータを更新
+		mutateComments((currentData) => {
+			if (!currentData) return currentData;
+			return {
+				...currentData,
+				comments: currentData.comments.map(comment => 
+					comment.id === commentId 
+						? { ...comment, likeCount, isLiked }
+						: comment
+				)
+			};
+		}, false);
+	};
+
 	if (!accountId || userLoading) {
 		return (
 			<div className="container mx-auto px-4 py-8">
@@ -300,6 +349,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ accountI
 	const followingUsers = followingData?.users || [];
 	const followersUsers = followersData?.users || [];
 	const likedPosts = likedPostsData?.posts || [];
+	const comments = commentsData?.comments || [];
 
 	return (
 		<div className="container mx-auto px-4 py-8">
@@ -328,13 +378,14 @@ export default function UserProfilePage({ params }: { params: Promise<{ accountI
 			{/* タブコンテンツ */}
 			<Tabs defaultValue={isOwnProfile ? "feed" : "posts"} className="w-full">
 				<TabsList className="grid w-full" style={{ 
-					gridTemplateColumns: isOwnProfile ? "repeat(5, 1fr)" : "repeat(4, 1fr)" 
+					gridTemplateColumns: isOwnProfile ? "repeat(6, 1fr)" : "repeat(5, 1fr)" 
 				}}>
 					{isOwnProfile && <TabsTrigger value="feed">フィード</TabsTrigger>}
 					<TabsTrigger value="posts">投稿</TabsTrigger>
 					<TabsTrigger value="following">フォロー中</TabsTrigger>
 					<TabsTrigger value="followers">フォロワー</TabsTrigger>
 					<TabsTrigger value="likes">いいね</TabsTrigger>
+					<TabsTrigger value="comments">コメント</TabsTrigger>
 				</TabsList>
 
 				{/* フィードタブ（自分自身のプロフィールのみ） */}
@@ -483,6 +534,40 @@ export default function UserProfilePage({ params }: { params: Promise<{ accountI
 						</div>
 					) : (
 						<PostCards posts={likedPosts} onLikeChange={handleLikeChange} onPostUpdate={handlePostUpdate} onPostDelete={handlePostDelete} />
+					)}
+				</TabsContent>
+
+				{/* コメントタブ */}
+				<TabsContent value="comments" className="mt-6">
+					{commentsLoading ? (
+						<div className="space-y-4">
+							{Array.from({ length: 3 }).map((_, i) => (
+								<div key={i} className="animate-pulse">
+									<div className="h-48 bg-gray-200 rounded-lg"></div>
+								</div>
+							))}
+						</div>
+					) : commentsError ? (
+						<div className="text-center py-8">
+							<p className="text-gray-600 mb-4">コメントの取得に失敗しました</p>
+							<button 
+								onClick={handleRetry}
+								className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+							>
+								再試行
+							</button>
+						</div>
+					) : comments.length === 0 ? (
+						<div className="text-center py-8">
+							<p className="text-gray-600">コメントがありません</p>
+						</div>
+					) : (
+						<CommentCards 
+							comments={comments} 
+							onLikeChange={handleCommentLikeChange}
+							onCommentUpdate={handleCommentUpdate}
+							onCommentDelete={handleCommentDelete}
+						/>
 					)}
 				</TabsContent>
 			</Tabs>

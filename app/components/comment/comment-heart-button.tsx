@@ -5,19 +5,19 @@ import { useOptimistic, useTransition } from "react";
 import { useUser } from "@/app/contexts/user-context";
 import { toast } from "sonner";
 
-interface HeartButtonProps {
-	postId: string;
+interface CommentHeartButtonProps {
+	commentId: string;
 	initialLikeCount?: number;
 	initialIsLiked?: boolean;
 	onLikeChange?: (likeCount: number, isLiked: boolean) => void;
 }
 
-export function HeartButton({ 
-	postId, 
+export function CommentHeartButton({ 
+	commentId, 
 	initialLikeCount = 0, 
 	initialIsLiked = false,
 	onLikeChange 
-}: HeartButtonProps) {
+}: CommentHeartButtonProps) {
 	const { user } = useUser();
 	const [isPending, startTransition] = useTransition();
 	
@@ -61,7 +61,7 @@ export function HeartButton({
 					throw new Error("認証トークンが取得できません");
 				}
 
-				const response = await fetch(`/api/posts/${postId}/like`, {
+				const response = await fetch(`/api/comments/${commentId}/like`, {
 					method: optimisticState.isLiked ? "DELETE" : "POST",
 					headers: {
 						"Content-Type": "application/json",
@@ -110,4 +110,4 @@ export function HeartButton({
 			)}
 		</div>
 	);
-}
+} 
