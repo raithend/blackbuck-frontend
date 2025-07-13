@@ -11,6 +11,7 @@ import { formatDistanceToNow } from "date-fns";
 import { ja } from "date-fns/locale";
 import { MoreHorizontal, Edit, Trash2, UserRound } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { useUser } from "@/app/contexts/user-context";
 import { useState } from "react";
 import { CommentHeartButton } from "./comment-heart-button";
@@ -154,7 +155,7 @@ export function CommentCards({ comments, onLikeChange, onCommentUpdate, onCommen
 				return (
 					<Card key={comment.id} className="grid gap-2 p-0 md:px-16">
 						<CardHeader className="flex-row items-center justify-between p-0 m-4 md:m-0">
-							<div className="flex items-center">
+							<Link href={`/users/${comment.user.account_id}`} className="flex items-center hover:opacity-80 transition-opacity">
 								<Avatar>
 									<AvatarImage src={comment.user.avatar_url || undefined} />
 									<AvatarFallback>
@@ -165,7 +166,7 @@ export function CommentCards({ comments, onLikeChange, onCommentUpdate, onCommen
 									<div className="text-base font-semibold">{comment.user.username}</div>
 									<div>{comment.user.account_id}</div>
 								</div>
-							</div>
+							</Link>
 							
 							{/* 自分のコメントの場合のみドットメニューを表示 */}
 							{isOwnComment && (

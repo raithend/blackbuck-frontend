@@ -140,7 +140,7 @@ export function PostCard({ post, onLikeChange, onPostUpdate, onPostDelete }: Pos
 		<>
 			<Card className="grid gap-2 p-0 md:px-16">
 				<CardHeader className="flex-row items-center justify-between p-0 m-4 md:m-0">
-					<div className="flex items-center">
+					<Link href={`/users/${post.user.account_id}`} className="flex items-center hover:opacity-80 transition-opacity">
 						<Avatar>
 							<AvatarImage src={post.user.avatar_url || undefined} />
 							<AvatarFallback>
@@ -151,7 +151,7 @@ export function PostCard({ post, onLikeChange, onPostUpdate, onPostDelete }: Pos
 							<div className="text-base font-semibold">{post.user.username}</div>
 							<div>{post.user.account_id}</div>
 						</div>
-					</div>
+					</Link>
 					
 					{/* 自分の投稿の場合のみドットメニューを表示 */}
 					{isOwnPost && (
