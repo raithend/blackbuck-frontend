@@ -48,7 +48,7 @@ export async function POST(
 		}
 
 		// リクエストボディを取得
-		const { content, location, event, classification, imageUrls } = await request.json();
+		const { content, location, event, classification, imageUrls, parentCommentId } = await request.json();
 
 		// コメント内容または画像のいずれかが必要
 		if ((!content || content.trim() === "") && (!imageUrls || imageUrls.length === 0)) {
@@ -68,6 +68,7 @@ export async function POST(
 				classification: classification || null,
 				user_id: user.id,
 				post_id: postId,
+				parent_comment_id: parentCommentId || null,
 			})
 			.select()
 			.single();

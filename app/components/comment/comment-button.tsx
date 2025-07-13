@@ -25,9 +25,11 @@ import { useState } from "react";
 interface CommentProps {
 	postId: string;
 	commentCount?: number;
+	isReply?: boolean;
+	parentCommentId?: string;
 }
 
-export function CommentButton({ postId, commentCount = 0 }: CommentProps) {
+export function CommentButton({ postId, commentCount = 0, isReply = false, parentCommentId }: CommentProps) {
 	const [content, setContent] = useState("");
 	const [location, setLocation] = useState("");
 	const [event, setEvent] = useState("");
@@ -66,6 +68,12 @@ export function CommentButton({ postId, commentCount = 0 }: CommentProps) {
 	};
 
 	const handleSubmit = async () => {
+		// 投稿IDが無効な場合は処理を中止
+		if (!postId || postId === "") {
+			console.error("無効な投稿ID:", postId);
+			return;
+		}
+
 		// コメント内容または画像のいずれかが必要
 		if ((!content || content.trim() === "") && imageFiles.length === 0) {
 			return;
@@ -99,6 +107,7 @@ export function CommentButton({ postId, commentCount = 0 }: CommentProps) {
 					event: event || undefined,
 					classification: classification || undefined,
 					imageUrls,
+					parentCommentId: parentCommentId || undefined,
 				}),
 			});
 
@@ -135,7 +144,7 @@ export function CommentButton({ postId, commentCount = 0 }: CommentProps) {
 			</DialogTrigger>
 			<DialogContent className="max-w-md">
 				<DialogHeader>
-					<DialogTitle>コメントを投稿</DialogTitle>
+					<DialogTitle>{isReply ? "返信を投稿" : "コメントを投稿"}</DialogTitle>
 				</DialogHeader>
 				<div className="space-y-4">
 					<div className="flex items-center space-x-2">

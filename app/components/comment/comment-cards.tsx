@@ -26,6 +26,27 @@ interface CommentWithPost {
 	updated_at: string;
 	likeCount: number;
 	isLiked: boolean;
+	post_id?: string;
+	post?: {
+		id: string;
+		content: string;
+		location: string | null;
+		event: string | null;
+		classification: string | null;
+		created_at: string;
+		updated_at: string;
+		user: {
+			id: string;
+			account_id: string;
+			username: string;
+			avatar_url: string | null;
+		};
+		post_images: Array<{
+			id: string;
+			image_url: string;
+			order_index: number;
+		}>;
+	};
 	user: {
 		id: string;
 		account_id: string;
@@ -248,7 +269,12 @@ export function CommentCards({ comments, onLikeChange, onCommentUpdate, onCommen
 										initialIsLiked={comment.isLiked || false}
 										onLikeChange={(likeCount, isLiked) => handleLikeChange(comment.id, likeCount, isLiked)}
 									/>
-									<CommentButton postId={comment.id.toString()} commentCount={0} />
+									<CommentButton 
+										postId={comment.post_id || comment.post?.id || ""} 
+										commentCount={0} 
+										isReply={true} 
+										parentCommentId={comment.id} 
+									/>
 								</div>
 								<div className="text-sm text-gray-500 text-right">
 									<div>最終更新：{formatDateSafely(comment.updated_at)}</div>

@@ -122,6 +122,7 @@ export async function GET(
 			updated_at: comment.updated_at,
 			likeCount: commentLikeCountMap.get(comment.id) || 0,
 			isLiked: userCommentLikes.includes(comment.id),
+			post_id: comment.post_id,
 			user: {
 				id: user.id,
 				account_id: user.account_id,

@@ -83,10 +83,10 @@ export function ProfileHeader({ user }: ProfileHeaderProps) {
 			<div className="pt-16 px-6">
 				<div className="flex justify-between items-start">
 					<div className="space-y-2 flex-1">
-						<h1 className="text-2xl font-bold text-gray-900">
+						<h1 className="text-2xl font-bold">
 							{user.username}
 						</h1>
-						<p className="text-gray-600">
+						<p>
 							@{user.account_id}
 						</p>
 						{user.bio && (
