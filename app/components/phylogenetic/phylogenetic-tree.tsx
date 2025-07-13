@@ -187,7 +187,7 @@ export function PhylogeneticTree({ customTreeFile, customTreeContent }: Phylogen
 			.attr(
 				"xlink:href",
 				(d: ExtendedHierarchyNode) =>
-					`https://ja.wikipedia.org/wiki/${d.data.name}`,
+					`/classifications/${encodeURIComponent(d.data.name)}`,
 			)
 			.attr("target", "_blank")
 			.attr(
