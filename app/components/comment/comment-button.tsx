@@ -125,7 +125,6 @@ export function CommentButton({ postId, commentCount = 0 }: CommentProps) {
 			<DialogTrigger asChild>
 				<Button variant="ghost" size="sm" className="flex items-center gap-2">
 					<MessageCircle className="h-4 w-4" />
-					<span>コメント</span>
 					{commentCount > 0 && (
 						<span className="text-sm text-gray-600 min-w-[1rem] text-center">
 							{commentCount}

@@ -33,6 +33,7 @@ import { formatDistanceToNow } from "date-fns";
 import { ja } from "date-fns/locale";
 import { MoreHorizontal, Edit, Trash2, UserRound } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { useUser } from "@/app/contexts/user-context";
 import { HeartButton } from "./heart-button";
 import { PostEditDialog } from "./post-edit-dialog";
@@ -212,9 +213,39 @@ export function PostCard({ post, onLikeChange, onPostUpdate, onPostDelete }: Pos
 					<div className="grid gap-4">
 						<div className="grid gap-1">
 							<div>{post.content}</div>
-							<div>{post.location}</div>
-							<div>{post.event}</div>
-							<div>{post.classification}</div>
+							{post.location && (
+								<div className="text-sm">
+									撮影地：
+									<Link 
+										href={`/locations/${encodeURIComponent(post.location)}`}
+										className="hover:underline cursor-pointer"
+									>
+										{post.location}
+									</Link>
+								</div>
+							)}
+							{post.event && (
+								<div className="text-sm">
+									イベント：
+									<Link 
+										href={`/events/${encodeURIComponent(post.event)}`}
+										className="hover:underline cursor-pointer"
+									>
+										{post.event}
+									</Link>
+								</div>
+							)}
+							{post.classification && (
+								<div className="text-sm">
+									分類：
+									<Link 
+										href={`/classifications/${encodeURIComponent(post.classification)}`}
+										className="hover:underline cursor-pointer"
+									>
+										{post.classification}
+									</Link>
+								</div>
+							)}
 						</div>
 						<div className="flex justify-between items-center">
 							<div className="flex gap-2">
