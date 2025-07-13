@@ -116,6 +116,8 @@ export function CommentCards({ comments, onLikeChange, onCommentUpdate, onCommen
 				throw new Error("認証トークンが取得できません");
 			}
 
+			console.log("コメント削除API呼び出し:", `/api/comments/${commentId}`);
+
 			const response = await fetch(`/api/comments/${commentId}`, {
 				method: "DELETE",
 				headers: {
@@ -123,9 +125,19 @@ export function CommentCards({ comments, onLikeChange, onCommentUpdate, onCommen
 				},
 			});
 
+			console.log("レスポンスステータス:", response.status);
+			console.log("レスポンスヘッダー:", Object.fromEntries(response.headers.entries()));
+
 			if (!response.ok) {
-				const errorData = await response.json();
-				throw new Error(errorData.error || "コメントの削除に失敗しました");
+				const responseText = await response.text();
+				console.log("エラーレスポンス:", responseText);
+				
+				try {
+					const errorData = JSON.parse(responseText);
+					throw new Error(errorData.error || "コメントの削除に失敗しました");
+				} catch (parseError) {
+					throw new Error(`コメントの削除に失敗しました (${response.status}): ${responseText}`);
+				}
 			}
 
 			onCommentDelete?.(commentId);
