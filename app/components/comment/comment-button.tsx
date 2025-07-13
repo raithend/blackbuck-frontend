@@ -2,6 +2,7 @@
 
 import { ImageUpload } from "@/app/components/post/image-upload";
 import { LocationDropdownMenu } from "@/app/components/post/location-dropdown-menu";
+import { EventDropdownMenu } from "@/app/components/post/event-dropdown-menu";
 import {
 	Avatar,
 	AvatarFallback,
@@ -29,6 +30,7 @@ interface CommentProps {
 export function CommentButton({ postId, commentCount = 0 }: CommentProps) {
 	const [content, setContent] = useState("");
 	const [location, setLocation] = useState("");
+	const [event, setEvent] = useState("");
 	const [classification, setClassification] = useState("");
 	const [imageFiles, setImageFiles] = useState<File[]>([]);
 	const [isOpen, setIsOpen] = useState(false);
@@ -39,8 +41,19 @@ export function CommentButton({ postId, commentCount = 0 }: CommentProps) {
 		const formData = new FormData();
 		formData.append("file", file);
 
+		// 認証トークンを取得
+		const supabase = await import("@/app/lib/supabase-browser").then(m => m.createClient());
+		const { data: { session } } = await supabase.auth.getSession();
+		
+		if (!session?.access_token) {
+			throw new Error("認証トークンが取得できません");
+		}
+
 		const response = await fetch("/api/upload/posts", {
 			method: "POST",
+			headers: {
+				"Authorization": `Bearer ${session.access_token}`,
+			},
 			body: formData,
 		});
 
@@ -82,6 +95,7 @@ export function CommentButton({ postId, commentCount = 0 }: CommentProps) {
 				body: JSON.stringify({
 					content: content.trim(),
 					location: location || undefined,
+					event: event || undefined,
 					classification: classification || undefined,
 					imageUrls,
 				}),
@@ -95,6 +109,7 @@ export function CommentButton({ postId, commentCount = 0 }: CommentProps) {
 			// フォームをリセット
 			setContent("");
 			setLocation("");
+			setEvent("");
 			setClassification("");
 			setImageFiles([]);
 			setIsOpen(false);
@@ -142,6 +157,7 @@ export function CommentButton({ postId, commentCount = 0 }: CommentProps) {
 						className="min-h-[100px]"
 					/>
 					<LocationDropdownMenu value={location} onChange={setLocation} />
+					<EventDropdownMenu value={event} onChange={setEvent} />
 					<Input
 						type="text"
 						placeholder="分類"

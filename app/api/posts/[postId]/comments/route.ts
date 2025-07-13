@@ -21,8 +21,11 @@ export async function POST(
 
 		const token = authHeader.split(" ")[1];
 
+		// 認証されたSupabaseクライアントを作成
+		const supabaseWithAuth = await createClient(token);
+
 		// トークンの検証
-		const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+		const { data: { user }, error: authError } = await supabaseWithAuth.auth.getUser();
 		if (authError || !user) {
 			return NextResponse.json(
 				{ error: "認証が必要です" },
@@ -31,7 +34,7 @@ export async function POST(
 		}
 
 		// 投稿の存在確認
-		const { data: post, error: postError } = await supabase
+		const { data: post, error: postError } = await supabaseWithAuth
 			.from("posts")
 			.select("id")
 			.eq("id", postId)
@@ -45,7 +48,7 @@ export async function POST(
 		}
 
 		// リクエストボディを取得
-		const { content, location, classification, imageUrls } = await request.json();
+		const { content, location, event, classification, imageUrls } = await request.json();
 
 		if (!content || content.trim() === "") {
 			return NextResponse.json(
@@ -55,11 +58,12 @@ export async function POST(
 		}
 
 		// コメントを作成
-		const { data: comment, error: commentError } = await supabase
+		const { data: comment, error: commentError } = await supabaseWithAuth
 			.from("comments")
 			.insert({
 				content: content.trim(),
 				location: location || null,
+				event: event || null,
 				classification: classification || null,
 				user_id: user.id,
 				post_id: postId,
@@ -83,7 +87,7 @@ export async function POST(
 				order_index: index,
 			}));
 
-			const { error: imageError } = await supabase
+			const { error: imageError } = await supabaseWithAuth
 				.from("comment_images")
 				.insert(imageData);
 
