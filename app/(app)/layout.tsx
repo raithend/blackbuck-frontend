@@ -6,9 +6,9 @@ export default function AppLayout({
 	children: React.ReactNode;
 }) {
 	return (
-		<div className="min-h-screen pb-16">
+		<div className="min-h-screen">
 			<Header />
-			<main className="pt-16">{children}</main>
+			<main>{children}</main>
 		</div>
 	);
 }
