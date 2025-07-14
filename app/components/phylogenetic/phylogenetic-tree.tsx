@@ -8,7 +8,7 @@ import yaml from "js-yaml";
 
 // ツリーデータの型定義
 export interface TreeNode {
-	name: string;
+	name?: string;  // オプショナルに変更
 	children?: TreeNode[];
 	color?: string;
 }
@@ -71,7 +71,7 @@ export function PhylogeneticTree({ customTreeFile, customTreeContent }: Phylogen
 				}
 				
 				// データの妥当性チェック
-				if (!data || typeof data !== 'object' || !data.name) {
+				if (!data || typeof data !== 'object') {
 					console.error('無効なツリーデータ構造:', data);
 					throw new Error('ツリーデータの構造が正しくありません');
 				}
@@ -205,7 +205,7 @@ export function PhylogeneticTree({ customTreeFile, customTreeContent }: Phylogen
 			.attr(
 				"xlink:href",
 				(d: ExtendedHierarchyNode) =>
-					`/classifications/${encodeURIComponent(d.data.name)}`,
+					`/classifications/${encodeURIComponent(d.data.name || '')}`,
 			)
 			.attr("target", "_blank")
 			.attr(
@@ -243,7 +243,7 @@ export function PhylogeneticTree({ customTreeFile, customTreeContent }: Phylogen
 				const translateX = isRightSide ? labelOffset : -labelOffset;
 				return `rotate(${rotation}) translate(${translateX},0)`;
 			})
-			.text((d: ExtendedHierarchyNode) => d.data.name)
+			.text((d: ExtendedHierarchyNode) => d.data.name || 'No Name')
 			.style("fill", "white")
 			.style("font-size", "24px")
 			.on("mouseover", (event: MouseEvent, d: ExtendedHierarchyNode) => {

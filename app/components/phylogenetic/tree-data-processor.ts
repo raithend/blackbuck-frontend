@@ -3,7 +3,7 @@ import { load } from "js-yaml";
 
 // ツリーノードの型定義
 interface TreeNode {
-	name: string;
+	name?: string;  // オプショナルに変更
 	from?: string;
 	to?: string;
 	children?: TreeNode[];
@@ -96,6 +96,11 @@ const filterNodeByAge = (
 ): TreeNode | null => {
 	// nullチェックを追加
 	if (!node) {
+		return null;
+	}
+
+	// nameがnullまたは空で、かつ子ノードがない場合（末端ノード）は表示しない
+	if ((!node.name || node.name.trim() === '') && (!node.children || node.children.length === 0)) {
 		return null;
 	}
 
