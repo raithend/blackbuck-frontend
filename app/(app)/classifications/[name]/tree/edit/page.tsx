@@ -167,6 +167,11 @@ export default function PhylogeneticTreeEditPage() {
 					</Button>
 					<h1 className="text-2xl font-bold">系統樹編集: {decodedName}</h1>
 					<div className="ml-auto flex items-center gap-2">
+						{hasChanges && (
+							<div className="text-sm text-amber-600 bg-amber-50 p-2 rounded-lg border border-amber-200 mr-2">
+								⚠️ 未保存の変更があります
+							</div>
+						)}
 						<Button
 							variant="outline"
 							size="sm"
@@ -210,12 +215,6 @@ export default function PhylogeneticTreeEditPage() {
 						/>
 					</div>
 				</div>
-
-				{hasChanges && (
-					<div className="mb-4 text-sm text-amber-600 bg-amber-50 p-3 rounded-lg border border-amber-200">
-						⚠️ 未保存の変更があります
-					</div>
-				)}
 
 				<div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[calc(100vh-12rem)]">
 					{/* 左側: エディター */}
