@@ -91,9 +91,14 @@ const hasOverlap = (arr1: number[], arr2: number[]): boolean => {
 
 // ノードをフィルタリングする関数
 const filterNodeByAge = (
-	node: TreeNode,
+	node: TreeNode | null,
 	selectedAgeIds: number[],
 ): TreeNode | null => {
+	// nullチェックを追加
+	if (!node) {
+		return null;
+	}
+
 	// ノード自体の表示判定
 	let shouldDisplayNode = false;
 
@@ -125,7 +130,7 @@ const filterNodeByAge = (
 		return null;
 	}
 
-	// 子ノードを再帰的にフィルタリング
+	// 子ノードを再帰的にフィルタリング（nullチェック付き）
 	const filteredChildren =
 		node.children
 			?.map((child) => filterNodeByAge(child, selectedAgeIds))
@@ -158,6 +163,12 @@ export const processTreeData = (selectedAgeIds: number[], customData?: TreeNode)
 	} else {
 		// カスタムデータがない場合はnullを返す（tree-data.ymlは使用しない）
 		console.log('processTreeData - no custom data provided, returning null');
+		return null;
+	}
+
+	// データの妥当性チェック
+	if (!dataToUse || typeof dataToUse !== 'object') {
+		console.warn('processTreeData - invalid data structure:', dataToUse);
 		return null;
 	}
 

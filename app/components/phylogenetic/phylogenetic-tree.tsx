@@ -45,7 +45,13 @@ export function PhylogeneticTree({ customTreeFile, customTreeContent }: Phylogen
 				
 				if (customTreeContent) {
 					// データベースから直接コンテンツを読み込み（YAML形式）
-					data = yaml.load(customTreeContent) as TreeNode;
+					try {
+						data = yaml.load(customTreeContent) as TreeNode;
+					} catch (yamlError) {
+						console.error('YAMLパースエラー:', yamlError);
+						console.error('問題のあるYAMLコンテンツ:', customTreeContent);
+						throw new Error('YAMLデータの形式が正しくありません');
+					}
 				} else if (customTreeFile) {
 					// ファイルURLから読み込み（YAML形式）
 					const response = await fetch(customTreeFile);
@@ -53,9 +59,21 @@ export function PhylogeneticTree({ customTreeFile, customTreeContent }: Phylogen
 						throw new Error('Failed to load custom tree data');
 					}
 					const text = await response.text();
-					data = yaml.load(text) as TreeNode;
+					try {
+						data = yaml.load(text) as TreeNode;
+					} catch (yamlError) {
+						console.error('YAMLパースエラー:', yamlError);
+						console.error('問題のあるYAMLコンテンツ:', text);
+						throw new Error('YAMLファイルの形式が正しくありません');
+					}
 				} else {
 					throw new Error('No custom tree data provided');
+				}
+				
+				// データの妥当性チェック
+				if (!data || typeof data !== 'object' || !data.name) {
+					console.error('無効なツリーデータ構造:', data);
+					throw new Error('ツリーデータの構造が正しくありません');
 				}
 				
 				setCustomTreeData(data);
