@@ -10,6 +10,10 @@ export async function POST(
     const { name } = await params;
     const decodedName = decodeURIComponent(name);
     
+    // デバッグ用ログ
+    console.log('Original name from params:', name);
+    console.log('Decoded name:', decodedName);
+    
     // Authorizationヘッダーからアクセストークンを取得
     const authHeader = request.headers.get("authorization");
     const accessToken = authHeader?.replace("Bearer ", "");
@@ -41,6 +45,7 @@ export async function POST(
 
     // WikipediaのURLを構築
     const wikipediaUrl = `https://ja.wikipedia.org/wiki/${encodeURIComponent(decodedName)}`;
+    console.log('Wikipedia URL:', wikipediaUrl);
     
     // Claude APIに送信するプロンプト
     const prompt = `以下のWikipediaページから系統樹データを抽出し、YAML形式で返してください：
@@ -121,32 +126,37 @@ children:
       }, { status: 400 });
     }
 
-    // 分類IDを取得
-    const { data: classification, error: classificationError } = await supabase
+    // 分類IDを取得（保存用、なくてもエラーにしない）
+    const { data: classification } = await supabase
       .from('classifications')
       .select('id')
       .eq('name', decodedName)
       .single();
 
-    if (classificationError || !classification) {
-      return NextResponse.json({ error: '分類が見つかりません' }, { status: 404 });
+    if (classification) {
+      // 生成されたYAMLをphylogenetic_treesテーブルにupsert
+      const { error: upsertError } = await supabase
+        .from('phylogenetic_trees')
+        .upsert({
+          classification_id: classification.id,
+          content: generatedYaml,
+          creator: user.id,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'classification_id' });
+
+      if (upsertError) {
+        console.error('系統樹データ保存エラー:', upsertError);
+        // 保存エラーは警告として返すが、生成データは返す
+        return NextResponse.json({ 
+          warning: '系統樹データの保存に失敗しました',
+          yaml: generatedYaml,
+          message: 'Wikipediaから系統樹データを生成しました（保存は失敗）',
+          source: wikipediaUrl
+        });
+      }
     }
 
-    // 生成されたYAMLをphylogenetic_treesテーブルにupsert
-    const { error: upsertError } = await supabase
-      .from('phylogenetic_trees')
-      .upsert({
-        classification_id: classification.id,
-        content: generatedYaml,
-        creator: user.id,
-        updated_at: new Date().toISOString(),
-      }, { onConflict: 'classification_id' });
-
-    if (upsertError) {
-      console.error('系統樹データ保存エラー:', upsertError);
-      return NextResponse.json({ error: '系統樹データの保存に失敗しました' }, { status: 500 });
-    }
-
+    // 分類がなくても生成データは返す
     return NextResponse.json({ 
       success: true, 
       yaml: generatedYaml,
