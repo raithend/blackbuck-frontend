@@ -181,7 +181,7 @@ export default function PhylogeneticTreeEditPage() {
 							disabled={isGenerating}
 						>
 							<Sparkles className="h-4 w-4 mr-2" />
-							{isGenerating ? "生成中..." : "Wikipediaから生成"}
+							{isGenerating ? "生成中..." : "生成"}
 						</Button>
 						<Button
 							variant="outline"
