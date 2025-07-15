@@ -52,7 +52,7 @@ export default function PhylogeneticTreeViewPage() {
 		const url = URL.createObjectURL(blob);
 		const a = document.createElement('a');
 		a.href = url;
-		a.download = `${decodedName}_phylogenetic_tree.txt`;
+		a.download = `${decodedName}_phylogenetic_tree.yml`;
 		document.body.appendChild(a);
 		a.click();
 		document.body.removeChild(a);
@@ -121,6 +121,7 @@ export default function PhylogeneticTreeViewPage() {
 								<MonacoEditor
 									height="100%"
 									defaultLanguage="yaml"
+									theme="vs-dark"
 									value={treeContent}
 									options={{
 										minimap: { enabled: true },
@@ -146,7 +147,7 @@ export default function PhylogeneticTreeViewPage() {
 										parameterHints: {
 											enabled: false
 										},
-										tabCompletion: 'off',
+										tabCompletion: 'on',
 										tabSize: 2,
 										insertSpaces: true,
 										wrappingIndent: 'indent',
@@ -156,6 +157,80 @@ export default function PhylogeneticTreeViewPage() {
 											verticalScrollbarSize: 14,
 											horizontalScrollbarSize: 14
 										}
+									}}
+									onMount={(editor, monaco) => {
+										console.log('MonacoEditor onMount');
+										monaco.languages.registerCompletionItemProvider('yaml', {
+											triggerCharacters: ['-', 'c', 'f', 't'],
+											provideCompletionItems: (model, position) => {
+												const lineContent = model.getLineContent(position.lineNumber).slice(0, position.column - 1);
+												console.log('provideCompletionItems called. lineContent:', lineContent);
+												const suggestions = [];
+												if (/^\s*-$/.test(lineContent)) {
+													suggestions.push({
+														label: '- name:',
+														kind: monaco.languages.CompletionItemKind.Snippet,
+														insertText: '- name: ',
+														insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+														range: {
+															startLineNumber: position.lineNumber,
+															startColumn: 1,
+															endLineNumber: position.lineNumber,
+															endColumn: position.column,
+														},
+													});
+													console.log('Triggered - name: snippet');
+												}
+												if (/^\s*c$/.test(lineContent)) {
+													suggestions.push({
+														label: 'children:',
+														kind: monaco.languages.CompletionItemKind.Snippet,
+														insertText: 'children: ',
+														insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+														range: {
+															startLineNumber: position.lineNumber,
+															startColumn: 1,
+															endLineNumber: position.lineNumber,
+															endColumn: position.column,
+														},
+													});
+													console.log('Triggered children: snippet');
+												}
+												if (/^\s*f$/.test(lineContent)) {
+													suggestions.push({
+														label: 'from:',
+														kind: monaco.languages.CompletionItemKind.Snippet,
+														insertText: 'from: ',
+														insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+														range: {
+															startLineNumber: position.lineNumber,
+															startColumn: 1,
+															endLineNumber: position.lineNumber,
+															endColumn: position.column,
+														},
+													});
+													console.log('Triggered from: snippet');
+												}
+												if (/^\s*t$/.test(lineContent)) {
+													suggestions.push({
+														label: 'to:',
+														kind: monaco.languages.CompletionItemKind.Snippet,
+														insertText: 'to: ',
+														insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+														range: {
+															startLineNumber: position.lineNumber,
+															startColumn: 1,
+															endLineNumber: position.lineNumber,
+															endColumn: position.column,
+														},
+													});
+													console.log('Triggered to: snippet');
+												}
+												console.log('suggestions:', suggestions);
+												return { suggestions };
+											},
+										});
+										console.log('registerCompletionItemProvider called');
 									}}
 								/>
 							</CardContent>

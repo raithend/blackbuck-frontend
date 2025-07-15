@@ -14,6 +14,13 @@ import geologicalAgesData from "@/app/data/geological-ages.json";
 import { GeologicalAgeCard } from "@/app/components/geological/geological-age-card";
 import { useGeologicalAge } from "@/app/components/geological/geological-context";
 import { Button } from "@/app/components/ui/button";
+import dynamic from "next/dynamic";
+
+// Monaco Editorを動的インポート
+const MonacoEditor = dynamic(
+  () => import("@monaco-editor/react"),
+  { ssr: false }
+);
 
 const FabricHabitatEditor = forwardRef(function FabricHabitatEditor({
 	habitatData = [],
@@ -791,6 +798,104 @@ const FabricHabitatEditor = forwardRef(function FabricHabitatEditor({
 						</TabsContent>
 					</Tabs>
 				</div>
+			</div>
+			{/* YAMLエディタ */}
+			<div className="mt-8">
+				<Card>
+					<CardHeader>
+						<CardTitle>YAMLエディタ（スニペット補完付き）</CardTitle>
+					</CardHeader>
+					<CardContent>
+						<MonacoEditor
+							height="300px"
+							defaultLanguage="yaml"
+							theme="vs-dark"
+							options={{
+								fontSize: 14,
+								minimap: { enabled: false },
+								tabSize: 2,
+								insertSpaces: true,
+								wordWrap: 'on',
+								automaticLayout: true,
+								tabCompletion: 'on', // 追加
+							}}
+							onMount={(editor, monaco) => {
+								console.log('MonacoEditor onMount');
+								monaco.languages.registerCompletionItemProvider('yaml', {
+									triggerCharacters: ['-', 'c', 'f', 't'],
+									provideCompletionItems: (model, position) => {
+										const lineContent = model.getLineContent(position.lineNumber).slice(0, position.column - 1);
+										console.log('provideCompletionItems called. lineContent:', lineContent);
+										const suggestions = [];
+										if (/^\s*-$/.test(lineContent)) {
+											suggestions.push({
+												label: '- name:',
+												kind: monaco.languages.CompletionItemKind.Snippet,
+												insertText: '- name: ',
+												insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+												range: {
+													startLineNumber: position.lineNumber,
+													startColumn: 1,
+													endLineNumber: position.lineNumber,
+													endColumn: position.column,
+												},
+											});
+											console.log('Triggered - name: snippet');
+										}
+										if (/^\s*c$/.test(lineContent)) {
+											suggestions.push({
+												label: 'children:',
+												kind: monaco.languages.CompletionItemKind.Snippet,
+												insertText: 'children: ',
+												insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+												range: {
+													startLineNumber: position.lineNumber,
+													startColumn: 1,
+													endLineNumber: position.lineNumber,
+													endColumn: position.column,
+												},
+											});
+											console.log('Triggered children: snippet');
+										}
+										if (/^\s*f$/.test(lineContent)) {
+											suggestions.push({
+												label: 'from:',
+												kind: monaco.languages.CompletionItemKind.Snippet,
+												insertText: 'from: ',
+												insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+												range: {
+													startLineNumber: position.lineNumber,
+													startColumn: 1,
+													endLineNumber: position.lineNumber,
+													endColumn: position.column,
+												},
+											});
+											console.log('Triggered from: snippet');
+										}
+										if (/^\s*t$/.test(lineContent)) {
+											suggestions.push({
+												label: 'to:',
+												kind: monaco.languages.CompletionItemKind.Snippet,
+												insertText: 'to: ',
+												insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+												range: {
+													startLineNumber: position.lineNumber,
+													startColumn: 1,
+													endLineNumber: position.lineNumber,
+													endColumn: position.column,
+												},
+											});
+											console.log('Triggered to: snippet');
+										}
+										console.log('suggestions:', suggestions);
+										return { suggestions };
+									},
+								});
+								console.log('registerCompletionItemProvider called');
+							}}
+						/>
+					</CardContent>
+				</Card>
 			</div>
 		</div>
 	);
