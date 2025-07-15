@@ -147,6 +147,8 @@ export default function PhylogeneticTreeViewPage() {
 											enabled: false
 										},
 										tabCompletion: 'off',
+										tabSize: 2,
+										insertSpaces: true,
 										wrappingIndent: 'indent',
 										scrollbar: {
 											vertical: 'visible',
