@@ -135,11 +135,13 @@ const filterNodeByAge = (
 		return null;
 	}
 
-	// 子ノードを再帰的にフィルタリング（nullチェック付き）
+	// 子ノードを再帰的にフィルタリング（配列チェック付き）
 	const filteredChildren =
-		node.children
-			?.map((child) => filterNodeByAge(child, selectedAgeIds))
-			.filter((child): child is TreeNode => child !== null) || [];
+		Array.isArray(node.children)
+			? node.children
+				.map((child) => filterNodeByAge(child, selectedAgeIds))
+				.filter((child): child is TreeNode => child !== null)
+			: [];
 
 	// ノードの表示判定
 	if (shouldDisplayNode || filteredChildren.length > 0) {
