@@ -27,6 +27,7 @@ export default function PhylogeneticTreeEditPage() {
 	const [isSaving, setIsSaving] = useState(false);
 	const [isGenerating, setIsGenerating] = useState(false);
 	const [originalContent, setOriginalContent] = useState("");
+	const [yamlError, setYamlError] = useState<string | null>(null);
 
 	// 既存の系統樹データを取得
 	useEffect(() => {
@@ -169,7 +170,8 @@ export default function PhylogeneticTreeEditPage() {
 					<div className="ml-auto flex items-center gap-2">
 						{hasChanges && (
 							<div className="text-sm text-amber-600 bg-amber-50 p-2 rounded-lg border border-amber-200 mr-2">
-								⚠️ 未保存の変更があります
+								<span className="block lg:hidden">⚠️ 未保存</span>
+								<span className="hidden lg:block">⚠️ 未保存の変更があります</span>
 							</div>
 						)}
 						<Button
@@ -225,7 +227,11 @@ export default function PhylogeneticTreeEditPage() {
 									height="100%"
 									defaultLanguage="yaml"
 									value={treeContent}
-									onChange={(value) => setTreeContent(value || "")}
+									onChange={(value) => {
+										setTreeContent(value || "");
+										// YAMLエラーをクリア
+										setYamlError(null);
+									}}
 									options={{
 										minimap: { enabled: true },
 										scrollBeyondLastLine: false,
@@ -268,22 +274,27 @@ export default function PhylogeneticTreeEditPage() {
 
 					{/* 右側: プレビュー */}
 					<div className="flex flex-col space-y-4">
-						{/* 地質時代カード */}
-						<Card>
-							<CardContent>
-								<GeologicalAgeCard enableMenu={false} />
-							</CardContent>
-						</Card>
-
 						{/* 系統樹プレビュー */}
 						<Card className="flex-1">
 							<CardContent className="flex-1 p-0 h-full">
-								<div className="h-full min-h-[400px]">
+								<div className="h-full min-h-[400px] relative">
+									{/* 地質時代カードを右上に重ねて配置 */}
+									<div className="absolute top-0 right-0 z-10">
+										<GeologicalAgeCard enableMenu={true} />
+									</div>
 									{treeContent ? (
-										<PhylogeneticTree customTreeContent={treeContent} />
+										<PhylogeneticTree 
+											customTreeContent={treeContent} 
+											onError={(error) => setYamlError(error)}
+										/>
 									) : (
 										<div className="flex items-center justify-center h-full text-gray-500">
 											<p>YAMLを入力して系統樹をプレビュー</p>
+										</div>
+									)}
+									{yamlError && (
+										<div className="absolute bottom-4 left-4 bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded-lg text-sm">
+											⚠️ YAMLエラー: {yamlError}
 										</div>
 									)}
 								</div>

@@ -4,11 +4,11 @@ import * as d3 from "d3";
 import React, { useEffect, useRef, useState } from "react";
 import { useGeologicalAge } from "../geological/geological-context";
 import { processTreeData } from "./tree-data-processor";
-import yaml from "js-yaml";
+import { safeYamlParse } from "@/app/lib/yaml-utils";
 
 // ツリーデータの型定義
 export interface TreeNode {
-	name?: string;  // オプショナルに変更
+	name: string;
 	children?: TreeNode[];
 	color?: string;
 }
@@ -23,9 +23,10 @@ interface ExtendedHierarchyNode extends d3.HierarchyNode<TreeNode> {
 interface PhylogeneticTreeProps {
 	customTreeFile?: string;
 	customTreeContent?: string;
+	onError?: (error: string) => void;
 }
 
-export function PhylogeneticTree({ customTreeFile, customTreeContent }: PhylogeneticTreeProps) {
+export function PhylogeneticTree({ customTreeFile, customTreeContent, onError }: PhylogeneticTreeProps) {
 	const svgRef = useRef<SVGSVGElement>(null);
 	const { selectedAgeIds } = useGeologicalAge();
 	const [customTreeData, setCustomTreeData] = useState<TreeNode | null>(null);
@@ -41,39 +42,36 @@ export function PhylogeneticTree({ customTreeFile, customTreeContent }: Phylogen
 		const loadCustomTreeData = async () => {
 			setIsLoading(true);
 			try {
-				let data: TreeNode;
+				let data: TreeNode | null = null;
 				
 				if (customTreeContent) {
 					// データベースから直接コンテンツを読み込み（YAML形式）
 					try {
-						data = yaml.load(customTreeContent) as TreeNode;
+						const parsedData = safeYamlParse(customTreeContent);
+						if (parsedData && typeof parsedData === 'object' && 'name' in parsedData) {
+							data = parsedData as TreeNode;
+						}
 					} catch (yamlError) {
-						console.error('YAMLパースエラー:', yamlError);
-						console.error('問題のあるYAMLコンテンツ:', customTreeContent);
-						throw new Error('YAMLデータの形式が正しくありません');
+						console.warn('YAMLデータの解析に失敗しました（無視されます）:', yamlError);
+						if (onError) {
+							onError('YAMLの構文エラーがあります。無効な部分は無視されます。');
+						}
 					}
 				} else if (customTreeFile) {
 					// ファイルURLから読み込み（YAML形式）
-					const response = await fetch(customTreeFile);
-					if (!response.ok) {
-						throw new Error('Failed to load custom tree data');
-					}
-					const text = await response.text();
 					try {
-						data = yaml.load(text) as TreeNode;
+						const response = await fetch(customTreeFile);
+						if (!response.ok) {
+							throw new Error('Failed to load custom tree data');
+						}
+						const text = await response.text();
+						const parsedData = safeYamlParse(text);
+						if (parsedData && typeof parsedData === 'object' && 'name' in parsedData) {
+							data = parsedData as TreeNode;
+						}
 					} catch (yamlError) {
-						console.error('YAMLパースエラー:', yamlError);
-						console.error('問題のあるYAMLコンテンツ:', text);
-						throw new Error('YAMLファイルの形式が正しくありません');
+						console.warn('YAMLファイルの解析に失敗しました（無視されます）:', yamlError);
 					}
-				} else {
-					throw new Error('No custom tree data provided');
-				}
-				
-				// データの妥当性チェック
-				if (!data || typeof data !== 'object') {
-					console.error('無効なツリーデータ構造:', data);
-					throw new Error('ツリーデータの構造が正しくありません');
 				}
 				
 				setCustomTreeData(data);
@@ -205,7 +203,7 @@ export function PhylogeneticTree({ customTreeFile, customTreeContent }: Phylogen
 			.attr(
 				"xlink:href",
 				(d: ExtendedHierarchyNode) =>
-					`/classifications/${encodeURIComponent(d.data.name || '')}`,
+					`/classifications/${encodeURIComponent(d.data.name)}`,
 			)
 			.attr("target", "_blank")
 			.attr(
@@ -243,7 +241,7 @@ export function PhylogeneticTree({ customTreeFile, customTreeContent }: Phylogen
 				const translateX = isRightSide ? labelOffset : -labelOffset;
 				return `rotate(${rotation}) translate(${translateX},0)`;
 			})
-			.text((d: ExtendedHierarchyNode) => d.data.name || 'No Name')
+			.text((d: ExtendedHierarchyNode) => d.data.name)
 			.style("fill", "white")
 			.style("font-size", "24px")
 			.on("mouseover", (event: MouseEvent, d: ExtendedHierarchyNode) => {
