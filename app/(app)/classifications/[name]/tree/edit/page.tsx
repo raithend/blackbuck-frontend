@@ -163,15 +163,15 @@ export default function PhylogeneticTreeEditPage() {
 						variant="outline"
 						onClick={() => router.push(`/classifications/${encodeURIComponent(decodedName)}`)}
 					>
-						<ArrowLeft className="h-4 w-4 mr-2" />
-						戻る
+						<ArrowLeft className="h-4 w-4 lg:mr-2" />
+						<span className="hidden lg:inline">戻る</span>
 					</Button>
 					<h1 className="text-2xl font-bold">系統樹編集: {decodedName}</h1>
 					<div className="ml-auto flex items-center gap-2">
 						{hasChanges && (
 							<div className="text-sm text-amber-600 bg-amber-50 p-2 rounded-lg border border-amber-200 mr-2">
-								<span className="block lg:hidden">⚠️ 未保存</span>
-								<span className="hidden lg:block">⚠️ 未保存の変更があります</span>
+								<span className="block lg:hidden">⚠️</span>
+								<span className="hidden lg:block">⚠️ 未保存</span>
 							</div>
 						)}
 						<Button
@@ -180,8 +180,8 @@ export default function PhylogeneticTreeEditPage() {
 							onClick={handleGenerateFromWikipedia}
 							disabled={isGenerating}
 						>
-							<Sparkles className="h-4 w-4 mr-2" />
-							{isGenerating ? "生成中..." : "生成"}
+							<Sparkles className="h-4 w-4 lg:mr-2" />
+							<span className="hidden lg:inline">{isGenerating ? "生成中..." : "生成"}</span>
 						</Button>
 						<Button
 							variant="outline"
@@ -189,24 +189,24 @@ export default function PhylogeneticTreeEditPage() {
 							onClick={handleDownload}
 							disabled={!treeContent}
 						>
-							<Download className="h-4 w-4 mr-2" />
-							ダウンロード
+							<Download className="h-4 w-4 lg:mr-2" />
+							<span className="hidden lg:inline">ダウンロード</span>
 						</Button>
 						<Button
 							variant="outline"
 							size="sm"
 							onClick={() => document.getElementById('file-upload')?.click()}
 						>
-							<Upload className="h-4 w-4 mr-2" />
-							アップロード
+							<Upload className="h-4 w-4 lg:mr-2" />
+							<span className="hidden lg:inline">アップロード</span>
 						</Button>
 						<Button
 							onClick={handleSave}
 							disabled={isSaving || !hasChanges}
 							size="sm"
 						>
-							<Save className="h-4 w-4 mr-2" />
-							{isSaving ? "保存中..." : "保存"}
+							<Save className="h-4 w-4 lg:mr-2" />
+							<span className="hidden lg:inline">{isSaving ? "保存中..." : "保存"}</span>
 						</Button>
 						<input
 							id="file-upload"
