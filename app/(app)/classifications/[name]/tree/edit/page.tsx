@@ -226,6 +226,7 @@ export default function PhylogeneticTreeEditPage() {
 								<MonacoEditor
 									height="100%"
 									defaultLanguage="yaml"
+									theme="vs-dark"
 									value={treeContent}
 									onChange={(value) => {
 										setTreeContent(value || "");
