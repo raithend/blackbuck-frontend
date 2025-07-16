@@ -1,12 +1,6 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {
-  webpack: (config) => {
-    config.module.rules.push({
-      test: /\.ya?ml$/,
-      use: 'raw-loader',
-    });
-    return config;
-  },
+import type { NextConfig } from 'next';
+
+const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       {
@@ -36,6 +30,18 @@ const nextConfig = {
       },
     ],
   },
+  turbopack: {
+    rules: {
+      '*.yaml': {
+        loaders: ['raw-loader'],
+        as: '*.js',
+      },
+      '*.yml': {
+        loaders: ['raw-loader'],
+        as: '*.js',
+      },
+    },
+  },
 };
 
-module.exports = nextConfig; 
+export default nextConfig; 
