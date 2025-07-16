@@ -28,3 +28,11 @@ export type PhotoBubble = Database["public"]["Tables"]["photo_bubbles"]["Row"];
 
 export type ProfilePhotoBubble =
 	Database["public"]["Views"]["profile_photo_bubbles"]["Row"];
+
+export interface TreeNode {
+  name?: string;
+  from?: string;
+  to?: string;
+  children?: TreeNode[];
+  color?: string;
+}

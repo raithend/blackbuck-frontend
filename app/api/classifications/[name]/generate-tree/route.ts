@@ -10,10 +10,6 @@ export async function POST(
     const { name } = await params;
     const decodedName = decodeURIComponent(name);
     
-    // デバッグ用ログ
-    console.log('Original name from params:', name);
-    console.log('Decoded name:', decodedName);
-    
     // Authorizationヘッダーからアクセストークンを取得
     const authHeader = request.headers.get("authorization");
     const accessToken = authHeader?.replace("Bearer ", "");

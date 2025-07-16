@@ -1,13 +1,6 @@
 import geologicalAgesData from "@/app/data/geological-ages.json";
 import { load } from "js-yaml";
-
-// ツリーノードの型定義
-interface TreeNode {
-	name?: string;  // オプショナルに変更
-	from?: string;
-	to?: string;
-	children?: TreeNode[];
-}
+import type { TreeNode } from '../../types/types';
 
 // 地質時代の名前からIDを取得する関数
 const getAgeIdsByName = (ageName: string): number[] => {

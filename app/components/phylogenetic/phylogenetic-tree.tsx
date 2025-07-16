@@ -5,13 +5,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useGeologicalAge } from "../geological/geological-context";
 import { processTreeData } from "./tree-data-processor";
 import { safeYamlParse } from "@/app/lib/yaml-utils";
-
-// ツリーデータの型定義
-export interface TreeNode {
-	name: string;
-	children?: TreeNode[];
-	color?: string;
-}
+import type { TreeNode } from '../../types/types';
 
 // d3の階層ノードの型を拡張
 interface ExtendedHierarchyNode extends d3.HierarchyNode<TreeNode> {
@@ -84,7 +78,7 @@ export function PhylogeneticTree({ customTreeFile, customTreeContent, onError }:
 		};
 
 		loadCustomTreeData();
-	}, [customTreeFile, customTreeContent]);
+	}, [customTreeFile, customTreeContent, onError]);
 
 	useEffect(() => {
 		if (!svgRef.current || isLoading) return;
@@ -203,7 +197,7 @@ export function PhylogeneticTree({ customTreeFile, customTreeContent, onError }:
 			.attr(
 				"xlink:href",
 				(d: ExtendedHierarchyNode) =>
-					`/classifications/${encodeURIComponent(d.data.name)}`,
+					`/classifications/${encodeURIComponent(d.data.name ?? "")}`,
 			)
 			.attr("target", "_blank")
 			.attr(
@@ -241,7 +235,7 @@ export function PhylogeneticTree({ customTreeFile, customTreeContent, onError }:
 				const translateX = isRightSide ? labelOffset : -labelOffset;
 				return `rotate(${rotation}) translate(${translateX},0)`;
 			})
-			.text((d: ExtendedHierarchyNode) => d.data.name)
+			.text((d: ExtendedHierarchyNode) => d.data.name ?? "")
 			.style("fill", "white")
 			.style("font-size", "24px")
 			.on("mouseover", (event: MouseEvent, d: ExtendedHierarchyNode) => {
