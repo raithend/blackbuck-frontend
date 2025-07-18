@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/app/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card";
@@ -28,6 +28,11 @@ export default function PhylogeneticTreeEditPage() {
 	const [isGenerating, setIsGenerating] = useState(false);
 	const [originalContent, setOriginalContent] = useState("");
 	const [yamlError, setYamlError] = useState<string | null>(null);
+	
+	// 自動保存用のタイマーとフラグ
+	const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
+	const [isAutoSaving, setIsAutoSaving] = useState(false);
+	const [lastAutoSaveTime, setLastAutoSaveTime] = useState<Date | null>(null);
 
 	// 既存の系統樹データを取得
 	useEffect(() => {
@@ -52,10 +57,82 @@ export default function PhylogeneticTreeEditPage() {
 		fetchTreeData();
 	}, [decodedName]);
 
+	// 自動保存処理
+	const handleAutoSave = async () => {
+		if (treeContent === originalContent) {
+			return; // 変更がない場合は保存しない
+		}
+
+		setIsAutoSaving(true);
+		try {
+			const supabase = createClient();
+			const { data: { session } } = await supabase.auth.getSession();
+			
+			const response = await fetch(`/api/classifications/${encodeURIComponent(decodedName)}/phylogenetic-trees`, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'Authorization': `Bearer ${session?.access_token}`,
+				},
+				body: JSON.stringify({
+					content: treeContent
+				}),
+			});
+
+			if (!response.ok) {
+				throw new Error('自動保存に失敗しました');
+			}
+
+			setOriginalContent(treeContent);
+			setLastAutoSaveTime(new Date());
+			toast.success('自動保存しました', {
+				duration: 2000,
+				description: lastAutoSaveTime ? `前回: ${lastAutoSaveTime.toLocaleTimeString()}` : undefined
+			});
+		} catch (error) {
+			console.error('自動保存エラー:', error);
+			toast.error('自動保存に失敗しました');
+		} finally {
+			setIsAutoSaving(false);
+		}
+	};
+
+	// 入力変更時の自動保存タイマー設定
+	const handleContentChange = (value: string | undefined) => {
+		const newContent = value || "";
+		setTreeContent(newContent);
+		setYamlError(null);
+
+		// 既存のタイマーをクリア
+		if (autoSaveTimerRef.current) {
+			clearTimeout(autoSaveTimerRef.current);
+		}
+
+		// 5秒後に自動保存を実行
+		autoSaveTimerRef.current = setTimeout(() => {
+			handleAutoSave();
+		}, 5000);
+	};
+
+	// コンポーネントのアンマウント時にタイマーをクリア
+	useEffect(() => {
+		return () => {
+			if (autoSaveTimerRef.current) {
+				clearTimeout(autoSaveTimerRef.current);
+			}
+		};
+	}, []);
+
 	// Wikipediaから系統樹を生成
 	const handleGenerateFromWikipedia = async () => {
 		setIsGenerating(true);
 		try {
+			// 既存の自動保存タイマーをクリア
+			if (autoSaveTimerRef.current) {
+				clearTimeout(autoSaveTimerRef.current);
+				autoSaveTimerRef.current = null;
+			}
+
 			const supabase = createClient();
 			const { data: { session } } = await supabase.auth.getSession();
 			
@@ -84,7 +161,7 @@ export default function PhylogeneticTreeEditPage() {
 		}
 	};
 
-	// 保存処理
+	// 手動保存処理
 	const handleSave = async () => {
 		setIsSaving(true);
 		try {
@@ -107,6 +184,7 @@ export default function PhylogeneticTreeEditPage() {
 			}
 
 			setOriginalContent(treeContent);
+			setLastAutoSaveTime(new Date());
 			toast.success('系統樹を保存しました');
 		} catch (error) {
 			console.error('保存エラー:', error);
@@ -174,6 +252,13 @@ export default function PhylogeneticTreeEditPage() {
 								<span className="hidden lg:block">⚠️ 未保存</span>
 							</div>
 						)}
+						{/* 自動保存状態表示 */}
+						{isAutoSaving && (
+							<div className="text-sm text-blue-600 bg-blue-50 p-2 rounded-lg border border-blue-200 mr-2">
+								<span className="block lg:hidden">💾</span>
+								<span className="hidden lg:block">💾 自動保存中...</span>
+							</div>
+						)}
 						<Button
 							variant="outline"
 							size="sm"
@@ -202,7 +287,7 @@ export default function PhylogeneticTreeEditPage() {
 						</Button>
 						<Button
 							onClick={handleSave}
-							disabled={isSaving || !hasChanges}
+							disabled={isSaving || !hasChanges || isAutoSaving}
 							size="sm"
 						>
 							<Save className="h-4 w-4 lg:mr-2" />
@@ -211,7 +296,7 @@ export default function PhylogeneticTreeEditPage() {
 						<input
 							id="file-upload"
 							type="file"
-							accept=".txt,.newick,.nexus"
+							accept=".yml,.yaml"
 							onChange={handleFileUpload}
 							className="hidden"
 						/>
@@ -228,11 +313,7 @@ export default function PhylogeneticTreeEditPage() {
 									defaultLanguage="yaml"
 									theme="vs-dark"
 									value={treeContent}
-									onChange={(value) => {
-										setTreeContent(value || "");
-										// YAMLエラーをクリア
-										setYamlError(null);
-									}}
+									onChange={handleContentChange}
 									options={{
 										minimap: { enabled: true },
 										scrollBeyondLastLine: false,
