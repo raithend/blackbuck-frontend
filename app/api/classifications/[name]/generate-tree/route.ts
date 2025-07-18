@@ -56,17 +56,38 @@ URL: ${wikipediaUrl}
 - 分類階級（門、綱、目、科、属、種など）を考慮して階層を構築
 
 例：
-name: 脊椎動物亜門
+name: ワニ目
 children:
-  - name: 無顎上綱
+  - name: アリゲーター科
     children:
-      - name: 円口類
+      - name: アリゲーター亜科
         children:
-          - name: ヤツメウナギ目
-          - name: ヌタウナギ目
-  - name: 顎口上綱
-    children:
-      - name: 板皮類
+          - name: アメリカアリゲーター
+          - name: ヨウスコウアリゲーター
+      - name: カイマン亜科
+        children:
+          - name: メガネカイマン
+          - name: コビトカイマン
+  - name: Longirostres
+    children: 
+      - name: クロコダイル科
+        children:
+          - name: クロコダイル属
+            children:
+              - name: イリエワニ
+              - name: ナイルワニ
+              - name: シャムワニ
+      - name: ガビアル科
+        children: 
+          - name: インドガビアル属
+            children:
+              - name: インドガビアル
+          - name: マレーガビアル属
+            children:
+              - name: マレーガビアル
+          - name: トミストマ亜科
+            children: 
+              - name: マチカネワニ
 
 注意：
 - 日本語の分類名を優先的に使用
