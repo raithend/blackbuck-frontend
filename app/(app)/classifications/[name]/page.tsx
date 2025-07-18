@@ -93,13 +93,16 @@ const ClassificationContent = memo(({
 	isGeographicDataCreator,
 	user,
 	phylogeneticTreeCreator,
-	habitatDataCreator
+	habitatDataCreator,
+	relatedPosts,
+	relatedPostsLoading,
+	relatedPostsError
 }: {
 	decodedName: string;
 	classification: Classification | null;
 	posts: PostWithUser[];
 	postsLoading: boolean;
-	postsError: any;
+	postsError: unknown;
 	hasOverview: boolean;
 	hasPosts: boolean;
 	hasPhylogeneticTree: boolean;
@@ -115,9 +118,12 @@ const ClassificationContent = memo(({
 	mutatePosts: () => void;
 	isTreeCreator: boolean;
 	isGeographicDataCreator: boolean;
-	user: any;
-	phylogeneticTreeCreator?: any;
-	habitatDataCreator?: any;
+	user: unknown;
+	phylogeneticTreeCreator?: unknown;
+	habitatDataCreator?: unknown;
+	relatedPosts: PostWithUser[];
+	relatedPostsLoading: boolean;
+	relatedPostsError: string | null;
 }) => {
 	const { selectedAgeIds } = useGeologicalAge();
 
@@ -339,17 +345,17 @@ const ClassificationContent = memo(({
 				</TabsContent>
 				
 				<TabsContent value="posts" className="mt-6">
-					{postsLoading ? (
+					{postsLoading || relatedPostsLoading ? (
 						<div className="flex items-center justify-center h-64 text-gray-500">
 							<p>投稿を読み込み中...</p>
 						</div>
-					) : postsError ? (
+					) : postsError || relatedPostsError ? (
 						<div className="flex items-center justify-center h-64 text-red-500">
 							<p>投稿の取得でエラーが発生しました</p>
 						</div>
-					) : hasPosts ? (
-						<PostCards 
-							posts={posts} 
+					) : ([...posts, ...relatedPosts].length > 0) ? (
+						<PostCards
+							posts={[...posts, ...relatedPosts]}
 							onLikeChange={handleLikeChange}
 							onPostUpdate={handlePostUpdate}
 							onPostDelete={handlePostDelete}
@@ -480,6 +486,11 @@ export default function ClassificationPage() {
 	const decodedName = decodeURIComponent(params.name as string);
 	const [activeTab, setActiveTab] = useState("overview");
 	const { user } = useUser();
+
+	// 関連投稿のstateを追加
+	const [relatedPosts, setRelatedPosts] = useState<PostWithUser[]>([]);
+	const [relatedPostsLoading, setRelatedPostsLoading] = useState(false);
+	const [relatedPostsError, setRelatedPostsError] = useState<string | null>(null);
 
 			// 分類情報のみを取得（即座に表示可能）
 		const { data: classificationData, error: classificationError, isLoading: classificationLoading } = useSWR<{ classification: Classification | null }>(
@@ -653,6 +664,28 @@ export default function ClassificationPage() {
 	// 生息地データ作成者かどうかを判定
 	const isGeographicDataCreator = !!(user && habitatData?.habitatData?.creator === user.id);
 
+	// 関連投稿を非同期で取得
+	useEffect(() => {
+		setRelatedPosts([]);
+		setRelatedPostsLoading(true);
+		setRelatedPostsError(null);
+		fetch(`/api/classifications/${encodeURIComponent(decodedName)}/related-posts`)
+			.then(res => {
+				if (!res.ok) throw new Error('関連投稿の取得に失敗しました');
+				return res.json();
+			})
+			.then(data => {
+				if (Array.isArray(data.relatedPosts)) {
+					setRelatedPosts(data.relatedPosts);
+				}
+				setRelatedPostsLoading(false);
+			})
+			.catch(err => {
+				setRelatedPostsError(err.message);
+				setRelatedPostsLoading(false);
+			});
+	}, [decodedName]);
+
 	// 分類情報の読み込み中
 	if (classificationLoading) return <div>分類情報を読み込み中...</div>;
 	if (classificationError) return <div>分類情報の取得でエラーが発生しました</div>;
@@ -686,6 +719,9 @@ export default function ClassificationPage() {
 				isGeographicDataCreator={isGeographicDataCreator}
 				phylogeneticTreeCreator={phylogeneticTreeCreator}
 				habitatDataCreator={habitatDataCreator}
+				relatedPosts={relatedPosts}
+				relatedPostsLoading={relatedPostsLoading}
+				relatedPostsError={relatedPostsError}
 			/>
 		</GeologicalAgeProvider>
 	);
