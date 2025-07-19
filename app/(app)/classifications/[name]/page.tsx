@@ -16,6 +16,7 @@ import { GeologicalAgeCard } from "@/app/components/geological/geological-age-ca
 import { GeologicalAgeProvider, useGeologicalAge } from "@/app/components/geological/geological-context";
 import { useUser } from "@/app/contexts/user-context";
 import geologicalAgesData from "@/app/data/geological-ages.json";
+import { findRelatedClassifications } from "@/app/lib/yaml-utils";
 
 import type { PostWithUser, Classification } from "@/app/types/types";
 
@@ -93,10 +94,7 @@ const ClassificationContent = memo(({
 	isGeographicDataCreator,
 	user,
 	phylogeneticTreeCreator,
-	habitatDataCreator,
-	relatedPosts,
-	relatedPostsLoading,
-	relatedPostsError
+	habitatDataCreator
 }: {
 	decodedName: string;
 	classification: Classification | null;
@@ -121,9 +119,6 @@ const ClassificationContent = memo(({
 	user: unknown;
 	phylogeneticTreeCreator?: unknown;
 	habitatDataCreator?: unknown;
-	relatedPosts: PostWithUser[];
-	relatedPostsLoading: boolean;
-	relatedPostsError: string | null;
 }) => {
 	const { selectedAgeIds } = useGeologicalAge();
 
@@ -345,17 +340,17 @@ const ClassificationContent = memo(({
 				</TabsContent>
 				
 				<TabsContent value="posts" className="mt-6">
-					{postsLoading || relatedPostsLoading ? (
+					{postsLoading ? (
 						<div className="flex items-center justify-center h-64 text-gray-500">
 							<p>投稿を読み込み中...</p>
 						</div>
-					) : postsError || relatedPostsError ? (
+					) : postsError ? (
 						<div className="flex items-center justify-center h-64 text-red-500">
 							<p>投稿の取得でエラーが発生しました</p>
 						</div>
-					) : ([...posts, ...relatedPosts].length > 0) ? (
+					) : posts.length > 0 ? (
 						<PostCards
-							posts={[...posts, ...relatedPosts]}
+							posts={posts}
 							onLikeChange={handleLikeChange}
 							onPostUpdate={handlePostUpdate}
 							onPostDelete={handlePostDelete}
@@ -487,12 +482,7 @@ export default function ClassificationPage() {
 	const [activeTab, setActiveTab] = useState("overview");
 	const { user } = useUser();
 
-	// 関連投稿のstateを追加
-	const [relatedPosts, setRelatedPosts] = useState<PostWithUser[]>([]);
-	const [relatedPostsLoading, setRelatedPostsLoading] = useState(false);
-	const [relatedPostsError, setRelatedPostsError] = useState<string | null>(null);
-
-			// 分類情報のみを取得（即座に表示可能）
+	// 分類情報のみを取得（即座に表示可能）
 		const { data: classificationData, error: classificationError, isLoading: classificationLoading } = useSWR<{ classification: Classification | null }>(
 		`/api/classifications/${encodeURIComponent(decodedName)}?includePosts=false`,
 		fetcher,
@@ -664,26 +654,34 @@ export default function ClassificationPage() {
 	// 生息地データ作成者かどうかを判定
 	const isGeographicDataCreator = !!(user && habitatData?.habitatData?.creator === user.id);
 
-	// 関連投稿を非同期で取得
+	// 関連分類名を取得する処理
 	useEffect(() => {
-		setRelatedPosts([]);
-		setRelatedPostsLoading(true);
-		setRelatedPostsError(null);
-		fetch(`/api/classifications/${encodeURIComponent(decodedName)}/related-posts`)
-			.then(res => {
-				if (!res.ok) throw new Error('関連投稿の取得に失敗しました');
-				return res.json();
-			})
-			.then(data => {
-				if (Array.isArray(data.relatedPosts)) {
-					setRelatedPosts(data.relatedPosts);
+		const fetchTreeChildren = async () => {
+			try {
+				console.log('=== データベース系統樹からの関連分類名取得開始 ===');
+				console.log('対象分類名:', decodedName);
+				
+				// データベースの系統樹データから関連分類名を取得
+				const response = await fetch(`/api/classifications/${encodeURIComponent(decodedName)}/tree-children`);
+				if (!response.ok) {
+					throw new Error('系統樹childrenデータの取得に失敗しました');
 				}
-				setRelatedPostsLoading(false);
-			})
-			.catch(err => {
-				setRelatedPostsError(err.message);
-				setRelatedPostsLoading(false);
-			});
+				
+				const data = await response.json();
+				console.log('取得した系統樹childrenデータ:', data);
+				
+				console.log('=== 最終結果 ===');
+				console.log('対象分類名:', decodedName);
+				console.log('関連分類名の配列:', data.children);
+				console.log('処理された系統樹の数:', data.treesWithChildren);
+				console.log('詳細情報:', data.processedTrees);
+				
+			} catch (error) {
+				console.error('系統樹childrenデータの処理エラー:', error);
+			}
+		};
+		
+		fetchTreeChildren();
 	}, [decodedName]);
 
 	// 分類情報の読み込み中
@@ -719,9 +717,6 @@ export default function ClassificationPage() {
 				isGeographicDataCreator={isGeographicDataCreator}
 				phylogeneticTreeCreator={phylogeneticTreeCreator}
 				habitatDataCreator={habitatDataCreator}
-				relatedPosts={relatedPosts}
-				relatedPostsLoading={relatedPostsLoading}
-				relatedPostsError={relatedPostsError}
 			/>
 		</GeologicalAgeProvider>
 	);
