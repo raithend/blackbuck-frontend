@@ -536,9 +536,9 @@ export default function ClassificationPage() {
 	// 生息地データ作成者のユーザー情報（APIから直接取得）
 	const habitatDataCreator = (habitatData?.habitatData as any)?.users;
 
-	// 投稿情報を別途取得（Claude API使用のため時間がかかる）
-	const { data: postsData, error: postsError, isLoading: postsLoading, mutate: mutatePosts } = useSWR<{ posts: PostWithUser[] }>(
-		`/api/classifications/${encodeURIComponent(decodedName)}?includePosts=true`,
+	// 投稿情報を別途取得（4フェーズ方式）
+	const { data: postsData, error: postsError, isLoading: postsLoading, mutate: mutatePosts } = useSWR<{ posts: PostWithUser[], phaseResults: any }>(
+		`/api/classifications/${encodeURIComponent(decodedName)}/phased-posts`,
 		fetcher,
 		{
 			revalidateOnFocus: false,
@@ -654,35 +654,7 @@ export default function ClassificationPage() {
 	// 生息地データ作成者かどうかを判定
 	const isGeographicDataCreator = !!(user && habitatData?.habitatData?.creator === user.id);
 
-	// 関連分類名を取得する処理
-	useEffect(() => {
-		const fetchTreeChildren = async () => {
-			try {
-				console.log('=== データベース系統樹からの関連分類名取得開始 ===');
-				console.log('対象分類名:', decodedName);
-				
-				// データベースの系統樹データから関連分類名を取得
-				const response = await fetch(`/api/classifications/${encodeURIComponent(decodedName)}/tree-children`);
-				if (!response.ok) {
-					throw new Error('系統樹childrenデータの取得に失敗しました');
-				}
-				
-				const data = await response.json();
-				console.log('取得した系統樹childrenデータ:', data);
-				
-				console.log('=== 最終結果 ===');
-				console.log('対象分類名:', decodedName);
-				console.log('関連分類名の配列:', data.children);
-				console.log('処理された系統樹の数:', data.treesWithChildren);
-				console.log('詳細情報:', data.processedTrees);
-				
-			} catch (error) {
-				console.error('系統樹childrenデータの処理エラー:', error);
-			}
-		};
-		
-		fetchTreeChildren();
-	}, [decodedName]);
+	// 関連分類名を取得する処理（4フェーズ方式のAPIで統合されているため削除）
 
 	// 分類情報の読み込み中
 	if (classificationLoading) return <div>分類情報を読み込み中...</div>;
