@@ -291,28 +291,30 @@ ${JSON.stringify(classifications)}`,
 		const allPosts = new Map<string, FormattedPost>();
 		
 		// Phase 1の投稿を追加
-		results.phase1.posts.forEach(post => allPosts.set(post.id, post));
+		for (const post of results.phase1.posts) {
+			allPosts.set(post.id, post);
+		}
 		
 		// Phase 2の投稿を追加（重複しないもののみ）
-		results.phase2.posts.forEach(post => {
+		for (const post of results.phase2.posts) {
 			if (!allPosts.has(post.id)) {
 				allPosts.set(post.id, post);
 			}
-		});
+		}
 		
 		// Phase 3の投稿を追加（重複しないもののみ）
-		results.phase3.posts.forEach(post => {
+		for (const post of results.phase3.posts) {
 			if (!allPosts.has(post.id)) {
 				allPosts.set(post.id, post);
 			}
-		});
+		}
 		
 		// Phase 4の投稿を追加（重複しないもののみ）
-		results.phase4.posts.forEach(post => {
+		for (const post of results.phase4.posts) {
 			if (!allPosts.has(post.id)) {
 				allPosts.set(post.id, post);
 			}
-		});
+		}
 
 		const finalPosts = Array.from(allPosts.values()).sort((a, b) => 
 			new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
