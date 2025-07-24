@@ -352,7 +352,7 @@ export default function PhylogeneticTreeEditPage() {
 									onMount={(editor, monaco) => {
 										console.log('MonacoEditor onMount');
 										monaco.languages.registerCompletionItemProvider('yaml', {
-											triggerCharacters: ['-', 'c', 'f', 't'],
+											triggerCharacters: ['-', 'c', 'f', 't', 'e'],
 											provideCompletionItems: (model, position) => {
 												const lineContent = model.getLineContent(position.lineNumber).slice(0, position.column - 1);
 												const indentMatch = lineContent.match(/^\s*/);
@@ -419,6 +419,22 @@ export default function PhylogeneticTreeEditPage() {
 														},
 													});
 													console.log('Triggered to: snippet');
+												}
+												// en_name補完
+												if (/^\s*e$/.test(lineContent)) {
+													suggestions.push({
+														label: 'en_name:',
+														kind: monaco.languages.CompletionItemKind.Snippet,
+														insertText: 'en_name: ',
+														insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+														range: {
+															startLineNumber: position.lineNumber,
+															startColumn: startColumn,
+															endLineNumber: position.lineNumber,
+															endColumn: endColumn,
+														},
+													});
+													console.log('Triggered en_name: snippet');
 												}
 												console.log('suggestions:', suggestions);
 												return { suggestions };

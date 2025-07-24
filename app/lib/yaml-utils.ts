@@ -119,6 +119,7 @@ export function partialYamlParse(content: string): unknown {
 // 系統樹ノードの型定義
 interface TreeNode {
   name: string;
+  en_name?: string; // 英語名（任意）
   children?: TreeNode[];
   from?: string;
   to?: string;
