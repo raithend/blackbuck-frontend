@@ -100,7 +100,13 @@ children:
 - 純粋なYAML形式のみを返す（説明文は含めない）
 - 分類情報が見つからない場合は、基本的な分類構造を提案する
 - 各分類群は適切な階層レベルで配置する
-- 英語名を使用する場合は、そのまま英語表記を維持する`;
+- 英語名を使用する場合は、そのまま英語表記を維持する
+
+予約語の使用：
+- linked_tree: 他の系統樹を参照する場合に使用（UUIDを指定）
+- non_post_leaf: リーフノードだが投稿取得時に無視したい場合にtrueを設定
+- post_branch: 非リーフノードだが投稿取得に含めたい場合にtrueを設定
+- link_only: この系統樹はlinked_treeのみを参照し、自身のnameは投稿取得対象にしない場合にtrueを設定`;
 
     // Claude APIにリクエスト
     const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {

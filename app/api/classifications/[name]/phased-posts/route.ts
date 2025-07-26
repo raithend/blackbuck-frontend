@@ -1,6 +1,6 @@
 import { createClient } from "@/app/lib/supabase-server";
 import { NextResponse } from "next/server";
-import { safeYamlParse, findRelatedClassifications } from "@/app/lib/yaml-utils";
+import { safeYamlParse, findRelatedClassifications, collectAllChildrenNamesWithLinkedTree } from "@/app/lib/yaml-utils";
 import Anthropic from "@anthropic-ai/sdk";
 
 const anthropic = new Anthropic({
@@ -155,33 +155,53 @@ export async function GET(
 		// Phase 2: 分類ページに紐づけられている系統樹から子要素を取得（常に実行）
 		console.log('=== Phase 2: 分類ページ系統樹から子要素を取得 ===');
 		let hasLinkedTree = false;
-		const { data: classification } = await supabase
+		const { data: classification, error: classificationError } = await supabase
 			.from("classifications")
 			.select("id")
 			.eq("name", decodedName)
 			.single();
+		if (classificationError) {
+			console.error('Phase 2: 分類名取得エラー:', classificationError);
+		}
+		console.log('Phase 2: classification:', classification);
 
 		if (classification) {
-			const { data: phylogeneticTree } = await supabase
+			const { data: phylogeneticTree, error: treeError } = await supabase
 				.from("phylogenetic_trees")
 				.select("content")
 				.eq("classification_id", classification.id)
 				.single();
+			if (treeError) {
+				console.error('Phase 2: 系統樹取得エラー:', treeError);
+			}
+			console.log('Phase 2: phylogeneticTree:', phylogeneticTree);
 
 			if (phylogeneticTree?.content) {
 				hasLinkedTree = true;
 				const treeData = safeYamlParse(phylogeneticTree.content);
+				console.log('Phase 2: treeData:', treeData);
 				if (treeData) {
-					const children = findRelatedClassifications(treeData, decodedName);
+					// linked_tree対応の子要素収集
+					const children = await collectAllChildrenNamesWithLinkedTree(treeData, supabase);
+					console.log('Phase 2: collectAllChildrenNamesWithLinkedTree result:', children);
 					if (children.length > 0) {
 						console.log(`Phase 2: ${children.length}個の子要素を発見:`, children);
 						const phase2Posts = await fetchAndFormatPosts(supabase, children, userLikes, "Phase 2");
+						console.log('Phase 2: fetchAndFormatPosts result:', phase2Posts);
 						results.phase2.posts = phase2Posts;
 						results.phase2.count = phase2Posts.length;
 						console.log(`Phase 2 完了: ${phase2Posts.length}件の投稿を取得`);
+					} else {
+						console.log('Phase 2: 子要素が見つかりませんでした');
 					}
+				} else {
+					console.log('Phase 2: treeDataがnullです');
 				}
+			} else {
+				console.log('Phase 2: phylogeneticTree.contentがありません');
 			}
+		} else {
+			console.log('Phase 2: classificationがありません');
 		}
 
 		// Phase 3: データベース系統樹から関連分類名を取得（Phase 2で系統樹が設定されていない場合のみ実行）
@@ -200,7 +220,8 @@ export async function GET(
 					try {
 						const treeData = safeYamlParse(tree.content);
 						if (treeData) {
-							const children = findRelatedClassifications(treeData, decodedName);
+							// linked_tree対応の子要素収集
+							const children = await collectAllChildrenNamesWithLinkedTree(treeData, supabase);
 							for (const child of children) {
 								if (!allChildren.includes(child)) {
 									allChildren.push(child);

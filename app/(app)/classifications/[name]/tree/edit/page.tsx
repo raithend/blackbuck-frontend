@@ -352,7 +352,7 @@ export default function PhylogeneticTreeEditPage() {
 									onMount={(editor, monaco) => {
 										console.log('MonacoEditor onMount');
 										monaco.languages.registerCompletionItemProvider('yaml', {
-											triggerCharacters: ['-', 'c', 'f', 't', 'e'],
+											triggerCharacters: ['-', 'c', 'f', 't', 'e', 'p', 'n'],
 											provideCompletionItems: (model, position) => {
 												const lineContent = model.getLineContent(position.lineNumber).slice(0, position.column - 1);
 												const indentMatch = lineContent.match(/^\s*/);
@@ -435,6 +435,38 @@ export default function PhylogeneticTreeEditPage() {
 														},
 													});
 													console.log('Triggered en_name: snippet');
+												}
+												// post_branch補完
+												if (/^\s*p$/.test(lineContent)) {
+													suggestions.push({
+														label: 'post_branch:',
+														kind: monaco.languages.CompletionItemKind.Snippet,
+														insertText: 'post_branch: true',
+														insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+														range: {
+															startLineNumber: position.lineNumber,
+															startColumn: startColumn,
+															endLineNumber: position.lineNumber,
+															endColumn: endColumn,
+														},
+													});
+													console.log('Triggered post_branch: snippet');
+												}
+												// non_post_leaf補完（nで始まる場合）
+												if (/^\s*n$/.test(lineContent)) {
+													suggestions.push({
+														label: 'non_post_leaf:',
+														kind: monaco.languages.CompletionItemKind.Snippet,
+														insertText: 'non_post_leaf: true',
+														insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+														range: {
+															startLineNumber: position.lineNumber,
+															startColumn: startColumn,
+															endLineNumber: position.lineNumber,
+															endColumn: endColumn,
+														},
+													});
+													console.log('Triggered non_post_leaf: snippet');
 												}
 												console.log('suggestions:', suggestions);
 												return { suggestions };

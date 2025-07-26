@@ -123,6 +123,10 @@ interface TreeNode {
   children?: TreeNode[];
   from?: string;
   to?: string;
+  linked_tree?: string; // 追加: linked_tree予約語
+  non_post_leaf?: boolean; // 追加: リーフノードだが投稿取得時に無視するもの
+  post_branch?: boolean; // 追加: リーフノードではないが投稿取得に含めるもの
+  link_only?: boolean; // 追加: この系統樹はlinked_treeのみを参照するもの
 }
 
 // 分類名を含む系統樹を探し出し、そのchildren要素のnameを重複のない配列として取得
@@ -196,4 +200,120 @@ export function findRelatedClassifications(treeData: unknown, targetName: string
   console.log('収集された分類名:', result);
   
   return result;
+} 
+
+// Supabaseクライアントの型（必要なメソッドのみ）
+// type SupabaseLike = { ... } // ← 削除
+
+/**
+ * linked_treeを再帰的にたどり、すべての子要素nameを配列で返す
+ * @param treeData YAMLパース済み系統樹
+ * @param supabase Supabaseクライアント
+ * @param visitedTreeIds 無限ループ防止用の訪問済みUUIDセット
+ * @returns Promise<string[]>
+ */
+export async function collectAllChildrenNamesWithLinkedTree(
+  treeData: unknown,
+  supabase: any,
+  visitedTreeIds: Set<string> = new Set()
+): Promise<string[]> {
+  const names = new Set<string>();
+
+  // link_only用の再帰関数：linked_treeを持つノードのみを処理
+  async function collectLinkedTreeOnly(node: TreeNode) {
+    console.log('collectLinkedTreeOnly:', node.name, 'linked_tree:', node.linked_tree);
+    
+    // このノードにlinked_treeがある場合
+    if (node.linked_tree && !visitedTreeIds.has(node.linked_tree)) {
+      console.log('linked_treeを辿ります:', node.linked_tree);
+      visitedTreeIds.add(node.linked_tree);
+      const { data: linkedTree } = await supabase
+        .from("phylogenetic_trees")
+        .select("content")
+        .eq("id", node.linked_tree)
+        .single();
+      if (linkedTree?.content) {
+        console.log('linked_treeの内容を取得しました');
+        const linkedTreeData = safeYamlParse(linkedTree.content);
+        if (linkedTreeData) {
+          console.log('linked_treeをパースしました。再帰的に処理します。');
+          await collect(linkedTreeData as TreeNode);
+        } else {
+          console.log('linked_treeのパースに失敗しました');
+        }
+      } else {
+        console.log('linked_treeの内容を取得できませんでした');
+      }
+    }
+    
+    // childrenがあれば再帰的に辿る
+    if (node.children) {
+      for (const child of node.children) {
+        await collectLinkedTreeOnly(child);
+      }
+    }
+  }
+
+  async function collect(node: TreeNode) {
+    // link_onlyがtrueの場合、このノード自身のnameは追加せず、linked_treeのみを辿る
+    if (node.link_only === true) {
+      console.log('link_only: true が検出されました。linked_treeのみを辿ります。');
+      // すべての子孫要素を再帰的に辿ってlinked_treeを探す
+      if (node.children) {
+        console.log('childrenの数:', node.children.length);
+        for (const child of node.children) {
+          await collectLinkedTreeOnly(child);
+        }
+      } else {
+        console.log('childrenがありません');
+      }
+      return; // link_onlyの場合はここで終了
+    }
+    
+    // 通常の投稿取得対象の判定
+    let shouldIncludeInPosts = false;
+    
+    // 1. リーフノード（childrenがない、または空配列）の場合
+    if (!node.children || node.children.length === 0) {
+      // non_post_leafがtrueでない限り、リーフノードは投稿取得対象
+      shouldIncludeInPosts = !node.non_post_leaf;
+    } else {
+      // 2. 非リーフノード（ブランチノード）の場合
+      // post_branchがtrueの場合のみ投稿取得対象
+      shouldIncludeInPosts = node.post_branch === true;
+    }
+    
+    // 投稿取得対象の場合、nameを追加
+    if (shouldIncludeInPosts && node.name && node.name.trim() !== "") {
+      console.log('nameを追加:', node.name.trim());
+      names.add(node.name.trim());
+    }
+    
+    // childrenがあれば再帰的にたどる
+    if (node.children) {
+      for (const child of node.children) {
+        await collect(child);
+      }
+    }
+    
+    // linked_treeがあれば、その系統樹も再帰的にたどる
+    if (node.linked_tree && !visitedTreeIds.has(node.linked_tree)) {
+      console.log('通常処理でlinked_treeを辿ります:', node.linked_tree);
+      visitedTreeIds.add(node.linked_tree);
+      const { data: linkedTree } = await supabase
+        .from("phylogenetic_trees")
+        .select("content")
+        .eq("id", node.linked_tree)
+        .single();
+      if (linkedTree?.content) {
+        const linkedTreeData = safeYamlParse(linkedTree.content);
+        if (linkedTreeData) {
+          await collect(linkedTreeData as TreeNode);
+        }
+      }
+    }
+  }
+
+  await collect(treeData as TreeNode);
+  return Array.from(names);
 } 
