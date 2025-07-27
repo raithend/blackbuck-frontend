@@ -192,7 +192,11 @@ export async function DELETE(
 		// S3から画像を削除
 		if (postImages && postImages.length > 0) {
 			const imageUrls = postImages.map(img => img.image_url);
-			await deleteMultipleFromS3(imageUrls);
+			console.log("投稿削除時の画像URL:", imageUrls);
+			const deleteResults = await deleteMultipleFromS3(imageUrls);
+			console.log("投稿削除時のS3削除結果:", deleteResults);
+		} else {
+			console.log("投稿削除時: 削除対象の画像なし");
 		}
 
 		// 関連する画像レコードを削除
