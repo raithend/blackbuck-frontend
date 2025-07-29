@@ -18,7 +18,7 @@ import { useUser } from "@/app/contexts/user-context";
 import geologicalAgesData from "@/app/data/geological-ages.json";
 import { findRelatedClassifications } from "@/app/lib/yaml-utils";
 
-import type { PostWithUser, Classification } from "@/app/types/types";
+import type { PostWithUser, Classification, User } from "@/app/types/types";
 
 interface EraGroup {
 	era: string;
@@ -36,6 +36,24 @@ interface HabitatElement {
 interface ClassificationResponse {
 	classification: Classification | null;
 	posts: PostWithUser[];
+}
+
+// 系統樹APIレスポンスの型定義
+interface PhylogeneticTreeResponse {
+	phylogeneticTree: {
+		content: string;
+		creator: string;
+		users: User;
+	} | null;
+}
+
+// 生息地データAPIレスポンスの型定義
+interface HabitatDataResponse {
+	habitatData: {
+		content: string;
+		creator: string;
+		users: User;
+	} | null;
 }
 
 // フェッチャー関数
@@ -116,9 +134,9 @@ const ClassificationContent = memo(({
 	mutatePosts: () => void;
 	isTreeCreator: boolean;
 	isGeographicDataCreator: boolean;
-	user: unknown;
-	phylogeneticTreeCreator?: unknown;
-	habitatDataCreator?: unknown;
+	user: User | null;
+	phylogeneticTreeCreator?: User;
+	habitatDataCreator?: User;
 }) => {
 	const { selectedAgeIds } = useGeologicalAge();
 
@@ -505,7 +523,7 @@ export default function ClassificationPage() {
 	);
 
 	// 系統樹データを取得
-	const { data: phylogeneticTreeData, error: phylogeneticTreeError, isLoading: phylogeneticTreeLoading } = useSWR<{ phylogeneticTree: { content: string; creator: string } | null }>(
+	const { data: phylogeneticTreeData, error: phylogeneticTreeError, isLoading: phylogeneticTreeLoading } = useSWR<PhylogeneticTreeResponse>(
 		`/api/classifications/${encodeURIComponent(decodedName)}/phylogenetic-trees`,
 		fetcher,
 		{
@@ -518,7 +536,7 @@ export default function ClassificationPage() {
 	);
 
 	// 生息地データを取得
-	const { data: habitatData, error: habitatError, isLoading: habitatLoading } = useSWR<{ habitatData: { content: string; creator: string } | null }>(
+	const { data: habitatData, error: habitatError, isLoading: habitatLoading } = useSWR<HabitatDataResponse>(
 		`/api/classifications/${encodeURIComponent(decodedName)}/habitat-data`,
 		fetcher,
 		{
@@ -531,10 +549,10 @@ export default function ClassificationPage() {
 	);
 
 	// 系統樹作成者のユーザー情報（APIから直接取得）
-	const phylogeneticTreeCreator = (phylogeneticTreeData?.phylogeneticTree as any)?.users;
+	const phylogeneticTreeCreator = phylogeneticTreeData?.phylogeneticTree?.users;
 
 	// 生息地データ作成者のユーザー情報（APIから直接取得）
-	const habitatDataCreator = (habitatData?.habitatData as any)?.users;
+	const habitatDataCreator = habitatData?.habitatData?.users;
 
 	// 投稿情報を別途取得（4フェーズ方式）
 	const { data: postsData, error: postsError, isLoading: postsLoading, mutate: mutatePosts } = useSWR<{ posts: PostWithUser[], phaseResults: any }>(
