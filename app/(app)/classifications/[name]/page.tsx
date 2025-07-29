@@ -8,6 +8,7 @@ import { Edit, Eye } from "lucide-react";
 
 import { Button } from "@/app/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/components/ui/tabs";
+import { Card, CardContent, CardHeader } from "@/app/components/ui/card";
 import { ClassificationEditButton } from "@/app/components/classification/classification-edit-button";
 import { PostCards } from "@/app/components/post/post-cards";
 import PhylogeneticTreeArea from "@/app/components/phylogenetic/phylogenetic-tree-area";
@@ -316,40 +317,52 @@ const ClassificationContent = memo(({
 				
 				<TabsContent value="overview" className="mt-6">
 					{hasOverview ? (
-						<div className="space-y-4">
-							{classification?.description && (
-								<div className="p-4 bg-gray-50 rounded-lg">
-									<h3 className="font-semibold mb-2">説明</h3>
-									<p className="text-gray-700">{classification.description}</p>
+						<Card>
+							<CardContent className="p-6">
+								<div className="space-y-6">
+									{classification?.description && (
+										<div>
+											<h3 className="text-lg font-semibold mb-3">説明</h3>
+											<p className="leading-relaxed">{classification.description}</p>
+										</div>
+									)}
+									{(classification?.english_name || classification?.scientific_name) && (
+										<div>
+											<h3 className="text-lg font-semibold mb-3">分類情報</h3>
+											<div className="space-y-2">
+												{classification?.english_name && (
+													<p>
+														<span className="font-medium">英語名:</span> {classification.english_name}
+													</p>
+												)}
+												{classification?.scientific_name && (
+													<p>
+														<span className="font-medium">学名:</span> <em>{classification.scientific_name}</em>
+													</p>
+												)}
+											</div>
+										</div>
+									)}
+									{(classification?.era_start || classification?.era_end) && (
+										<div>
+											<h3 className="text-lg font-semibold mb-3">生息年代</h3>
+											<div className="space-y-2">
+												{classification?.era_start && (
+													<p>
+														<span className="font-medium">開始:</span> {classification.era_start}
+													</p>
+												)}
+												{classification?.era_end && (
+													<p>
+														<span className="font-medium">終了:</span> {classification.era_end}
+													</p>
+												)}
+											</div>
+										</div>
+									)}
 								</div>
-							)}
-							{(classification?.english_name || classification?.scientific_name) && (
-								<div className="p-4 bg-gray-50 rounded-lg">
-									<h3 className="font-semibold mb-2">分類情報</h3>
-									<div className="space-y-2">
-										{classification?.english_name && (
-											<p><span className="font-medium">英語名:</span> {classification.english_name}</p>
-										)}
-										{classification?.scientific_name && (
-											<p><span className="font-medium">学名:</span> <em>{classification.scientific_name}</em></p>
-										)}
-									</div>
-								</div>
-							)}
-							{(classification?.era_start || classification?.era_end) && (
-								<div className="p-4 bg-gray-50 rounded-lg">
-									<h3 className="font-semibold mb-2">生息年代</h3>
-									<div className="space-y-2">
-										{classification?.era_start && (
-											<p><span className="font-medium">開始:</span> {classification.era_start}</p>
-										)}
-										{classification?.era_end && (
-											<p><span className="font-medium">終了:</span> {classification.era_end}</p>
-										)}
-									</div>
-								</div>
-							)}
-						</div>
+							</CardContent>
+						</Card>
 					) : (
 						<div className="flex items-center justify-center h-64 text-gray-500">
 							<p>概要が設定されていません</p>
@@ -578,6 +591,9 @@ export default function ClassificationPage() {
 	);
 
 	const classification: Classification | null = classificationData?.classification ?? null;
+	console.log('=== 分類情報デバッグ ===');
+	console.log('classificationData:', classificationData);
+	console.log('classification:', classification);
 	const posts = postsData?.posts || [];
 
 	// 生息地データを時代別にグループ化
@@ -627,12 +643,25 @@ export default function ClassificationPage() {
 
 
 	// 分類情報の存在チェックをメモ化
-	const classificationChecks = useMemo(() => ({
-		hasOverview: !!(classification?.description || classification?.english_name || classification?.scientific_name || classification?.era_start || classification?.era_end),
-		hasPosts: posts.length > 0,
-		hasPhylogeneticTree: !!phylogeneticTreeData?.phylogeneticTree?.content,
-		hasGeographicData: !!habitatData?.habitatData?.content
-	}), [classification, posts.length, phylogeneticTreeData?.phylogeneticTree?.content, habitatData?.habitatData?.content]);
+	const classificationChecks = useMemo(() => {
+		console.log('=== classificationChecks計算開始 ===');
+		console.log('classification:', classification);
+		console.log('classification?.description:', classification?.description);
+		console.log('classification?.english_name:', classification?.english_name);
+		console.log('classification?.scientific_name:', classification?.scientific_name);
+		console.log('classification?.era_start:', classification?.era_start);
+		console.log('classification?.era_end:', classification?.era_end);
+		
+		const hasOverview = !!(classification?.description || classification?.english_name || classification?.scientific_name || classification?.era_start || classification?.era_end);
+		console.log('hasOverview:', hasOverview);
+		
+		return {
+			hasOverview,
+			hasPosts: posts.length > 0,
+			hasPhylogeneticTree: !!phylogeneticTreeData?.phylogeneticTree?.content,
+			hasGeographicData: !!habitatData?.habitatData?.content
+		};
+	}, [classification, posts.length, phylogeneticTreeData?.phylogeneticTree?.content, habitatData?.habitatData?.content]);
 
 	// いいね状態変更のハンドラー
 	const handleLikeChange = useCallback((postId: string, likeCount: number, isLiked: boolean) => {

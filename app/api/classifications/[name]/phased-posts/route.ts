@@ -174,7 +174,7 @@ export async function GET(
 			if (treeError) {
 				console.error('Phase 2: 系統樹取得エラー:', treeError);
 			}
-			console.log('Phase 2: phylogeneticTree:', phylogeneticTree);
+			console.log('Phase 2: phylogeneticTree取得完了');
 
 			if (phylogeneticTree?.content) {
 				hasLinkedTree = true;
