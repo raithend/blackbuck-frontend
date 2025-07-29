@@ -103,6 +103,7 @@ export function ClassificationEditButton({
 				open={isDialogOpen}
 				onOpenChange={setIsDialogOpen}
 				onSave={handleSave}
+				classificationName={decodedName}
 			/>
 		</>
 	);

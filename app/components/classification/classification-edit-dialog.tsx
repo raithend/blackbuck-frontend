@@ -13,6 +13,7 @@ import {
 import { Input } from "@/app/components/ui/input";
 import { Label } from "@/app/components/ui/label";
 import { Textarea } from "@/app/components/ui/textarea";
+import { Sparkles } from "lucide-react";
 import type { Classification } from "@/app/types/types";
 
 interface ClassificationEditDialogProps {
@@ -20,6 +21,7 @@ interface ClassificationEditDialogProps {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
 	onSave: (data: Partial<Classification>) => Promise<void>;
+	classificationName: string;
 }
 
 export function ClassificationEditDialog({
@@ -27,6 +29,7 @@ export function ClassificationEditDialog({
 	open,
 	onOpenChange,
 	onSave,
+	classificationName,
 }: ClassificationEditDialogProps) {
 	const [formData, setFormData] = useState<Partial<Classification>>({
 		english_name: classification?.english_name || "",
@@ -37,6 +40,7 @@ export function ClassificationEditDialog({
 	});
 
 	const [isLoading, setIsLoading] = useState(false);
+	const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
 
 	const handleInputChange = (field: keyof Classification, value: string) => {
 		setFormData((prev) => ({
@@ -58,6 +62,45 @@ export function ClassificationEditDialog({
 			console.error("分類情報の保存に失敗しました:", error);
 		} finally {
 			setIsLoading(false);
+		}
+	};
+
+	const handleGenerateSummary = async () => {
+		setIsGeneratingSummary(true);
+		try {
+			// 認証トークンを取得
+			const supabase = await import("@/app/lib/supabase-browser").then(m => m.createClient());
+			const { data: { session } } = await supabase.auth.getSession();
+			
+			if (!session?.access_token) {
+				throw new Error("認証トークンが取得できません");
+			}
+
+			const response = await fetch(`/api/classifications/${encodeURIComponent(classificationName)}/wikipedia-summary`, {
+				headers: {
+					"Authorization": `Bearer ${session.access_token}`,
+				},
+			});
+			
+			if (!response.ok) {
+				const errorData = await response.json();
+				throw new Error(errorData.error || "Wikipediaからの概要取得に失敗しました");
+			}
+			
+			const data = await response.json();
+			if (data.summary) {
+				setFormData(prev => ({
+					...prev,
+					description: data.summary
+				}));
+			} else {
+				throw new Error("Wikipediaから概要を取得できませんでした");
+			}
+		} catch (error) {
+			console.error("Wikipedia概要生成エラー:", error);
+			alert(error instanceof Error ? error.message : "Wikipediaからの概要取得に失敗しました");
+		} finally {
+			setIsGeneratingSummary(false);
 		}
 	};
 
@@ -121,13 +164,27 @@ export function ClassificationEditDialog({
 
 					<div className="space-y-2">
 						<Label htmlFor="description">説明</Label>
-						<Textarea
-							id="description"
-							value={formData.description || ""}
-							onChange={(e) => handleInputChange("description", e.target.value)}
-							placeholder="分類の説明を入力"
-							rows={3}
-						/>
+						<div className="flex gap-2">
+							<Textarea
+								id="description"
+								value={formData.description || ""}
+								onChange={(e) => handleInputChange("description", e.target.value)}
+								placeholder="分類の説明を入力"
+								rows={3}
+								className="flex-1"
+							/>
+							<Button
+								type="button"
+								variant="outline"
+								size="sm"
+								onClick={handleGenerateSummary}
+								disabled={isGeneratingSummary}
+								className="flex-shrink-0"
+							>
+								<Sparkles className="h-4 w-4 mr-2" />
+								{isGeneratingSummary ? "生成中..." : "Wikipediaから生成"}
+							</Button>
+						</div>
 					</div>
 
 
