@@ -91,10 +91,16 @@ export const generateMapWithHabitat = (mapName: string, habitatData: HabitatData
             } else {
               ctx.fillStyle = habitat.color || 'red';
               ctx.beginPath();
-              ctx.arc(0, 0, pointSize * finalScaleX, 0, 2 * Math.PI);
+              
+              // 円を楕円として描画して、scaleXとscaleYの両方を適用
+              const radiusX = pointSize * finalScaleX;
+              const radiusY = pointSize * finalScaleY;
+              
+              // 楕円を描画
+              ctx.ellipse(0, 0, radiusX, radiusY, 0, 0, 2 * Math.PI);
               ctx.fill();
               ctx.strokeStyle = 'white';
-              ctx.lineWidth = Math.max(1, finalScaleX);
+              ctx.lineWidth = Math.max(1, Math.min(finalScaleX, finalScaleY));
               ctx.stroke();
             }
             
