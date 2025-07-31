@@ -16,6 +16,12 @@ export interface HabitatElement {
 	maxR?: number;
 	text?: string;
 	fontSize?: number;
+	// Transform情報を追加
+	scaleX?: number;
+	scaleY?: number;
+	angle?: number;
+	flipX?: boolean;
+	flipY?: boolean;
 }
 
 export interface FabricHabitatEditorProps {

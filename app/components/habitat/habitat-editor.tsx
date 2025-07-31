@@ -40,8 +40,47 @@ const FabricHabitatEditor = forwardRef(function FabricHabitatEditor({
 	const pointSizeRef = useRef(20);
 	const textContentRef = useRef('テキスト');
 	const fontSizeRef = useRef(16);
-	const [habitatElements, setHabitatElements] = useState<HabitatElement[]>([]);
+	const [habitatElements, setHabitatElements] = useState<HabitatElement[]>(() => {
+		// 初期化時にlocalStorageから復元を試みる
+		try {
+			const saved = localStorage.getItem('habitatElements');
+			if (saved) {
+				const parsed = JSON.parse(saved);
+				console.log('useState初期化時にlocalStorageからhabitatElementsを復元:', parsed);
+				return parsed;
+			}
+		} catch (error) {
+			console.error('useState初期化時のlocalStorage復元に失敗:', error);
+		}
+		return [];
+	});
+	const habitatElementsRef = useRef<HabitatElement[]>([]);
 	const [selectedObject, setSelectedObject] = useState<FabricObject | null>(null);
+
+	// localStorageからhabitatElementsを復元する関数
+	const restoreHabitatElements = useCallback(() => {
+		try {
+			const saved = localStorage.getItem('habitatElements');
+			if (saved) {
+				const parsed = JSON.parse(saved);
+				console.log('localStorageからhabitatElementsを復元:', parsed);
+				setHabitatElements(parsed);
+				habitatElementsRef.current = parsed;
+			}
+		} catch (error) {
+			console.error('localStorageからの復元に失敗:', error);
+		}
+	}, []);
+
+	// habitatElementsをlocalStorageに保存する関数
+	const saveHabitatElements = useCallback((elements: HabitatElement[]) => {
+		try {
+			localStorage.setItem('habitatElements', JSON.stringify(elements));
+			console.log('habitatElementsをlocalStorageに保存:', elements);
+		} catch (error) {
+			console.error('localStorageへの保存に失敗:', error);
+		}
+	}, []);
 
 	// 地質時代コンテキストを使用
 	const { selectedMap, selectedAgeIds, setSelectedMap, setSelectedAgeIds } = useGeologicalAge();
@@ -86,9 +125,9 @@ const FabricHabitatEditor = forwardRef(function FabricHabitatEditor({
 	const handleColorChange = (color: string) => {
 		setPointColor(color);
 		pointColorRef.current = color; // refも即座に更新
-		const point = getSelectedPoint(habitatElements);
+		const point = getSelectedPoint(habitatElementsRef.current);
 		if (selectedObject || point) {
-			updateSelectedPoint(habitatElements, setHabitatElements, 'color', color);
+			updateSelectedPoint(habitatElementsRef.current, setHabitatElements, 'color', color);
 		}
 	};
 
@@ -96,9 +135,9 @@ const FabricHabitatEditor = forwardRef(function FabricHabitatEditor({
 	const handleSizeChange = (size: number) => {
 		setPointSize(size);
 		pointSizeRef.current = size; // refも即座に更新
-		const point = getSelectedPoint(habitatElements);
+		const point = getSelectedPoint(habitatElementsRef.current);
 		if (selectedObject || point) {
-			updateSelectedPoint(habitatElements, setHabitatElements, 'size', size);
+			updateSelectedPoint(habitatElementsRef.current, setHabitatElements, 'size', size);
 		}
 	};
 
@@ -106,9 +145,9 @@ const FabricHabitatEditor = forwardRef(function FabricHabitatEditor({
 	const handleTextContentChange = (text: string) => {
 		setTextContent(text);
 		textContentRef.current = text; // refも即座に更新
-		const point = getSelectedPoint(habitatElements);
+		const point = getSelectedPoint(habitatElementsRef.current);
 		if (selectedObject || point) {
-			updateSelectedPoint(habitatElements, setHabitatElements, 'text', text);
+			updateSelectedPoint(habitatElementsRef.current, setHabitatElements, 'text', text);
 		}
 	};
 
@@ -116,9 +155,9 @@ const FabricHabitatEditor = forwardRef(function FabricHabitatEditor({
 	const handleFontSizeChange = (size: number) => {
 		setFontSize(size);
 		fontSizeRef.current = size; // refも即座に更新
-		const point = getSelectedPoint(habitatElements);
+		const point = getSelectedPoint(habitatElementsRef.current);
 		if (selectedObject || point) {
-			updateSelectedPoint(habitatElements, setHabitatElements, 'fontSize', size);
+			updateSelectedPoint(habitatElementsRef.current, setHabitatElements, 'fontSize', size);
 		}
 	};
 
@@ -293,6 +332,37 @@ const FabricHabitatEditor = forwardRef(function FabricHabitatEditor({
 		console.log('onSave関数:', onSave);
 		console.log('現在のselectedAgeIds:', selectedAgeIds);
 		console.log('現在のselectedMap:', selectedMap);
+		console.log('現在のhabitatElements:', habitatElements);
+		console.log('habitatElements.length:', habitatElements.length);
+		console.log('habitatElementsRef.current:', habitatElementsRef.current);
+		console.log('habitatElementsRef.current.length:', habitatElementsRef.current.length);
+		
+		// localStorageからも復元を試みる
+		let currentHabitatElements = habitatElementsRef.current.length > 0 ? habitatElementsRef.current : habitatElements;
+		console.log('保存時の復元処理開始 - currentHabitatElements:', currentHabitatElements);
+		
+		if (currentHabitatElements.length === 0) {
+			try {
+				const saved = localStorage.getItem('habitatElements');
+				console.log('localStorageから取得したデータ:', saved);
+				if (saved) {
+					const parsed = JSON.parse(saved);
+					console.log('localStorageから復元したhabitatElements:', parsed);
+					if (parsed && Array.isArray(parsed) && parsed.length > 0) {
+						currentHabitatElements = parsed;
+						console.log('localStorageから復元成功 - currentHabitatElements:', currentHabitatElements);
+					} else {
+						console.log('localStorageのデータが空または無効');
+					}
+				} else {
+					console.log('localStorageにデータが存在しない');
+				}
+			} catch (error) {
+				console.error('localStorageからの復元に失敗:', error);
+			}
+		} else {
+			console.log('habitatElementsRefまたはhabitatElementsにデータが存在するため、localStorageからの復元をスキップ');
+		}
 		
 		// 現在選択されている時代情報を取得
 		const currentAgeInfo = getCurrentGeologicalAgeInfo();
@@ -304,10 +374,20 @@ const FabricHabitatEditor = forwardRef(function FabricHabitatEditor({
 		// 現在選択されている時代でグループを作成
 		const era = currentAgeInfo?.era || "顕生代";
 		
-		if (habitatElements.length > 0) {
+		// habitatElementsRef.currentを使用して、Fast Refreshによる状態リセットの影響を受けないようにする
+		// 生息地要素が存在する場合のみEraGroupを作成
+		if (currentHabitatElements.length > 0) {
 			eraGroups.push({
 				era: era,
-				elements: habitatElements
+				elements: currentHabitatElements
+			});
+			console.log('生息地要素が存在するため、EraGroupを作成:', eraGroups);
+		} else {
+			console.log('生息地要素が存在しないため、空のEraGroupを作成');
+			// 生息地要素が存在しない場合でも、空のEraGroupを作成
+			eraGroups.push({
+				era: era,
+				elements: []
 			});
 		}
 		
@@ -316,6 +396,12 @@ const FabricHabitatEditor = forwardRef(function FabricHabitatEditor({
 		if (onSave) {
 			onSave(eraGroups);
 			console.log('onSave関数を呼び出しました');
+			// 保存が成功したらlocalStorageをクリア
+			localStorage.removeItem('habitatElements');
+			console.log('localStorageをクリアしました');
+			// habitatElementsRefもクリア
+			habitatElementsRef.current = [];
+			console.log('habitatElementsRefをクリアしました');
 		} else {
 			console.log('onSave関数が定義されていません');
 		}
@@ -330,7 +416,7 @@ const FabricHabitatEditor = forwardRef(function FabricHabitatEditor({
 		if (selected) {
 			const obj = selected as FabricObjectWithHabitatId;
 			if (obj.habitatPointId) {
-				const point = habitatElements.find(p => p.id === obj.habitatPointId);
+				const point = habitatElementsRef.current.find(p => p.id === obj.habitatPointId);
 				if (point) {
 					setPointColor(point.color);
 					setPointSize(point.size);
@@ -352,9 +438,42 @@ const FabricHabitatEditor = forwardRef(function FabricHabitatEditor({
 
 	// オブジェクト変更イベントの処理
 	const handleObjectModified = (e: any) => {
+		console.log('handleObjectModified呼び出し:', e);
 		const obj = e.target as FabricObjectWithHabitatId;
+		console.log('変更されたオブジェクト:', obj);
+		console.log('habitatPointId:', obj?.habitatPointId);
+		console.log('transform情報:', {
+			scaleX: obj?.scaleX,
+			scaleY: obj?.scaleY,
+			angle: obj?.angle,
+			flipX: obj?.flipX,
+			flipY: obj?.flipY,
+		});
+		
 		if (obj?.habitatPointId) {
-			updateHabitatPointPosition(obj.habitatPointId, obj.left || 0, obj.top || 0);
+			console.log('変更前のhabitatElements:', habitatElementsRef.current);
+			
+			// transform情報のみを更新（位置情報は別途処理）
+			const updatedPoints = habitatElementsRef.current.map(point => {
+				if (point.id === obj.habitatPointId) {
+					const updatedPoint = {
+						...point,
+						scaleX: obj.scaleX,
+						scaleY: obj.scaleY,
+						angle: obj.angle,
+						flipX: obj.flipX,
+						flipY: obj.flipY,
+					};
+					console.log('更新されるポイント:', updatedPoint);
+					return updatedPoint;
+				}
+				return point;
+			});
+			console.log('更新後のhabitatElements:', updatedPoints);
+			habitatElementsRef.current = updatedPoints;
+			setHabitatElements(updatedPoints);
+		} else {
+			console.log('habitatPointIdが存在しないため、処理をスキップ');
 		}
 	};
 
@@ -366,17 +485,103 @@ const FabricHabitatEditor = forwardRef(function FabricHabitatEditor({
 		}
 	};
 
+	// オブジェクト移動イベントの処理
+	const handleObjectMoving = (e: any) => {
+		console.log('handleObjectMoving呼び出し:', e);
+		const obj = e.target as FabricObjectWithHabitatId;
+		if (obj?.habitatPointId) {
+			// 位置情報を更新
+			updateHabitatPointPosition(obj.habitatPointId, obj.left || 0, obj.top || 0);
+		}
+	};
+
+	// オブジェクトスケーリングイベントの処理
+	const handleObjectScaling = (e: any) => {
+		console.log('handleObjectScaling呼び出し:', e);
+		const obj = e.target as FabricObjectWithHabitatId;
+		console.log('スケーリングされたオブジェクト:', obj);
+		console.log('スケール情報:', {
+			scaleX: obj?.scaleX,
+			scaleY: obj?.scaleY,
+		});
+		
+		if (obj?.habitatPointId) {
+			console.log('スケーリング前のhabitatElements:', habitatElementsRef.current);
+			
+			// transform情報を更新
+			const updatedPoints = habitatElementsRef.current.map(point => {
+				if (point.id === obj.habitatPointId) {
+					const updatedPoint = {
+						...point,
+						scaleX: obj.scaleX,
+						scaleY: obj.scaleY,
+					};
+					console.log('スケーリング更新されるポイント:', updatedPoint);
+					return updatedPoint;
+				}
+				return point;
+			});
+			console.log('スケーリング後のhabitatElements:', updatedPoints);
+			habitatElementsRef.current = updatedPoints;
+			setHabitatElements(updatedPoints);
+		}
+	};
+
+	// オブジェクト回転イベントの処理
+	const handleObjectRotating = (e: any) => {
+		console.log('handleObjectRotating呼び出し:', e);
+		const obj = e.target as FabricObjectWithHabitatId;
+		console.log('回転されたオブジェクト:', obj);
+		console.log('回転情報:', {
+			angle: obj?.angle,
+		});
+		
+		if (obj?.habitatPointId) {
+			console.log('回転前のhabitatElements:', habitatElementsRef.current);
+			
+			// transform情報を更新
+			const updatedPoints = habitatElementsRef.current.map(point => {
+				if (point.id === obj.habitatPointId) {
+					const updatedPoint = {
+						...point,
+						angle: obj.angle,
+					};
+					console.log('回転更新されるポイント:', updatedPoint);
+					return updatedPoint;
+				}
+				return point;
+			});
+			console.log('回転後のhabitatElements:', updatedPoints);
+			habitatElementsRef.current = updatedPoints;
+			setHabitatElements(updatedPoints);
+		}
+	};
+
 	// 生息地ポイントの位置を更新
 	const updateHabitatPointPositionHandler = (id: string, left: number, top: number) => {
-		const updatedPoints = habitatElements.map(point => {
+		console.log('updateHabitatPointPositionHandler呼び出し:', { id, left, top });
+		console.log('更新前のhabitatElements:', habitatElementsRef.current);
+		
+		const updatedPoints = habitatElementsRef.current.map(point => {
 			if (point.id === id) {
 				// キャンバス座標を緯度経度に変換
 				const lng = (left / width) * 360 - 180;
 				const lat = 90 - (top / height) * 180;
-				return { ...point, lat, lng };
+				// 既存のtransform情報を保持
+				const updatedPoint = { 
+					...point, 
+					lat, 
+					lng,
+					// transform情報は既にhandleObjectModifiedで更新されているため、
+					// ここでは既存の値を保持
+				};
+				console.log('位置更新されるポイント:', updatedPoint);
+				return updatedPoint;
 			}
 			return point;
 		});
+		console.log('更新後のhabitatElements:', updatedPoints);
+		habitatElementsRef.current = updatedPoints;
 		setHabitatElements(updatedPoints);
 	};
 
@@ -461,7 +666,14 @@ const FabricHabitatEditor = forwardRef(function FabricHabitatEditor({
 			newPoint
 		});
 		
-		setHabitatElements(prev => [...prev, newPoint]);
+		console.log('新しいポイントをhabitatElementsに追加前:', habitatElementsRef.current);
+		setHabitatElements(prev => {
+			console.log('setHabitatElements呼び出し - prev:', prev);
+			const newState = [...prev, newPoint];
+			console.log('setHabitatElements呼び出し - newState:', newState);
+			return newState;
+		});
+		console.log('新しいポイントをhabitatElementsに追加後（非同期のため即座には反映されない）');
 		addPointToCanvas(newPoint);
 	}, [width, height, addPointToCanvas]);
 
@@ -481,8 +693,8 @@ const FabricHabitatEditor = forwardRef(function FabricHabitatEditor({
 	// プロパティ変更ハンドラ
 	const handlePropertyChange = (field: string | number | symbol, value: string | number | undefined) => {
 		// keyof HabitatElement かどうか型ガード
-		if (typeof field === 'string' && field in habitatElements[0]) {
-			updateSelectedPoint(habitatElements, setHabitatElements, field as keyof HabitatElement, value);
+		if (typeof field === 'string' && habitatElementsRef.current.length > 0 && field in habitatElementsRef.current[0]) {
+			updateSelectedPoint(habitatElementsRef.current, setHabitatElements, field as keyof HabitatElement, value);
 		}
 	};
 
@@ -521,6 +733,9 @@ const FabricHabitatEditor = forwardRef(function FabricHabitatEditor({
 			canvas.on('selection:cleared', handleSelectionCleared);
 			canvas.on('object:modified', handleObjectModified);
 			canvas.on('object:removed', handleObjectRemoved);
+			canvas.on('object:moving', handleObjectMoving); // オブジェクト移動イベントを追加
+			canvas.on('object:scaling', handleObjectScaling); // オブジェクトスケーリングイベントを追加
+			canvas.on('object:rotating', handleObjectRotating); // オブジェクト回転イベントを追加
 
 			console.log('イベントリスナー設定完了');
 
@@ -583,13 +798,14 @@ const FabricHabitatEditor = forwardRef(function FabricHabitatEditor({
 					return;
 				}
 
-				// 画像をキャンバスサイズに合わせてスケール（縦横比を保持）
+				// 画像の縦横比を保持しながらキャンバス全体にフィットさせる
 				const scaleX = width / (img.width || 1);
 				const scaleY = height / (img.height || 1);
 				const scale = Math.min(scaleX, scaleY);
 
-				img.scale(scale);
 				img.set({
+					scaleX: scale,
+					scaleY: scale,
 					left: (width - (img.width || 0) * scale) / 2,
 					top: (height - (img.height || 0) * scale) / 2,
 					selectable: false,
@@ -666,13 +882,57 @@ const FabricHabitatEditor = forwardRef(function FabricHabitatEditor({
 	}, []);
 
 	useEffect(() => {
-		// flatHabitatDataを直接使用
-		setHabitatElements(flatHabitatData);
+		// 初期化時のみflatHabitatDataをhabitatElementsに設定
+		// ユーザーが追加したポイントを上書きしないようにする
+		// また、useState初期化でlocalStorageから復元された場合は上書きしない
+		if (flatHabitatData.length > 0 && habitatElements.length === 0) {
+			console.log('初期化時: flatHabitatDataをhabitatElementsに設定:', flatHabitatData);
+			setHabitatElements(flatHabitatData);
+			habitatElementsRef.current = flatHabitatData;
+		}
+	}, [flatHabitatData, habitatElements.length]);
+
+	// habitatElementsの状態変更を監視
+	useEffect(() => {
+		console.log('habitatElements状態変更:', habitatElements);
+		console.log('habitatElements.length:', habitatElements.length);
+		if (habitatElements.length > 0) {
+			console.log('habitatElementsの詳細:', habitatElements.map(point => ({
+				id: point.id,
+				scaleX: point.scaleX,
+				scaleY: point.scaleY,
+				angle: point.angle,
+				flipX: point.flipX,
+				flipY: point.flipY,
+			})));
+		}
+		
+		// habitatElementsRefも同期更新
+		habitatElementsRef.current = habitatElements;
+		
+		// localStorageにも保存（空の配列は保存しない）
+		if (habitatElements.length > 0) {
+			saveHabitatElements(habitatElements);
+		} else {
+			// 空の配列になった場合はlocalStorageをクリア
+			localStorage.removeItem('habitatElements');
+			console.log('habitatElementsが空になったため、localStorageをクリアしました');
+		}
+	}, [habitatElements, saveHabitatElements]);
+
+	// habitatDataの変更を監視
+	useEffect(() => {
+		console.log('habitatData変更:', habitatData);
+	}, [habitatData]);
+
+	// flatHabitatDataの変更を監視
+	useEffect(() => {
+		console.log('flatHabitatData変更:', flatHabitatData);
 	}, [flatHabitatData]);
 
 	useImperativeHandle(ref, () => ({
-		getHabitatPoints: () => habitatElements
-	}), [habitatElements]);
+		getHabitatPoints: () => habitatElementsRef.current
+	}), []);
 
 	// 地質時代の選択に応じて地図を更新（初期化時のみ、かつ地図が実際に変更された場合のみ）
 	useEffect(() => {
@@ -713,7 +973,7 @@ const FabricHabitatEditor = forwardRef(function FabricHabitatEditor({
 		console.log('propertiesTabContent再計算 - habitatElements:', habitatElements.length);
 		return (
 			<HabitatPropertiesPanel
-				selectedPoint={getSelectedPoint(habitatElements) || null}
+				selectedPoint={getSelectedPoint(habitatElementsRef.current) || null}
 				onPropertyChange={handlePropertyChange}
 			/>
 		);
@@ -748,7 +1008,7 @@ const FabricHabitatEditor = forwardRef(function FabricHabitatEditor({
 							</CardTitle>
 						</CardHeader>
 						<CardContent>
-							<div className="relative border rounded-lg overflow-hidden">
+							<div className="relative border overflow-hidden">
 								<canvas
 									ref={canvasRef}
 									className="cursor-crosshair"

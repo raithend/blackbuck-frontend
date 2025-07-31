@@ -58,7 +58,9 @@ const GlobeArea = React.memo<GlobeAreaProps>(({
 		}
 		
 		const dataKey = eraGroups.flatMap(eraGroup => 
-			eraGroup.elements?.map(item => `${item.lat},${item.lng},${item.color},${item.size}`) || []
+			eraGroup.elements?.map(item => 
+				`${item.lat},${item.lng},${item.color},${item.size},${item.scaleX || 1},${item.scaleY || 1},${item.angle || 0},${item.flipX || false},${item.flipY || false}`
+			) || []
 		).join('|');
 		return `${selectedMap}_${dataKey}`;
 	}, [selectedMap, eraGroups, habitatEraIds, selectedAgeIds]);

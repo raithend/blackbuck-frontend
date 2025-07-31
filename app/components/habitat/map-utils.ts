@@ -55,33 +55,51 @@ export const generateMapWithHabitat = (mapName: string, habitatData: HabitatData
           const pointSize = (habitat.size || 20) * scaleFactor;
           
           if (x >= 0 && x <= canvas.width && y >= 0 && y <= canvas.height) {
+            // transform情報を適用
+            const finalScaleX = (habitat.scaleX || 1) * scaleFactor;
+            const finalScaleY = (habitat.scaleY || 1) * scaleFactor;
+            const angle = habitat.angle || 0;
+            const flipX = habitat.flipX || false;
+            const flipY = habitat.flipY || false;
+            
+            // コンテキストを保存
+            ctx.save();
+            
+            // 変換行列を適用
+            ctx.translate(x, y);
+            ctx.rotate((angle * Math.PI) / 180);
+            ctx.scale(flipX ? -1 : 1, flipY ? -1 : 1);
+            
             if (habitat.text) {
-              ctx.font = `${(habitat.fontSize || 16) * scaleFactor}px sans-serif`;
+              ctx.font = `${(habitat.fontSize || 16) * finalScaleX}px sans-serif`;
               ctx.fillStyle = habitat.color || 'black';
               ctx.textAlign = 'center';
               ctx.textBaseline = 'middle';
               ctx.strokeStyle = 'white';
               ctx.lineWidth = 2;
-              ctx.strokeText(habitat.text, x, y);
-              ctx.fillText(habitat.text, x, y);
+              ctx.strokeText(habitat.text, 0, 0);
+              ctx.fillText(habitat.text, 0, 0);
             } else if (habitat.maxR) {
               ctx.strokeStyle = habitat.color || 'red';
-              ctx.lineWidth = Math.max(1, 2 * scaleFactor);
+              ctx.lineWidth = Math.max(1, 2 * finalScaleX);
               ctx.globalAlpha = 0.5;
-              const radius = Math.min((habitat.maxR / 20000) * canvas.width, 50 * scaleFactor);
+              const radius = Math.min((habitat.maxR / 20000) * canvas.width, 50 * finalScaleX);
               ctx.beginPath();
-              ctx.arc(x, y, radius, 0, 2 * Math.PI);
+              ctx.arc(0, 0, radius, 0, 2 * Math.PI);
               ctx.stroke();
               ctx.globalAlpha = 1;
             } else {
               ctx.fillStyle = habitat.color || 'red';
               ctx.beginPath();
-              ctx.arc(x, y, pointSize, 0, 2 * Math.PI);
+              ctx.arc(0, 0, pointSize * finalScaleX, 0, 2 * Math.PI);
               ctx.fill();
               ctx.strokeStyle = 'white';
-              ctx.lineWidth = Math.max(1, scaleFactor);
+              ctx.lineWidth = Math.max(1, finalScaleX);
               ctx.stroke();
             }
+            
+            // コンテキストを復元
+            ctx.restore();
           }
         }
       });

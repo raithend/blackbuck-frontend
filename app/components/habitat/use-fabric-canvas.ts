@@ -76,6 +76,13 @@ export function useFabricCanvas({
 			return; // 不明な形状の場合は処理をスキップ
 		}
 
+		// 保存されたtransform情報を復元
+		if (point.scaleX !== undefined) fabricObject.set('scaleX', point.scaleX);
+		if (point.scaleY !== undefined) fabricObject.set('scaleY', point.scaleY);
+		if (point.angle !== undefined) fabricObject.set('angle', point.angle);
+		if (point.flipX !== undefined) fabricObject.set('flipX', point.flipX);
+		if (point.flipY !== undefined) fabricObject.set('flipY', point.flipY);
+
 		// オブジェクトにカスタムデータを追加
 		(fabricObject as FabricObjectWithHabitatId).habitatPointId = point.id;
 		canvas.add(fabricObject);
@@ -193,13 +200,14 @@ export function useFabricCanvas({
 				FabricImage.fromURL(`/PALEOMAP_PaleoAtlas_Rasters_v3/${mapFile}`, {
 					crossOrigin: 'anonymous',
 				}).then((img) => {
-					// 画像をキャンバスサイズに合わせてスケール
+					// 画像の縦横比を保持しながらキャンバス全体にフィットさせる
 					const scaleX = width / (img.width || 1);
 					const scaleY = height / (img.height || 1);
 					const scale = Math.min(scaleX, scaleY);
 
-					img.scale(scale);
 					img.set({
+						scaleX: scale,
+						scaleY: scale,
 						left: (width - (img.width || 0) * scale) / 2,
 						top: (height - (img.height || 0) * scale) / 2,
 						selectable: false,

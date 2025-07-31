@@ -41,18 +41,26 @@ export default function HabitatEditPage() {
 
 
 	// EraGroupからHabitatDataを抽出
-	const extractHabitatData = (eraGroups: EraGroup[]): HabitatData[] => {
-		const habitatData: HabitatData[] = [];
+	const extractHabitatData = (eraGroups: EraGroup[]): HabitatElement[] => {
+		const habitatData: HabitatElement[] = [];
 		for (const group of eraGroups) {
 			for (const element of group.elements) {
 				habitatData.push({
+					id: element.id,
 					lat: element.lat,
 					lng: element.lng,
 					color: element.color,
 					size: element.size,
-					label: element.text,
+					shape: element.shape,
+					label: element.label,
 					text: element.text,
 					fontSize: element.fontSize,
+					// transform情報も含める
+					scaleX: element.scaleX,
+					scaleY: element.scaleY,
+					angle: element.angle,
+					flipX: element.flipX,
+					flipY: element.flipY,
 				});
 			}
 		}
@@ -175,8 +183,8 @@ export default function HabitatEditPage() {
 						onSave={handleSave}
 						showMapSelector={true}
 						onMapChange={handleMapChange}
-						width={1000}
-						height={600}
+						width={960}
+						height={480}
 					/>
 				</div>
 

@@ -8,7 +8,7 @@ import type { HabitatElement } from "@/app/components/habitat/types";
 
 interface GlobeProps {
 	customTexture?: string; // カスタムテクスチャのURL（生息地データ付きの地図画像）
-	habitatPoints?: { lat: number; lng: number; color: string; size: number }[];
+	habitatPoints?: HabitatElement[]; // transform情報を含むHabitatElementの配列
 }
 
 const GlobeComponent = React.memo<GlobeProps>(({ 
@@ -48,7 +48,9 @@ const GlobeComponent = React.memo<GlobeProps>(({
 			return customTexture || 'default';
 		}
 		const mapName = customTexture.replace(/^.*\/(Map.*\.jpg).*$/, '$1');
-		const pointsKey = habitatPoints.map(p => `${p.lat},${p.lng},${p.color},${p.size}`).join('|');
+		const pointsKey = habitatPoints.map(p => 
+			`${p.lat},${p.lng},${p.color},${p.size},${p.scaleX || 1},${p.scaleY || 1},${p.angle || 0},${p.flipX || false},${p.flipY || false}`
+		).join('|');
 		return `${mapName}_${pointsKey}`;
 	}, [customTexture, habitatPoints]);
 
