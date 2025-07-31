@@ -40,50 +40,46 @@ const FabricHabitatEditor = forwardRef(function FabricHabitatEditor({
 	const pointSizeRef = useRef(20);
 	const textContentRef = useRef('テキスト');
 	const fontSizeRef = useRef(16);
-	const [habitatElements, setHabitatElements] = useState<HabitatElement[]>(() => {
-		// 初期化時にlocalStorageから復元を試みる
-		try {
-			const saved = localStorage.getItem('habitatElements');
-			if (saved) {
-				const parsed = JSON.parse(saved);
-				console.log('useState初期化時にlocalStorageからhabitatElementsを復元:', parsed);
-				return parsed;
-			}
-		} catch (error) {
-			console.error('useState初期化時のlocalStorage復元に失敗:', error);
-		}
-		return [];
-	});
+	const [habitatElements, setHabitatElements] = useState<HabitatElement[]>([]);
 	const habitatElementsRef = useRef<HabitatElement[]>([]);
 	const [selectedObject, setSelectedObject] = useState<FabricObject | null>(null);
 
 	// localStorageからhabitatElementsを復元する関数
 	const restoreHabitatElements = useCallback(() => {
-		try {
-			const saved = localStorage.getItem('habitatElements');
-			if (saved) {
-				const parsed = JSON.parse(saved);
-				console.log('localStorageからhabitatElementsを復元:', parsed);
-				setHabitatElements(parsed);
-				habitatElementsRef.current = parsed;
+		if (typeof window !== 'undefined') {
+			try {
+				const saved = localStorage.getItem('habitatElements');
+				if (saved) {
+					const parsed = JSON.parse(saved);
+					console.log('localStorageからhabitatElementsを復元:', parsed);
+					setHabitatElements(parsed);
+					habitatElementsRef.current = parsed;
+				}
+			} catch (error) {
+				console.error('localStorageからの復元に失敗:', error);
 			}
-		} catch (error) {
-			console.error('localStorageからの復元に失敗:', error);
 		}
 	}, []);
 
 	// habitatElementsをlocalStorageに保存する関数
 	const saveHabitatElements = useCallback((elements: HabitatElement[]) => {
-		try {
-			localStorage.setItem('habitatElements', JSON.stringify(elements));
-			console.log('habitatElementsをlocalStorageに保存:', elements);
-		} catch (error) {
-			console.error('localStorageへの保存に失敗:', error);
+		if (typeof window !== 'undefined') {
+			try {
+				localStorage.setItem('habitatElements', JSON.stringify(elements));
+				console.log('habitatElementsをlocalStorageに保存:', elements);
+			} catch (error) {
+				console.error('localStorageへの保存に失敗:', error);
+			}
 		}
 	}, []);
 
 	// 地質時代コンテキストを使用
 	const { selectedMap, selectedAgeIds, setSelectedMap, setSelectedAgeIds } = useGeologicalAge();
+
+	// コンポーネントマウント時にlocalStorageから復元
+	useEffect(() => {
+		restoreHabitatElements();
+	}, [restoreHabitatElements]);
 
 	// habitatDataをEraGroup[]からHabitatElement[]に変換
 	const flatHabitatData = useMemo(() => {

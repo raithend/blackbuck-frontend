@@ -6,9 +6,11 @@ import { Button } from "@/app/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { createClient } from "@/app/lib/supabase-browser";
 import FabricHabitatEditor from "@/app/components/habitat/habitat-editor";
+import HabitatJsonEditor from "@/app/components/habitat/habitat-json-editor";
 import Globe from "@/app/components/habitat/globe";
 import { GeologicalAgeCard } from "@/app/components/geological/geological-age-card";
 import { GeologicalAgeProvider } from "@/app/components/geological/geological-context";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/components/ui/tabs";
 import { toast } from "sonner";
 import type { MutableRefObject } from "react";
 import type { EraGroup, HabitatElement } from "@/app/components/habitat/types";
@@ -36,7 +38,9 @@ export default function HabitatEditPage() {
 	const [isLoading, setIsLoading] = useState(false);
 	const [isSaving, setIsSaving] = useState(false);
 	const [currentMap, setCurrentMap] = useState("Map1a_PALEOMAP_PaleoAtlas_000.jpg");
+	const [activeTab, setActiveTab] = useState("canvas");
 	const habitatEditorRef = useRef<{ getHabitatPoints: () => HabitatElement[] } | null>(null);
+	const monacoEditorRef = useRef<{ getHabitatPoints: () => HabitatElement[] } | null>(null);
 
 
 
@@ -146,9 +150,25 @@ export default function HabitatEditPage() {
 		setHabitatData(eraGroups);
 	};
 
+	// Monacoエディターからのデータ変更を処理
+	const handleMonacoDataChange = (eraGroups: EraGroup[]) => {
+		setHabitatData(eraGroups);
+	};
+
 	// 地図変更時の処理
 	const handleMapChange = (mapFile: string) => {
 		setCurrentMap(mapFile);
+	};
+
+	// 現在のエディターから生息地ポイントを取得
+	const getCurrentHabitatPoints = () => {
+		if (activeTab === "canvas" && habitatEditorRef.current) {
+			return habitatEditorRef.current.getHabitatPoints();
+		}
+		if (activeTab === "json" && monacoEditorRef.current) {
+			return monacoEditorRef.current.getHabitatPoints();
+		}
+		return extractHabitatData(habitatData);
 	};
 
 	if (isLoading) {
@@ -177,15 +197,37 @@ export default function HabitatEditPage() {
 
 				{/* 編集エリア */}
 				<div className="mb-8">
-					<FabricHabitatEditor
-						ref={habitatEditorRef}
-						habitatData={habitatData}
-						onSave={handleSave}
-						showMapSelector={true}
-						onMapChange={handleMapChange}
-						width={960}
-						height={480}
-					/>
+					<Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+						<TabsList className="grid w-full grid-cols-2">
+							<TabsTrigger value="canvas">キャンバス編集</TabsTrigger>
+							<TabsTrigger value="json">JSON編集</TabsTrigger>
+						</TabsList>
+						
+						<TabsContent value="canvas" className="mt-6">
+							<FabricHabitatEditor
+								ref={habitatEditorRef}
+								habitatData={habitatData}
+								onSave={handleSave}
+								showMapSelector={true}
+								onMapChange={handleMapChange}
+								width={960}
+								height={480}
+							/>
+						</TabsContent>
+						
+						<TabsContent value="json" className="mt-6">
+							<HabitatJsonEditor
+								ref={monacoEditorRef}
+								habitatData={habitatData}
+								onSave={handleSave}
+								onDataChange={handleMonacoDataChange}
+								showMapSelector={true}
+								onMapChange={handleMapChange}
+								width={960}
+								height={480}
+							/>
+						</TabsContent>
+					</Tabs>
 				</div>
 
 				{/* プレビューエリア */}
@@ -198,15 +240,13 @@ export default function HabitatEditPage() {
 							<div className="w-full h-full" style={{ height: '500px' }}>
 								<Globe 
 									customTexture={`/PALEOMAP_PaleoAtlas_Rasters_v3/${currentMap}`}
-									habitatPoints={extractHabitatData(habitatData)}
+									habitatPoints={getCurrentHabitatPoints()}
 								/>
 							</div>
 							<div className="flex justify-end px-4 pb-4">
 								<Button onClick={() => {
-									if (habitatEditorRef.current) {
-										// エディターから現在のデータを取得して更新
-										setCurrentMap(`${currentMap}?t=${Date.now()}`);
-									}
+									// 現在のエディターからデータを取得して更新
+									setCurrentMap(`${currentMap}?t=${Date.now()}`);
 								}}>
 									編集内容を反映
 								</Button>
