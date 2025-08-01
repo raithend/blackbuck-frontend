@@ -12,7 +12,7 @@ import {
 import { Input } from "@/app/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/components/ui/tabs";
 import { Search, User as UserIcon, MapPin, Tag, UserRound, Calendar } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import useSWR from "swr";
 import type { User } from "@/app/types/types";
@@ -51,7 +51,13 @@ export function SearchBox() {
 	const [eventQuery, setEventQuery] = useState("");
 	const [classificationQuery, setClassificationQuery] = useState("");
 	const [activeTab, setActiveTab] = useState("classifications");
+	const [isMounted, setIsMounted] = useState(false);
 	const router = useRouter();
+
+	// ハイドレーションエラーを防ぐため、クライアントサイドでのみレンダリング
+	useEffect(() => {
+		setIsMounted(true);
+	}, []);
 
 	// リアルタイム検索
 	const { data: userResults } = useSWR<{ users: User[] }>(
@@ -151,6 +157,19 @@ export function SearchBox() {
 			setClassificationQuery("");
 		}
 	};
+
+	// サーバーサイドレンダリング中は何も表示しない
+	if (!isMounted) {
+		return (
+			<Button
+				variant="outline"
+				className="w-full max-w-sm justify-start text-muted-foreground"
+			>
+				<div className="mr-2 h-4 w-4" />
+				<span>検索...</span>
+			</Button>
+		);
+	}
 
 	return (
 		<Dialog open={isOpen} onOpenChange={setIsOpen}>
