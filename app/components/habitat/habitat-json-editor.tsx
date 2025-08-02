@@ -175,31 +175,7 @@ const HabitatJsonEditor = forwardRef<HabitatJsonEditorRef, HabitatJsonEditorProp
                 </div>
               )}
             </div>
-            <div className="mt-4 text-sm text-gray-600">
-              <p>JSON形式で生息地データを編集できます。以下の構造で記述してください：</p>
-              <pre className="mt-2 p-2 bg-gray-100 rounded text-xs">
-{`[
-  {
-    "era": "時代名",
-    "elements": [
-      {
-        "id": "一意のID",
-        "lat": 緯度,
-        "lng": 経度,
-        "color": "色コード",
-        "size": サイズ,
-        "shape": "circle",
-        "scaleX": 横方向の拡大率,
-        "scaleY": 縦方向の拡大率,
-        "angle": 回転角度,
-        "flipX": false,
-        "flipY": false
-      }
-    ]
-  }
-]`}
-              </pre>
-            </div>
+            
           </CardContent>
         </Card>
       </div>
