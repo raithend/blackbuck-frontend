@@ -6,6 +6,7 @@ import { useParams } from "next/navigation";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
 
+import { AuthDialog } from "@/app/components/auth/auth-dialog";
 import { ClassificationEditButton } from "@/app/components/classification/classification-edit-button";
 import { GeologicalAgeCard } from "@/app/components/geological/geological-age-card";
 import {
@@ -130,6 +131,7 @@ const ClassificationContent = memo(
 		user,
 		phylogeneticTreeCreator,
 		habitatDataCreator,
+		setAuthDialogOpen,
 	}: {
 		decodedName: string;
 		classification: Classification | null;
@@ -158,6 +160,7 @@ const ClassificationContent = memo(
 		user: User | null;
 		phylogeneticTreeCreator?: User;
 		habitatDataCreator?: User;
+		setAuthDialogOpen: (open: boolean) => void;
 	}) => {
 		const { selectedAgeIds } = useGeologicalAge();
 
@@ -509,15 +512,20 @@ const ClassificationContent = memo(
 					) : (
 						<div className="text-center py-8">
 							<p className="text-gray-500 mb-4">系統樹が登録されていません</p>
-							{user && (
+							{user ? (
 								<Link
 									href={`/classifications/${encodeURIComponent(decodedName)}/tree/edit`}
 								>
 									<Button>
 										<Edit className="h-4 w-4 mr-2" />
-										系統樹を編集
+										系統樹を作成
 									</Button>
 								</Link>
+							) : (
+								<Button onClick={() => setAuthDialogOpen(true)}>
+									<Edit className="h-4 w-4 mr-2" />
+									系統樹を作成
+								</Button>
 							)}
 						</div>
 					)}
@@ -545,8 +553,17 @@ const ClassificationContent = memo(
 										系統樹を見る
 									</Button>
 								</Link>
-							) : // ログインしていない場合：何も表示しない
-							null}
+							) : (
+								// ログインしていない場合：見るボタンを表示
+								<Link
+									href={`/classifications/${encodeURIComponent(decodedName)}/tree/view`}
+								>
+									<Button variant="outline">
+										<Eye className="h-4 w-4 mr-2" />
+										系統樹を見る
+									</Button>
+								</Link>
+							)}
 						</div>
 					)}
 				</TabsContent>
@@ -565,14 +582,21 @@ const ClassificationContent = memo(
 							<p className="text-gray-500 mb-4">
 								生息地データが登録されていません
 							</p>
-							<Link
-								href={`/classifications/${encodeURIComponent(decodedName)}/habitat/edit`}
-							>
-								<Button>
+							{user ? (
+								<Link
+									href={`/classifications/${encodeURIComponent(decodedName)}/habitat/edit`}
+								>
+									<Button>
+										<Edit className="h-4 w-4 mr-2" />
+										生息地を編集
+									</Button>
+								</Link>
+							) : (
+								<Button onClick={() => setAuthDialogOpen(true)}>
 									<Edit className="h-4 w-4 mr-2" />
 									生息地を編集
 								</Button>
-							</Link>
+							)}
 						</div>
 					)}
 
@@ -599,8 +623,17 @@ const ClassificationContent = memo(
 										生息地を見る
 									</Button>
 								</Link>
-							) : // ログインしていない場合：何も表示しない
-							null}
+							) : (
+								// ログインしていない場合：見るボタンを表示
+								<Link
+									href={`/classifications/${encodeURIComponent(decodedName)}/habitat/view`}
+								>
+									<Button variant="outline">
+										<Eye className="h-4 w-4 mr-2" />
+										生息地を見る
+									</Button>
+								</Link>
+							)}
 						</div>
 					)}
 				</TabsContent>
@@ -616,6 +649,7 @@ export default function ClassificationPage() {
 	const params = useParams();
 	const decodedName = decodeURIComponent(params.name as string);
 	const [activeTab, setActiveTab] = useState("overview");
+	const [authDialogOpen, setAuthDialogOpen] = useState(false);
 	const { user } = useUser();
 
 	// 分類情報のみを取得（即座に表示可能）
@@ -912,6 +946,7 @@ export default function ClassificationPage() {
 					isGeographicDataCreator={isGeographicDataCreator}
 					phylogeneticTreeCreator={phylogeneticTreeCreator}
 					habitatDataCreator={habitatDataCreator}
+					setAuthDialogOpen={setAuthDialogOpen}
 				/>
 
 				{/* 共通の地質時代カードをタブの下部に配置（系統樹・生息地タブでのみ表示） */}
@@ -921,6 +956,11 @@ export default function ClassificationPage() {
 							<GeologicalAgeCard enableMenu={true} />
 						</div>
 					)}
+				<AuthDialog
+					isOpen={authDialogOpen}
+					onClose={() => setAuthDialogOpen(false)}
+					mode="login"
+				/>
 			</div>
 		</GeologicalAgeProvider>
 	);

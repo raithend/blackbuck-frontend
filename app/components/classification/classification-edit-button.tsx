@@ -1,5 +1,6 @@
 "use client";
 
+import { AuthDialog } from "@/app/components/auth/auth-dialog";
 import { Button } from "@/app/components/ui/button";
 import { useUser } from "@/app/contexts/user-context";
 import type { Classification } from "@/app/types/types";
@@ -18,6 +19,7 @@ export function ClassificationEditButton({
 	onUpdate,
 }: ClassificationEditButtonProps) {
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
+	const [authDialogOpen, setAuthDialogOpen] = useState(false);
 	const { user } = useUser();
 	const params = useParams();
 	const decodedName = decodeURIComponent(params.name as string);
@@ -89,7 +91,14 @@ export function ClassificationEditButton({
 			<Button
 				variant="outline"
 				size="sm"
-				onClick={() => setIsDialogOpen(true)}
+				onClick={() => {
+					if (!user) {
+						// 未ログイン状態の場合はauthダイアログを表示
+						setAuthDialogOpen(true);
+						return;
+					}
+					setIsDialogOpen(true);
+				}}
 				className="flex items-center gap-2"
 			>
 				{classification ? (
@@ -105,12 +114,19 @@ export function ClassificationEditButton({
 				)}
 			</Button>
 
-			<ClassificationEditDialog
-				classification={classification}
-				open={isDialogOpen}
-				onOpenChange={setIsDialogOpen}
-				onSave={handleSave}
-				classificationName={decodedName}
+			{user && (
+				<ClassificationEditDialog
+					classification={classification}
+					open={isDialogOpen}
+					onOpenChange={setIsDialogOpen}
+					onSave={handleSave}
+					classificationName={decodedName}
+				/>
+			)}
+			<AuthDialog
+				isOpen={authDialogOpen}
+				onClose={() => setAuthDialogOpen(false)}
+				mode="login"
 			/>
 		</>
 	);

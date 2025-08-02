@@ -1,5 +1,6 @@
 "use client";
 
+import { AuthDialog } from "@/app/components/auth/auth-dialog";
 import { GeologicalAgeCard } from "@/app/components/geological/geological-age-card";
 import { GeologicalAgeProvider } from "@/app/components/geological/geological-context";
 import Globe from "@/app/components/habitat/globe";
@@ -14,6 +15,7 @@ import {
 	TabsTrigger,
 } from "@/app/components/ui/tabs";
 import { createClient } from "@/app/lib/supabase-browser";
+import { useUser } from "@/app/contexts/user-context";
 import { ArrowLeft } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -35,6 +37,7 @@ export default function HabitatEditPage() {
 	const params = useParams();
 	const router = useRouter();
 	const decodedName = decodeURIComponent(params.name as string);
+	const { user } = useUser();
 	const [habitatData, setHabitatData] = useState<EraGroup[]>([]);
 	const [isLoading, setIsLoading] = useState(false);
 	const [isSaving, setIsSaving] = useState(false);
@@ -42,6 +45,7 @@ export default function HabitatEditPage() {
 		"Map1a_PALEOMAP_PaleoAtlas_000.jpg",
 	);
 	const [activeTab, setActiveTab] = useState("canvas");
+	const [authDialogOpen, setAuthDialogOpen] = useState(false);
 	const habitatEditorRef = useRef<{
 		getHabitatPoints: () => HabitatElement[];
 	} | null>(null);
@@ -117,12 +121,10 @@ export default function HabitatEditPage() {
 
 	// 保存処理
 	const handleSave = async (habitatData: EraGroup[]) => {
-		const supabase = createClient();
-		const {
-			data: { user },
-		} = await supabase.auth.getUser();
-
-		if (!user) return;
+		if (!user) {
+			setAuthDialogOpen(true);
+			return;
+		}
 
 		setIsSaving(true);
 		try {

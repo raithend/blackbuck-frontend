@@ -1,5 +1,6 @@
 "use client";
 
+import { AuthDialog } from "@/app/components/auth/auth-dialog";
 import { PostDialog } from "@/app/components/post/post-dialog";
 import { Button } from "@/app/components/ui/button";
 import { Dialog, DialogTrigger } from "@/app/components/ui/dialog";
@@ -9,6 +10,7 @@ import { toast } from "sonner";
 
 export function PostButton() {
 	const [open, setOpen] = useState(false);
+	const [authDialogOpen, setAuthDialogOpen] = useState(false);
 	const { user, session } = useUser();
 
 	const handlePost = async (data: {
@@ -66,12 +68,14 @@ export function PostButton() {
 
 	if (!user) {
 		return (
-			<Dialog open={open} onOpenChange={setOpen}>
-				<DialogTrigger asChild>
-					<Button>投稿する</Button>
-				</DialogTrigger>
-				<PostDialog onPost={handlePost} />
-			</Dialog>
+			<>
+				<Button onClick={() => setAuthDialogOpen(true)}>投稿する</Button>
+				<AuthDialog
+					isOpen={authDialogOpen}
+					onClose={() => setAuthDialogOpen(false)}
+					mode="login"
+				/>
+			</>
 		);
 	}
 

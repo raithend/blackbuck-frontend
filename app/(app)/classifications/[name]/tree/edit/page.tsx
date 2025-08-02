@@ -1,5 +1,6 @@
 "use client";
 
+import { AuthDialog } from "@/app/components/auth/auth-dialog";
 import { GeologicalAgeCard } from "@/app/components/geological/geological-age-card";
 import { GeologicalAgeProvider } from "@/app/components/geological/geological-context";
 import { PhylogeneticTree } from "@/app/components/phylogenetic/phylogenetic-tree";
@@ -11,6 +12,7 @@ import {
 	CardTitle,
 } from "@/app/components/ui/card";
 import { createClient } from "@/app/lib/supabase-browser";
+import { useUser } from "@/app/contexts/user-context";
 import { ArrowLeft, Download, Save, Sparkles, Upload } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useParams, useRouter } from "next/navigation";
@@ -26,12 +28,14 @@ export default function PhylogeneticTreeEditPage() {
 	const params = useParams();
 	const router = useRouter();
 	const decodedName = decodeURIComponent(params.name as string);
+	const { user } = useUser();
 	const [treeContent, setTreeContent] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
 	const [isSaving, setIsSaving] = useState(false);
 	const [isGenerating, setIsGenerating] = useState(false);
 	const [originalContent, setOriginalContent] = useState("");
 	const [yamlError, setYamlError] = useState<string | null>(null);
+	const [authDialogOpen, setAuthDialogOpen] = useState(false);
 
 	// 自動保存用のタイマーとフラグ
 	const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -183,6 +187,11 @@ export default function PhylogeneticTreeEditPage() {
 
 	// 手動保存処理
 	const handleSave = async () => {
+		if (!user) {
+			setAuthDialogOpen(true);
+			return;
+		}
+
 		setIsSaving(true);
 		try {
 			const supabase = createClient();
@@ -258,9 +267,14 @@ export default function PhylogeneticTreeEditPage() {
 		);
 	}
 
-	return (
+			return (
 		<GeologicalAgeProvider>
 			<div className="container mx-auto px-4 py-8">
+				<AuthDialog
+					isOpen={authDialogOpen}
+					onClose={() => setAuthDialogOpen(false)}
+					mode="login"
+				/>
 				<div className="flex items-center gap-4 mb-6">
 					<Button
 						variant="outline"
