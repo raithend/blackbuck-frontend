@@ -89,9 +89,13 @@ export function ClassificationEditDialog({
 			
 			const data = await response.json();
 			if (data.summary) {
+				// Wikipediaからの引用元を明記
+				const citation = `\n\n---\n出典: Wikipedia (${data.language === 'en' ? '英語版' : '日本語版'}) - ${data.url || 'https://wikipedia.org'}`;
+				const summaryWithCitation = data.summary + citation;
+				
 				setFormData(prev => ({
 					...prev,
-					description: data.summary
+					description: summaryWithCitation
 				}));
 			} else {
 				throw new Error("Wikipediaから概要を取得できませんでした");
