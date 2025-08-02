@@ -60,44 +60,59 @@ async function fetchAndFormatPosts(
 	userLikes: string[],
 	phase: string
 ): Promise<FormattedPost[]> {
-	const { data: posts, error } = await supabase
-		.from("posts")
-		.select(`
-			*,
-			users!posts_user_id_fkey (
-				id,
-				username,
-				avatar_url,
-				account_id,
-				bio,
-				created_at,
-				header_url,
-				updated_at
-			),
-			post_images (
-				id,
-				image_url,
-				order_index
-			),
-			likes (
-				id
-			)
-		`)
-		.in("classification", classifications)
-		.order("created_at", { ascending: false });
+	// 配列を分割するサイズ（Supabaseの制限を考慮）
+	const BATCH_SIZE = 100;
+	const allPosts: FormattedPost[] = [];
 
-	if (error) {
-		console.error(`${phase} 投稿取得エラー:`, error);
-		return [];
+	// 配列を分割して処理
+	for (let i = 0; i < classifications.length; i += BATCH_SIZE) {
+		const batch = classifications.slice(i, i + BATCH_SIZE);
+		console.log(`${phase} バッチ処理: ${i + 1}-${Math.min(i + BATCH_SIZE, classifications.length)}/${classifications.length} (${batch.length}個)`);
+		
+		const { data: posts, error } = await supabase
+			.from("posts")
+			.select(`
+				*,
+				users!posts_user_id_fkey (
+					id,
+					username,
+					avatar_url,
+					account_id,
+					bio,
+					created_at,
+					header_url,
+					updated_at
+				),
+				post_images (
+					id,
+					image_url,
+					order_index
+				),
+				likes (
+					id
+				)
+			`)
+			.in("classification", batch)
+			.order("created_at", { ascending: false });
+
+		if (error) {
+			console.error(`${phase} バッチ${Math.floor(i / BATCH_SIZE) + 1} 投稿取得エラー:`, error);
+			continue; // エラーが発生しても次のバッチを処理
+		}
+
+		const formattedPosts = posts?.map((post: Post) => ({
+			...post,
+			user: post.users,
+			likeCount: post.likes?.length || 0,
+			isLiked: userLikes.includes(post.id),
+			images: post.post_images?.sort((a: PostImage, b: PostImage) => a.order_index - b.order_index) || [],
+		})) || [];
+
+		allPosts.push(...formattedPosts);
 	}
 
-	return posts?.map((post: Post) => ({
-		...post,
-		user: post.users,
-		likeCount: post.likes?.length || 0,
-		isLiked: userLikes.includes(post.id),
-		images: post.post_images?.sort((a: PostImage, b: PostImage) => a.order_index - b.order_index) || [],
-	})) || [];
+	console.log(`${phase} 全バッチ完了: ${allPosts.length}件の投稿を取得`);
+	return allPosts;
 }
 
 export async function GET(
