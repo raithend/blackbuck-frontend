@@ -96,7 +96,7 @@ const GlobeComponent = React.memo<GlobeProps>(({
 		containerRef.current.appendChild(renderer.domElement);
 
 		// 地球儀のジオメトリとマテリアルを作成（テクスチャなし）
-		const geometry = new THREE.SphereGeometry(5, 32, 32);
+		const geometry = new THREE.SphereGeometry(8, 32, 32);
 		const material = new THREE.MeshPhongMaterial({
 			shininess: 5,
 		});
