@@ -23,24 +23,27 @@ export function CreatorCard({ user, className = "" }: CreatorCardProps) {
 
 	return (
 		<Card className={`w-64 ${className}`}>
-			<CardContent className="flex items-center gap-3 p-3">
-				<Link href={`/users/${user.account_id}`}>
-					<Avatar className="h-8 w-8">
-						<AvatarImage src={user.avatar_url || ""} alt={user.username} />
-						<AvatarFallback>{user.username ? user.username[0] : "U"}</AvatarFallback>
-					</Avatar>
-				</Link>
-				<div className="flex-1 min-w-0">
-					<Link href={`/users/${user.account_id}`} className="block">
-						<h4 className="text-sm font-medium truncate">{user.username || "Unknown User"}</h4>
-						<p className="text-xs text-muted-foreground truncate">@{user.account_id}</p>
+			<CardContent className="p-3">
+				<div className="flex items-center gap-3">
+					<div className="text-xs text-muted-foreground">作成者</div>
+					<Link href={`/users/${user.account_id}`}>
+						<Avatar className="h-6 w-6">
+							<AvatarImage src={user.avatar_url || ""} alt={user.username} />
+							<AvatarFallback>{user.username ? user.username[0] : "U"}</AvatarFallback>
+						</Avatar>
 					</Link>
+					<div className="flex-1 min-w-0">
+						<Link href={`/users/${user.account_id}`} className="block">
+							<h4 className="text-sm font-medium truncate">{user.username || "Unknown User"}</h4>
+							<p className="text-xs text-muted-foreground truncate">@{user.account_id}</p>
+						</Link>
+					</div>
+					<FollowButton
+						targetAccountId={user.account_id}
+						size="sm"
+						variant="outline"
+					/>
 				</div>
-				<FollowButton
-					targetAccountId={user.account_id}
-					size="sm"
-					variant="outline"
-				/>
 			</CardContent>
 		</Card>
 	);
