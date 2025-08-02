@@ -298,16 +298,7 @@ const ClassificationContent = memo(({
 	}, [filteredEraGroups]);
 
 	return (
-		<div className="container mx-auto px-4 py-8">
-			<div className="flex items-center justify-between mb-6">
-				<h1 className="text-2xl font-bold">{decodedName}</h1>
-				<ClassificationEditButton 
-					classification={classification || null} 
-					onUpdate={mutatePosts}
-				/>
-			</div>
-			
-			<Tabs defaultValue="overview" className="w-full" value={activeTab} onValueChange={setActiveTab}>
+		<Tabs defaultValue="overview" className="w-full" value={activeTab} onValueChange={setActiveTab}>
 				<TabsList className="grid w-full grid-cols-4">
 					<TabsTrigger value="overview">概要</TabsTrigger>
 					<TabsTrigger value="posts">投稿</TabsTrigger>
@@ -395,16 +386,11 @@ const ClassificationContent = memo(({
 				
 				<TabsContent value="tree" className="mt-6">
 					{hasPhylogeneticTree ? (
-						<div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-							<div className="lg:col-span-3">
-								<PhylogeneticTreeArea 
-									customTreeContent={phylogeneticTreeContent}
-									creator={phylogeneticTreeCreator}
-								/>
-							</div>
-							<div className="lg:col-span-1">
-								<GeologicalAgeCard enableMenu={true} />
-							</div>
+						<div className="w-full">
+							<PhylogeneticTreeArea 
+								customTreeContent={phylogeneticTreeContent}
+								creator={phylogeneticTreeCreator}
+							/>
 						</div>
 					) : (
 						<div className="text-center py-8">
@@ -449,17 +435,12 @@ const ClassificationContent = memo(({
 				
 				<TabsContent value="globe" className="mt-6">
 					{hasGeographicData ? (
-						<div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-							<div className="lg:col-span-3">
-								<GlobeArea 
-									customGeographicFile={habitatDataContent}
-									eraGroups={filteredEraGroups || eraGroups}
-									creator={habitatDataCreator}
-								/>
-							</div>
-							<div className="lg:col-span-1">
-								<GeologicalAgeCard enableMenu={true} />
-							</div>
+						<div className="w-full">
+							<GlobeArea 
+								customGeographicFile={habitatDataContent}
+								eraGroups={filteredEraGroups || eraGroups}
+								creator={habitatDataCreator}
+							/>
 						</div>
 					) : (
 						<div className="text-center py-8">
@@ -498,11 +479,10 @@ const ClassificationContent = memo(({
 							)}
 						</div>
 					)}
-				</TabsContent>
+								</TabsContent>
 			</Tabs>
-		</div>
-	);
-});
+		);
+	});
 
 // 表示名を設定
 ClassificationContent.displayName = 'ClassificationContent';
@@ -712,31 +692,48 @@ export default function ClassificationPage() {
 
 	return (
 		<GeologicalAgeProvider>
-			<ClassificationContent 
-				decodedName={decodedName}
-				classification={classification ?? null}
-				posts={posts}
-				postsLoading={postsLoading}
-				postsError={postsError}
-				hasOverview={hasOverview}
-				hasPosts={hasPosts}
-				hasPhylogeneticTree={hasPhylogeneticTree}
-				hasGeographicData={hasGeographicData}
-				eraGroups={eraGroups}
-				phylogeneticTreeContent={phylogeneticTreeData?.phylogeneticTree?.content}
-				habitatDataContent={habitatData?.habitatData?.content}
-				activeTab={activeTab}
-				setActiveTab={setActiveTab}
-				handleLikeChange={handleLikeChange}
-				handlePostUpdate={handlePostUpdate}
-				handlePostDelete={handlePostDelete}
-				mutatePosts={mutatePosts}
-				user={user}
-				isTreeCreator={isTreeCreator}
-				isGeographicDataCreator={isGeographicDataCreator}
-				phylogeneticTreeCreator={phylogeneticTreeCreator}
-				habitatDataCreator={habitatDataCreator}
-			/>
+			<div className="container mx-auto px-4 py-8 relative">
+				<div className="flex items-center justify-between mb-6">
+					<h1 className="text-2xl font-bold">{decodedName}</h1>
+					<ClassificationEditButton 
+						classification={classification || null} 
+						onUpdate={mutatePosts}
+					/>
+				</div>
+				
+				<ClassificationContent 
+					decodedName={decodedName}
+					classification={classification ?? null}
+					posts={posts}
+					postsLoading={postsLoading}
+					postsError={postsError}
+					hasOverview={hasOverview}
+					hasPosts={hasPosts}
+					hasPhylogeneticTree={hasPhylogeneticTree}
+					hasGeographicData={hasGeographicData}
+					eraGroups={eraGroups}
+					phylogeneticTreeContent={phylogeneticTreeData?.phylogeneticTree?.content}
+					habitatDataContent={habitatData?.habitatData?.content}
+					activeTab={activeTab}
+					setActiveTab={setActiveTab}
+					handleLikeChange={handleLikeChange}
+					handlePostUpdate={handlePostUpdate}
+					handlePostDelete={handlePostDelete}
+					mutatePosts={mutatePosts}
+					user={user}
+					isTreeCreator={isTreeCreator}
+					isGeographicDataCreator={isGeographicDataCreator}
+					phylogeneticTreeCreator={phylogeneticTreeCreator}
+					habitatDataCreator={habitatDataCreator}
+				/>
+				
+				{/* 共通の地質時代カードをタブの下部に配置（系統樹・生息地タブでのみ表示） */}
+				{(hasPhylogeneticTree || hasGeographicData) && (activeTab === "tree" || activeTab === "globe") && (
+					<div className="absolute top-40 right-4 z-50">
+						<GeologicalAgeCard enableMenu={true} />
+					</div>
+				)}
+			</div>
 		</GeologicalAgeProvider>
 	);
 }
