@@ -1,6 +1,35 @@
 import { createClient } from "@/app/lib/supabase-server";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import { safeYamlParse } from "@/app/lib/yaml-utils";
+
+// YAMLデータからname要素を再帰的に抽出する関数
+function extractNamesFromYaml(yamlContent: string): string[] {
+	try {
+		const parsed = safeYamlParse(yamlContent);
+		if (!parsed) return [];
+
+		const names: string[] = [];
+
+		// 再帰的にname要素を抽出する関数
+		const extractNames = (node: any): void => {
+			if (typeof node === 'object' && node !== null) {
+				if (node.name && typeof node.name === 'string') {
+					names.push(node.name);
+				}
+				if (node.children && Array.isArray(node.children)) {
+					node.children.forEach(extractNames);
+				}
+			}
+		};
+
+		extractNames(parsed);
+		return names;
+	} catch (error) {
+		console.error("YAML解析エラー:", error);
+		return [];
+	}
+}
 
 export async function GET(request: NextRequest) {
 	try {
@@ -43,12 +72,40 @@ export async function GET(request: NextRequest) {
 			);
 		}
 
+		// phylogenetic_treesテーブルから系統樹のname要素を検索
+		const { data: phylogeneticData, error: phylogeneticError } = await supabase
+			.from("phylogenetic_trees")
+			.select("content")
+			.not("content", "is", null);
+
+		if (phylogeneticError) {
+			console.error("系統樹検索エラー:", phylogeneticError);
+			return NextResponse.json(
+				{ error: "分類検索に失敗しました" },
+				{ status: 500 },
+			);
+		}
+
+		// 系統樹のYAMLデータからname要素を抽出
+		const phylogeneticNames: string[] = [];
+		phylogeneticData?.forEach((tree) => {
+			if (tree.content) {
+				const names = extractNamesFromYaml(tree.content);
+				phylogeneticNames.push(...names);
+			}
+		});
+
+		// 抽出したname要素から検索クエリに一致するものをフィルタリング
+		const matchingPhylogeneticNames = phylogeneticNames.filter(name =>
+			name.toLowerCase().includes(query.toLowerCase())
+		);
+
 		// 両方の結果を結合
 		const postClassificationsList = postClassifications?.map((c) => c.classification).filter(Boolean) || [];
 		const classificationNamesList = classificationData?.map((c) => c.name).filter(Boolean) || [];
 		
 		// 重複を除去してユニークな分類を取得
-		const allClassifications = [...postClassificationsList, ...classificationNamesList];
+		const allClassifications = [...postClassificationsList, ...classificationNamesList, ...matchingPhylogeneticNames];
 		const uniqueClassifications = Array.from(new Set(allClassifications)).slice(0, 10);
 
 		return NextResponse.json({ classifications: uniqueClassifications });
