@@ -1,8 +1,9 @@
 "use client";
 
+import { AuthDialog } from "@/app/components/auth/auth-dialog";
 import { useUser } from "@/app/contexts/user-context";
 import { HeartIcon } from "lucide-react";
-import { useOptimistic, useTransition } from "react";
+import { useOptimistic, useTransition, useState } from "react";
 import { toast } from "sonner";
 
 interface HeartButtonProps {
@@ -20,6 +21,7 @@ export function HeartButton({
 }: HeartButtonProps) {
 	const { user } = useUser();
 	const [isPending, startTransition] = useTransition();
+	const [authDialogOpen, setAuthDialogOpen] = useState(false);
 
 	// useOptimisticを使用して楽観的更新を実装
 	const [optimisticState, addOptimistic] = useOptimistic(
@@ -41,7 +43,7 @@ export function HeartButton({
 
 	const handleClick = async () => {
 		if (!user) {
-			toast.error("ログインが必要です");
+			setAuthDialogOpen(true);
 			return;
 		}
 
@@ -95,30 +97,37 @@ export function HeartButton({
 	};
 
 	return (
-		<div className="flex items-center gap-2">
-			<button
-				type="button"
-				onClick={handleClick}
-				disabled={isPending}
-				className={`flex items-center gap-1 p-2 rounded-full transition-colors ${
-					optimisticState.isLiked
-						? "text-red-600 hover:bg-red-50"
-						: "hover:bg-gray-50"
-				} ${isPending ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
-			>
-				<HeartIcon
-					className={`w-5 h-5 transition-all ${
+		<>
+			<div className="flex items-center gap-2">
+				<button
+					type="button"
+					onClick={handleClick}
+					disabled={isPending}
+					className={`flex items-center gap-1 p-2 rounded-full transition-colors ${
 						optimisticState.isLiked
-							? "fill-red-600 text-red-600"
-							: "fill-transparent"
-					} ${isPending ? "animate-pulse" : ""}`}
-				/>
-			</button>
-			{optimisticState.likeCount > 0 && (
-				<span className="text-sm min-w-[1rem] text-center">
-					{optimisticState.likeCount}
-				</span>
-			)}
-		</div>
+							? "text-red-600 hover:bg-red-50"
+							: "hover:bg-gray-50"
+					} ${isPending ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
+				>
+					<HeartIcon
+						className={`w-5 h-5 transition-all ${
+							optimisticState.isLiked
+								? "fill-red-600 text-red-600"
+								: "fill-transparent"
+						} ${isPending ? "animate-pulse" : ""}`}
+					/>
+				</button>
+				{optimisticState.likeCount > 0 && (
+					<span className="text-sm min-w-[1rem] text-center">
+						{optimisticState.likeCount}
+					</span>
+				)}
+			</div>
+			<AuthDialog
+				isOpen={authDialogOpen}
+				onClose={() => setAuthDialogOpen(false)}
+				mode="login"
+			/>
+		</>
 	);
 }

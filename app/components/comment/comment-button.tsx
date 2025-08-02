@@ -1,5 +1,6 @@
 "use client";
 
+import { AuthDialog } from "@/app/components/auth/auth-dialog";
 import { EventDropdownMenu } from "@/app/components/post/event-dropdown-menu";
 import { ImageUpload } from "@/app/components/post/image-upload";
 import { LocationDropdownMenu } from "@/app/components/post/location-dropdown-menu";
@@ -42,6 +43,7 @@ export function CommentButton({
 	const [imageFiles, setImageFiles] = useState<File[]>([]);
 	const [isOpen, setIsOpen] = useState(false);
 	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [authDialogOpen, setAuthDialogOpen] = useState(false);
 	const { user } = useUser();
 
 	const uploadToS3 = async (file: File): Promise<string> => {
@@ -144,17 +146,28 @@ export function CommentButton({
 	};
 
 	return (
-		<Dialog open={isOpen} onOpenChange={setIsOpen}>
-			<DialogTrigger asChild>
-				<Button variant="ghost" size="sm" className="flex items-center gap-2">
-					<MessageCircle className="h-4 w-4" />
-					{commentCount > 0 && (
-						<span className="text-sm min-w-[1rem] text-center">
-							{commentCount}
-						</span>
-					)}
-				</Button>
-			</DialogTrigger>
+		<>
+			<Dialog open={isOpen} onOpenChange={setIsOpen}>
+				<DialogTrigger asChild>
+					<Button 
+						variant="ghost" 
+						size="sm" 
+						className="flex items-center gap-2"
+						onClick={() => {
+							if (!user) {
+								setAuthDialogOpen(true);
+								return;
+							}
+						}}
+					>
+						<MessageCircle className="h-4 w-4" />
+						{commentCount > 0 && (
+							<span className="text-sm min-w-[1rem] text-center">
+								{commentCount}
+							</span>
+						)}
+					</Button>
+				</DialogTrigger>
 			<DialogContent className="max-w-md">
 				<DialogHeader>
 					<DialogTitle>{isReply ? "返信を投稿" : "コメントを投稿"}</DialogTitle>
@@ -208,5 +221,11 @@ export function CommentButton({
 				</div>
 			</DialogContent>
 		</Dialog>
+		<AuthDialog
+			isOpen={authDialogOpen}
+			onClose={() => setAuthDialogOpen(false)}
+			mode="login"
+		/>
+		</>
 	);
 }
