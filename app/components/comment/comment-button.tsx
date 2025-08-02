@@ -147,27 +147,22 @@ export function CommentButton({
 
 	return (
 		<>
-			<Dialog open={isOpen} onOpenChange={setIsOpen}>
-				<DialogTrigger asChild>
-					<Button 
-						variant="ghost" 
-						size="sm" 
-						className="flex items-center gap-2"
-						onClick={() => {
-							if (!user) {
-								setAuthDialogOpen(true);
-								return;
-							}
-						}}
-					>
-						<MessageCircle className="h-4 w-4" />
-						{commentCount > 0 && (
-							<span className="text-sm min-w-[1rem] text-center">
-								{commentCount}
-							</span>
-						)}
-					</Button>
-				</DialogTrigger>
+			{user ? (
+				<Dialog open={isOpen} onOpenChange={setIsOpen}>
+					<DialogTrigger asChild>
+						<Button 
+							variant="ghost" 
+							size="sm" 
+							className="flex items-center gap-2"
+						>
+							<MessageCircle className="h-4 w-4" />
+							{commentCount > 0 && (
+								<span className="text-sm min-w-[1rem] text-center">
+									{commentCount}
+								</span>
+							)}
+						</Button>
+					</DialogTrigger>
 			<DialogContent className="max-w-md">
 				<DialogHeader>
 					<DialogTitle>{isReply ? "返信を投稿" : "コメントを投稿"}</DialogTitle>
@@ -221,6 +216,21 @@ export function CommentButton({
 				</div>
 			</DialogContent>
 		</Dialog>
+		) : (
+			<Button 
+				variant="ghost" 
+				size="sm" 
+				className="flex items-center gap-2"
+				onClick={() => setAuthDialogOpen(true)}
+			>
+				<MessageCircle className="h-4 w-4" />
+				{commentCount > 0 && (
+					<span className="text-sm min-w-[1rem] text-center">
+						{commentCount}
+					</span>
+				)}
+			</Button>
+		)}
 		<AuthDialog
 			isOpen={authDialogOpen}
 			onClose={() => setAuthDialogOpen(false)}
