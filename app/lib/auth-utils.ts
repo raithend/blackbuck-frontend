@@ -1,14 +1,16 @@
 import { createClient } from "@/app/lib/supabase-server";
-import type { NextRequest } from "next/server";
-import type { User, SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/app/types/database.types";
+import type { SupabaseClient, User } from "@supabase/supabase-js";
+import type { NextRequest } from "next/server";
 
 export interface AuthResult {
 	user: User;
 	supabase: SupabaseClient<Database>;
 }
 
-export async function authenticateUser(request: NextRequest): Promise<AuthResult> {
+export async function authenticateUser(
+	request: NextRequest,
+): Promise<AuthResult> {
 	// まずAuthorizationヘッダーからアクセストークンを確認
 	const authHeader = request.headers.get("authorization");
 	const accessToken = authHeader?.replace("Bearer ", "");
@@ -17,7 +19,10 @@ export async function authenticateUser(request: NextRequest): Promise<AuthResult
 		// アクセストークンがある場合はそれを使用
 		try {
 			const supabase = await createClient(accessToken);
-			const { data: { user }, error: userError } = await supabase.auth.getUser();
+			const {
+				data: { user },
+				error: userError,
+			} = await supabase.auth.getUser();
 
 			if (userError || !user) {
 				console.error("ユーザー取得エラー:", userError);
@@ -30,14 +35,17 @@ export async function authenticateUser(request: NextRequest): Promise<AuthResult
 			throw new Error("認証が必要です");
 		}
 	}
-	
+
 	// アクセストークンがない場合はセッション認証を試行
 	try {
 		const supabase = await createClient();
-		const { data: { user }, error: authError } = await supabase.auth.getUser();
+		const {
+			data: { user },
+			error: authError,
+		} = await supabase.auth.getUser();
 
 		if (authError || !user) {
-			console.error('Auth error:', authError);
+			console.error("Auth error:", authError);
 			throw new Error("認証が必要です");
 		}
 
@@ -48,7 +56,9 @@ export async function authenticateUser(request: NextRequest): Promise<AuthResult
 	}
 }
 
-export async function authenticateUserWithToken(request: NextRequest): Promise<AuthResult> {
+export async function authenticateUserWithToken(
+	request: NextRequest,
+): Promise<AuthResult> {
 	// Authorizationヘッダーからアクセストークンを取得
 	const authHeader = request.headers.get("authorization");
 	const accessToken = authHeader?.replace("Bearer ", "");
@@ -61,7 +71,10 @@ export async function authenticateUserWithToken(request: NextRequest): Promise<A
 	const supabase = await createClient(accessToken);
 
 	// ユーザー情報を取得
-	const { data: { user }, error: userError } = await supabase.auth.getUser();
+	const {
+		data: { user },
+		error: userError,
+	} = await supabase.auth.getUser();
 
 	if (userError || !user) {
 		console.error("ユーザー取得エラー:", userError);
@@ -69,4 +82,4 @@ export async function authenticateUserWithToken(request: NextRequest): Promise<A
 	}
 
 	return { user, supabase };
-} 
+}

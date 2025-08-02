@@ -12,7 +12,7 @@ const anthropic = new Anthropic({
  * 用途: 検索機能で分類名の部分一致検索を行う
  * パラメータ: name (検索したい分類名)
  * 戻り値: マッチした分類の投稿一覧
- * 
+ *
  * 注意: 詳細情報が必要な場合は /api/classifications/[name] を使用してください
  */
 export async function GET(request: NextRequest) {
@@ -113,11 +113,14 @@ ${JSON.stringify(classifications)}`,
 			throw postsError;
 		}
 
-		return NextResponse.json({ posts }, {
-			headers: {
-				'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600', // 5分間キャッシュ
+		return NextResponse.json(
+			{ posts },
+			{
+				headers: {
+					"Cache-Control": "public, s-maxage=300, stale-while-revalidate=600", // 5分間キャッシュ
+				},
 			},
-		});
+		);
 	} catch (error) {
 		console.error("Error processing classifications:", error);
 		return NextResponse.json(
@@ -139,7 +142,7 @@ export async function POST(request: NextRequest) {
 		if (!name) {
 			return NextResponse.json(
 				{ error: "Classification name is required" },
-				{ status: 400 }
+				{ status: 400 },
 			);
 		}
 
@@ -148,22 +151,19 @@ export async function POST(request: NextRequest) {
 		const accessToken = authHeader?.replace("Bearer ", "");
 
 		if (!accessToken) {
-			return NextResponse.json(
-				{ error: "認証が必要です" },
-				{ status: 401 }
-			);
+			return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
 		}
 
 		// アクセストークンを使ってSupabaseクライアントを作成
 		const supabase = await createClient(accessToken);
 
 		// ユーザー情報を取得
-		const { data: { user }, error: authError } = await supabase.auth.getUser();
+		const {
+			data: { user },
+			error: authError,
+		} = await supabase.auth.getUser();
 		if (authError || !user) {
-			return NextResponse.json(
-				{ error: "認証が必要です" },
-				{ status: 401 }
-			);
+			return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
 		}
 
 		// 分類情報を作成
@@ -174,8 +174,8 @@ export async function POST(request: NextRequest) {
 				english_name: classificationData.english_name,
 				scientific_name: classificationData.scientific_name,
 				description: classificationData.description,
-				era_start: classificationData.era_start,
-				era_end: classificationData.era_end,
+				appearance_period: classificationData.appearance_period,
+				extinction_period: classificationData.extinction_period,
 			})
 			.select()
 			.single();
@@ -184,7 +184,7 @@ export async function POST(request: NextRequest) {
 			console.error("Classification creation error:", createError);
 			return NextResponse.json(
 				{ error: "Failed to create classification" },
-				{ status: 500 }
+				{ status: 500 },
 			);
 		}
 
@@ -193,7 +193,7 @@ export async function POST(request: NextRequest) {
 		console.error("Classification API error:", error);
 		return NextResponse.json(
 			{ error: "Internal Server Error" },
-			{ status: 500 }
+			{ status: 500 },
 		);
 	}
 }

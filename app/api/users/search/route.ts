@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
 			console.error("ユーザー検索エラー:", error);
 			return NextResponse.json(
 				{ error: "ユーザー検索に失敗しました" },
-				{ status: 500 }
+				{ status: 500 },
 			);
 		}
 
@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
 		console.error("ユーザー検索エラー:", error);
 		return NextResponse.json(
 			{ error: "サーバーエラーが発生しました" },
-			{ status: 500 }
+			{ status: 500 },
 		);
 	}
-} 
+}

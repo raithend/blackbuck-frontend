@@ -1,7 +1,15 @@
 "use client";
 
 import type React from "react";
-import { createContext, useContext, useState, useMemo, useCallback, useRef, memo } from "react";
+import {
+	createContext,
+	memo,
+	useCallback,
+	useContext,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 
 interface GeologicalAgeContextType {
 	selectedMap: string;
@@ -18,62 +26,75 @@ const GeologicalAgeContext = createContext<GeologicalAgeContextType>({
 });
 
 // プロバイダーコンポーネントをメモ化
-const GeologicalAgeProviderComponent = memo(({
-	children,
-}: { children: React.ReactNode }) => {
-	const [selectedMap, setSelectedMap] = useState<string>("");
-	const [selectedAgeIds, setSelectedAgeIds] = useState<number[]>([]);
-	
-	// 状態の安定化のためのref
-	const stateRef = useRef({
-		selectedMap,
-		selectedAgeIds,
-	});
-	
-	// 現在の状態をrefに同期
-	stateRef.current = {
-		selectedMap,
-		selectedAgeIds,
-	};
+const GeologicalAgeProviderComponent = memo(
+	({ children }: { children: React.ReactNode }) => {
+		const [selectedMap, setSelectedMap] = useState<string>("");
+		const [selectedAgeIds, setSelectedAgeIds] = useState<number[]>([]);
 
-	// 関数をメモ化して安定化
-	const setSelectedMapWithLog = useCallback((map: string) => {
-		if (process.env.NODE_ENV === 'development') {
-			console.log('GeologicalAgeContext - setSelectedMap呼び出し:', map);
-		}
-		setSelectedMap(map);
-	}, []);
+		// 状態の安定化のためのref
+		const stateRef = useRef({
+			selectedMap,
+			selectedAgeIds,
+		});
 
-	const setSelectedAgeIdsWithLog = useCallback((ageIds: number[]) => {
-		if (process.env.NODE_ENV === 'development') {
-			console.log('GeologicalAgeContext - setSelectedAgeIds呼び出し:', ageIds);
-		}
-		setSelectedAgeIds(ageIds);
-	}, []);
+		// 現在の状態をrefに同期
+		stateRef.current = {
+			selectedMap,
+			selectedAgeIds,
+		};
 
-	// コンテキスト値をメモ化（依存関係を最小限に）
-	const contextValue = useMemo(() => ({
-		selectedMap,
-		selectedAgeIds,
-		setSelectedMap: setSelectedMapWithLog,
-		setSelectedAgeIds: setSelectedAgeIdsWithLog,
-	}), [selectedMap, selectedAgeIds, setSelectedMapWithLog, setSelectedAgeIdsWithLog]);
+		// 関数をメモ化して安定化
+		const setSelectedMapWithLog = useCallback((map: string) => {
+			if (process.env.NODE_ENV === "development") {
+				console.log("GeologicalAgeContext - setSelectedMap呼び出し:", map);
+			}
+			setSelectedMap(map);
+		}, []);
 
-	return (
-		<GeologicalAgeContext.Provider value={contextValue}>
-			{children}
-		</GeologicalAgeContext.Provider>
-	);
-});
+		const setSelectedAgeIdsWithLog = useCallback((ageIds: number[]) => {
+			if (process.env.NODE_ENV === "development") {
+				console.log(
+					"GeologicalAgeContext - setSelectedAgeIds呼び出し:",
+					ageIds,
+				);
+			}
+			setSelectedAgeIds(ageIds);
+		}, []);
+
+		// コンテキスト値をメモ化（依存関係を最小限に）
+		const contextValue = useMemo(
+			() => ({
+				selectedMap,
+				selectedAgeIds,
+				setSelectedMap: setSelectedMapWithLog,
+				setSelectedAgeIds: setSelectedAgeIdsWithLog,
+			}),
+			[
+				selectedMap,
+				selectedAgeIds,
+				setSelectedMapWithLog,
+				setSelectedAgeIdsWithLog,
+			],
+		);
+
+		return (
+			<GeologicalAgeContext.Provider value={contextValue}>
+				{children}
+			</GeologicalAgeContext.Provider>
+		);
+	},
+);
 
 // 表示名を設定
-GeologicalAgeProviderComponent.displayName = 'GeologicalAgeProviderComponent';
+GeologicalAgeProviderComponent.displayName = "GeologicalAgeProviderComponent";
 
 // エクスポート用のラッパー
 export function GeologicalAgeProvider({
 	children,
 }: { children: React.ReactNode }) {
-	return <GeologicalAgeProviderComponent>{children}</GeologicalAgeProviderComponent>;
+	return (
+		<GeologicalAgeProviderComponent>{children}</GeologicalAgeProviderComponent>
+	);
 }
 
 export function useGeologicalAge() {

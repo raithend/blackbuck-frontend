@@ -11,11 +11,11 @@ import {
 } from "@/app/components/ui/card";
 import { Input } from "@/app/components/ui/input";
 import { Label } from "@/app/components/ui/label";
+import { validatePassword } from "@/app/lib/password-validation";
 import { createClient } from "@/app/lib/supabase-browser";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-import { validatePassword } from "@/app/lib/password-validation";
 import { GoogleLoginButton } from "./google-login-button";
 
 type SignUpParams = {
@@ -33,7 +33,7 @@ export function SignUpForm() {
 
 	const signUp = async ({ email, password, name }: SignUpParams) => {
 		const supabase = createClient();
-		
+
 		// サインアップ処理
 		const { data, error } = await supabase.auth.signUp({
 			email,
@@ -55,7 +55,7 @@ export function SignUpForm() {
 		}
 
 		// 少し待機してからユーザープロフィールを作成（APIレート制限を回避）
-		await new Promise(resolve => setTimeout(resolve, 1000));
+		await new Promise((resolve) => setTimeout(resolve, 1000));
 
 		// ユーザープロフィールを作成
 		const response = await fetch("/api/users", {
@@ -77,12 +77,12 @@ export function SignUpForm() {
 
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
-		
+
 		// 既に送信中の場合、重複送信を防ぐ
 		if (isLoading) {
 			return;
 		}
-		
+
 		setError(null);
 		setIsLoading(true);
 
@@ -115,22 +115,29 @@ export function SignUpForm() {
 			}
 		} catch (error: any) {
 			console.error("サインアップエラー:", error);
-			
+
 			// レート制限エラーの特別な処理
-			if (error.message?.includes("rate limit") || error.message?.includes("429") || error.message?.includes("email rate limit exceeded")) {
-				const retryMessage = retryCount > 0 
-					? `（${retryCount}回目の再試行）` 
-					: "";
+			if (
+				error.message?.includes("rate limit") ||
+				error.message?.includes("429") ||
+				error.message?.includes("email rate limit exceeded")
+			) {
+				const retryMessage =
+					retryCount > 0 ? `（${retryCount}回目の再試行）` : "";
 				setError(
 					`APIレート制限に達しました。${retryMessage}\n\n` +
-					`• 数分待ってから再度お試しください\n` +
-					`• 別のメールアドレスで試すこともできます\n` +
-					`• Googleアカウントでの登録を推奨します（下のボタン）`
+						`• 数分待ってから再度お試しください\n` +
+						`• 別のメールアドレスで試すこともできます\n` +
+						`• Googleアカウントでの登録を推奨します（下のボタン）`,
 				);
-				toast.error("APIレート制限に達しました。Googleログインをお試しください。");
-				setRetryCount(prev => prev + 1);
+				toast.error(
+					"APIレート制限に達しました。Googleログインをお試しください。",
+				);
+				setRetryCount((prev) => prev + 1);
 			} else if (error.message?.includes("already registered")) {
-				setError("このメールアドレスは既に登録されています。ログインページからサインインしてください。");
+				setError(
+					"このメールアドレスは既に登録されています。ログインページからサインインしてください。",
+				);
 				toast.error("このメールアドレスは既に登録されています");
 			} else {
 				setError("アカウントの作成に失敗しました。もう一度お試しください。");
@@ -173,14 +180,14 @@ export function SignUpForm() {
 					</div>
 					<div className="space-y-2">
 						<Label htmlFor="password">パスワード</Label>
-						<Input 
-							id="password" 
-							name="password" 
-							type="password" 
+						<Input
+							id="password"
+							name="password"
+							type="password"
 							value={password}
 							onChange={(e) => setPassword(e.target.value)}
 							placeholder="パスワードを入力（8文字以上）"
-							required 
+							required
 						/>
 						<p className="text-xs text-gray-500">
 							パスワードは8文字以上で入力してください
@@ -194,10 +201,10 @@ export function SignUpForm() {
 							</AlertDescription>
 						</Alert>
 					)}
-					
-					<Button 
-						type="submit" 
-						className="w-full" 
+
+					<Button
+						type="submit"
+						className="w-full"
 						disabled={isLoading || !password || password.length < 8}
 					>
 						{isLoading ? (
@@ -209,16 +216,20 @@ export function SignUpForm() {
 							"新規登録"
 						)}
 					</Button>
-					
+
 					{/* レート制限エラーが発生した場合、Googleログインを推奨 */}
-					{error && (error.includes("レート制限") || error.includes("rate limit") || error.includes("429") || error.includes("email rate limit exceeded")) && (
-						<Alert className="border-orange-200 bg-orange-50">
-							<AlertDescription className="text-orange-800">
-								💡 推奨: Googleアカウントでの登録がより簡単で確実です
-							</AlertDescription>
-						</Alert>
-					)}
-					
+					{error &&
+						(error.includes("レート制限") ||
+							error.includes("rate limit") ||
+							error.includes("429") ||
+							error.includes("email rate limit exceeded")) && (
+							<Alert className="border-orange-200 bg-orange-50">
+								<AlertDescription className="text-orange-800">
+									💡 推奨: Googleアカウントでの登録がより簡単で確実です
+								</AlertDescription>
+							</Alert>
+						)}
+
 					<div className="relative w-full">
 						<div className="absolute inset-0 flex items-center">
 							<span className="w-full border-t" />
@@ -229,7 +240,7 @@ export function SignUpForm() {
 							</span>
 						</div>
 					</div>
-					
+
 					<GoogleLoginButton className="w-full">
 						Googleでアカウント作成
 					</GoogleLoginButton>

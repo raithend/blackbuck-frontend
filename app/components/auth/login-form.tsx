@@ -56,19 +56,19 @@ export function LoginForm() {
 
 		try {
 			await signIn({ email, password });
-			
+
 			// SWRの自動更新に任せるため、手動でrefreshUserを呼び出す必要はない
-			
+
 			// 成功メッセージを表示
 			toast.success("ログインに成功しました");
-			
+
 			// 少し遅延を入れてからホーム画面に遷移（ユーザーコンテキストの更新完了を待つ）
 			setTimeout(() => {
 				router.push("/");
 			}, 100);
 		} catch (error: any) {
 			let errorMessage = "ログインに失敗しました";
-			
+
 			if (error?.message) {
 				if (error.message.includes("Invalid login credentials")) {
 					errorMessage = "メールアドレスまたはパスワードが正しくありません";
@@ -80,7 +80,7 @@ export function LoginForm() {
 					errorMessage = error.message;
 				}
 			}
-			
+
 			setError(errorMessage);
 			toast.error(errorMessage);
 		} finally {

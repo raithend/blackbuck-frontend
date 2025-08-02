@@ -8,8 +8,8 @@ import {
 } from "@/app/components/ui/dialog";
 import { Input } from "@/app/components/ui/input";
 import { Textarea } from "@/app/components/ui/textarea";
-import { useState } from "react";
 import type { Event } from "@/app/types/types";
+import { useState } from "react";
 
 interface EventDialogProps {
 	event?: Event;
@@ -86,4 +86,4 @@ export function EventDialog({ event, onSave }: EventDialogProps) {
 			</div>
 		</DialogContent>
 	);
-} 
+}

@@ -1,12 +1,12 @@
+import { deleteMultipleFromS3 } from "@/app/lib/s3-utils";
 import { createClient } from "@/app/lib/supabase-server";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { deleteMultipleFromS3 } from "@/app/lib/s3-utils";
 
 // コメントの更新
 export async function PUT(
 	request: NextRequest,
-	{ params }: { params: Promise<{ commentId: string }> }
+	{ params }: { params: Promise<{ commentId: string }> },
 ) {
 	try {
 		const { commentId } = await params;
@@ -14,10 +14,7 @@ export async function PUT(
 		// 認証ヘッダーを確認
 		const authHeader = request.headers.get("Authorization");
 		if (!authHeader?.startsWith("Bearer ")) {
-			return NextResponse.json(
-				{ error: "認証が必要です" },
-				{ status: 401 }
-			);
+			return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
 		}
 
 		const token = authHeader.split(" ")[1];
@@ -26,12 +23,12 @@ export async function PUT(
 		const supabase = await createClient(token);
 
 		// トークンの検証
-		const { data: { user }, error: authError } = await supabase.auth.getUser();
+		const {
+			data: { user },
+			error: authError,
+		} = await supabase.auth.getUser();
 		if (authError || !user) {
-			return NextResponse.json(
-				{ error: "認証が必要です" },
-				{ status: 401 }
-			);
+			return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
 		}
 
 		// コメントの存在確認と所有者確認
@@ -44,7 +41,7 @@ export async function PUT(
 		if (commentError || !comment) {
 			return NextResponse.json(
 				{ error: "コメントが見つかりません" },
-				{ status: 404 }
+				{ status: 404 },
 			);
 		}
 
@@ -52,17 +49,18 @@ export async function PUT(
 		if (comment.user_id !== user.id) {
 			return NextResponse.json(
 				{ error: "コメントの編集権限がありません" },
-				{ status: 403 }
+				{ status: 403 },
 			);
 		}
 
 		// リクエストボディを取得
-		const { content, location, event, classification, imageUrls } = await request.json();
+		const { content, location, event, classification, imageUrls } =
+			await request.json();
 
 		if (!content || content.trim() === "") {
 			return NextResponse.json(
 				{ error: "コメント内容は必須です" },
-				{ status: 400 }
+				{ status: 400 },
 			);
 		}
 
@@ -83,7 +81,7 @@ export async function PUT(
 			console.error("コメント更新エラー:", updateError);
 			return NextResponse.json(
 				{ error: "コメントの更新に失敗しました" },
-				{ status: 500 }
+				{ status: 500 },
 			);
 		}
 
@@ -112,15 +110,15 @@ export async function PUT(
 			}
 		}
 
-		return NextResponse.json({ 
+		return NextResponse.json({
 			message: "コメントを更新しました",
-			comment: updatedComment 
+			comment: updatedComment,
 		});
 	} catch (error) {
 		console.error("コメント更新エラー:", error);
 		return NextResponse.json(
 			{ error: "サーバーエラーが発生しました" },
-			{ status: 500 }
+			{ status: 500 },
 		);
 	}
 }
@@ -128,7 +126,7 @@ export async function PUT(
 // コメントの削除
 export async function DELETE(
 	request: NextRequest,
-	{ params }: { params: Promise<{ commentId: string }> }
+	{ params }: { params: Promise<{ commentId: string }> },
 ) {
 	try {
 		const { commentId } = await params;
@@ -136,10 +134,7 @@ export async function DELETE(
 		// 認証ヘッダーを確認
 		const authHeader = request.headers.get("Authorization");
 		if (!authHeader?.startsWith("Bearer ")) {
-			return NextResponse.json(
-				{ error: "認証が必要です" },
-				{ status: 401 }
-			);
+			return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
 		}
 
 		const token = authHeader.split(" ")[1];
@@ -148,12 +143,12 @@ export async function DELETE(
 		const supabase = await createClient(token);
 
 		// トークンの検証
-		const { data: { user }, error: authError } = await supabase.auth.getUser();
+		const {
+			data: { user },
+			error: authError,
+		} = await supabase.auth.getUser();
 		if (authError || !user) {
-			return NextResponse.json(
-				{ error: "認証が必要です" },
-				{ status: 401 }
-			);
+			return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
 		}
 
 		// コメントの存在確認と所有者確認
@@ -166,7 +161,7 @@ export async function DELETE(
 		if (commentError || !comment) {
 			return NextResponse.json(
 				{ error: "コメントが見つかりません" },
-				{ status: 404 }
+				{ status: 404 },
 			);
 		}
 
@@ -174,7 +169,7 @@ export async function DELETE(
 		if (comment.user_id !== user.id) {
 			return NextResponse.json(
 				{ error: "コメントの削除権限がありません" },
-				{ status: 403 }
+				{ status: 403 },
 			);
 		}
 
@@ -190,22 +185,16 @@ export async function DELETE(
 
 		// S3からコメント画像を削除
 		if (commentImages && commentImages.length > 0) {
-			const imageUrls = commentImages.map(img => img.image_url);
+			const imageUrls = commentImages.map((img) => img.image_url);
 			const deleteResults = await deleteMultipleFromS3(imageUrls);
 			console.log("コメント削除時のS3削除結果:", deleteResults);
 		}
 
 		// コメント画像レコードを削除
-		await supabase
-			.from("comment_images")
-			.delete()
-			.eq("comment_id", commentId);
+		await supabase.from("comment_images").delete().eq("comment_id", commentId);
 
 		// コメントのいいねを削除
-		await supabase
-			.from("comment_likes")
-			.delete()
-			.eq("comment_id", commentId);
+		await supabase.from("comment_likes").delete().eq("comment_id", commentId);
 
 		// コメントを削除
 		const { error: deleteError } = await supabase
@@ -217,18 +206,18 @@ export async function DELETE(
 			console.error("コメント削除エラー:", deleteError);
 			return NextResponse.json(
 				{ error: "コメントの削除に失敗しました" },
-				{ status: 500 }
+				{ status: 500 },
 			);
 		}
 
-		return NextResponse.json({ 
-			message: "コメントを削除しました" 
+		return NextResponse.json({
+			message: "コメントを削除しました",
 		});
 	} catch (error) {
 		console.error("コメント削除エラー:", error);
 		return NextResponse.json(
 			{ error: "サーバーエラーが発生しました" },
-			{ status: 500 }
+			{ status: 500 },
 		);
 	}
-} 
+}

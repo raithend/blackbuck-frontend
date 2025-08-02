@@ -1,9 +1,9 @@
+import { deleteMultipleFromS3 } from "@/app/lib/s3-utils";
 import { createClient } from "@/app/lib/supabase-server";
+import type { Database } from "@/app/types/database.types";
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { createClient as createSupabaseClient } from "@supabase/supabase-js";
-import type { Database } from "@/app/types/database.types";
-import { deleteMultipleFromS3 } from "@/app/lib/s3-utils";
 
 export async function DELETE(request: NextRequest) {
 	try {
@@ -17,14 +17,14 @@ export async function DELETE(request: NextRequest) {
 
 		// アクセストークンを使ってSupabaseクライアントを作成
 		const supabase = await createClient(accessToken);
-		
+
 		// 認証チェック
-		const { data: { user }, error: authError } = await supabase.auth.getUser();
+		const {
+			data: { user },
+			error: authError,
+		} = await supabase.auth.getUser();
 		if (authError || !user) {
-			return NextResponse.json(
-				{ error: "認証が必要です" },
-				{ status: 401 }
-			);
+			return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
 		}
 
 		// ユーザーのアカウントIDを取得
@@ -37,19 +37,16 @@ export async function DELETE(request: NextRequest) {
 		if (userError || !userProfile) {
 			return NextResponse.json(
 				{ error: "ユーザーが見つかりません" },
-				{ status: 404 }
+				{ status: 404 },
 			);
 		}
 
 		const accountId = userProfile.account_id;
 
 		// 関連データを削除（外部キー制約があるため順序が重要）
-		
+
 		// 1. コメントのいいねを削除
-		await supabase
-			.from("comment_likes")
-			.delete()
-			.eq("account_id", accountId);
+		await supabase.from("comment_likes").delete().eq("account_id", accountId);
 
 		// 2. コメント画像のURLを取得してS3から削除
 		const { data: commentImages, error: commentImagesError } = await supabase
@@ -63,28 +60,19 @@ export async function DELETE(request: NextRequest) {
 
 		// S3からコメント画像を削除
 		if (commentImages && commentImages.length > 0) {
-			const imageUrls = commentImages.map(img => img.image_url);
+			const imageUrls = commentImages.map((img) => img.image_url);
 			const deleteResults = await deleteMultipleFromS3(imageUrls);
 			console.log("アカウント削除時のコメント画像S3削除結果:", deleteResults);
 		}
 
 		// コメント画像レコードを削除
-		await supabase
-			.from("comment_images")
-			.delete()
-			.eq("account_id", accountId);
+		await supabase.from("comment_images").delete().eq("account_id", accountId);
 
 		// 3. コメントを削除
-		await supabase
-			.from("comments")
-			.delete()
-			.eq("account_id", accountId);
+		await supabase.from("comments").delete().eq("account_id", accountId);
 
 		// 4. 投稿のいいねを削除
-		await supabase
-			.from("likes")
-			.delete()
-			.eq("account_id", accountId);
+		await supabase.from("likes").delete().eq("account_id", accountId);
 
 		// 5. 投稿画像のURLを取得してS3から削除
 		const { data: postImages, error: postImagesError } = await supabase
@@ -98,22 +86,16 @@ export async function DELETE(request: NextRequest) {
 
 		// S3から投稿画像を削除
 		if (postImages && postImages.length > 0) {
-			const imageUrls = postImages.map(img => img.image_url);
+			const imageUrls = postImages.map((img) => img.image_url);
 			const deleteResults = await deleteMultipleFromS3(imageUrls);
 			console.log("アカウント削除時の投稿画像S3削除結果:", deleteResults);
 		}
 
 		// 投稿画像レコードを削除
-		await supabase
-			.from("post_images")
-			.delete()
-			.eq("account_id", accountId);
+		await supabase.from("post_images").delete().eq("account_id", accountId);
 
 		// 6. 投稿を削除
-		await supabase
-			.from("posts")
-			.delete()
-			.eq("account_id", accountId);
+		await supabase.from("posts").delete().eq("account_id", accountId);
 
 		// 7. フォロー関係を削除
 		await supabase
@@ -134,9 +116,9 @@ export async function DELETE(request: NextRequest) {
 		// S3からフォトバブル画像を削除
 		if (photoBubbles && photoBubbles.length > 0) {
 			const imageUrls = photoBubbles
-				.filter(bubble => bubble.image_url) // image_urlがnullでないもののみ
-				.map(bubble => bubble.image_url);
-			
+				.filter((bubble) => bubble.image_url) // image_urlがnullでないもののみ
+				.map((bubble) => bubble.image_url);
+
 			if (imageUrls.length > 0) {
 				const deleteResults = await deleteMultipleFromS3(imageUrls);
 				console.log("アカウント削除時のフォトバブルS3削除結果:", deleteResults);
@@ -144,28 +126,16 @@ export async function DELETE(request: NextRequest) {
 		}
 
 		// フォトバブルレコードを削除
-		await supabase
-			.from("photo_bubbles")
-			.delete()
-			.eq("account_id", accountId);
+		await supabase.from("photo_bubbles").delete().eq("account_id", accountId);
 
 		// 9. イベントを削除
-		await supabase
-			.from("events")
-			.delete()
-			.eq("account_id", accountId);
+		await supabase.from("events").delete().eq("account_id", accountId);
 
 		// 10. 場所を削除
-		await supabase
-			.from("locations")
-			.delete()
-			.eq("account_id", accountId);
+		await supabase.from("locations").delete().eq("account_id", accountId);
 
 		// 11. 分類データを削除
-		await supabase
-			.from("classifications")
-			.delete()
-			.eq("account_id", accountId);
+		await supabase.from("classifications").delete().eq("account_id", accountId);
 
 		// 12. 系統樹データを削除
 		await supabase
@@ -174,10 +144,7 @@ export async function DELETE(request: NextRequest) {
 			.eq("account_id", accountId);
 
 		// 13. 生息地データを削除
-		await supabase
-			.from("habitat_data")
-			.delete()
-			.eq("account_id", accountId);
+		await supabase.from("habitat_data").delete().eq("account_id", accountId);
 
 		// 14. ユーザーを削除
 		const { error: deleteUserTableError } = await supabase
@@ -189,7 +156,7 @@ export async function DELETE(request: NextRequest) {
 			console.error("ユーザーテーブル削除エラー:", deleteUserTableError);
 			return NextResponse.json(
 				{ error: "ユーザーの削除に失敗しました" },
-				{ status: 500 }
+				{ status: 500 },
 			);
 		}
 
@@ -198,9 +165,10 @@ export async function DELETE(request: NextRequest) {
 			process.env.NEXT_PUBLIC_SUPABASE_URL!,
 			process.env.SUPABASE_SERVICE_ROLE_KEY!,
 		);
-		
-		const { error: deleteAuthUserError } = await adminSupabase.auth.admin.deleteUser(user.id);
-		
+
+		const { error: deleteAuthUserError } =
+			await adminSupabase.auth.admin.deleteUser(user.id);
+
 		if (deleteAuthUserError) {
 			console.error("認証ユーザー削除エラー:", deleteAuthUserError);
 			// ユーザーテーブルは削除済みなので、エラーでも成功として扱う
@@ -208,14 +176,13 @@ export async function DELETE(request: NextRequest) {
 
 		return NextResponse.json(
 			{ message: "アカウントが正常に削除されました" },
-			{ status: 200 }
+			{ status: 200 },
 		);
-
 	} catch (error) {
 		console.error("アカウント削除エラー:", error);
 		return NextResponse.json(
 			{ error: "アカウントの削除に失敗しました" },
-			{ status: 500 }
+			{ status: 500 },
 		);
 	}
-} 
+}

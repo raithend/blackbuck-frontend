@@ -1,5 +1,5 @@
-import { createClient } from "@/app/lib/supabase-server";
 import { changePasswordSchema } from "@/app/api/db/validation";
+import { createClient } from "@/app/lib/supabase-server";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
@@ -34,11 +34,8 @@ export async function PUT(request: NextRequest) {
 		const validationResult = changePasswordSchema.safeParse(body);
 		if (!validationResult.success) {
 			const errors = validationResult.error.errors;
-			const errorMessage = errors.map(err => err.message).join(", ");
-			return NextResponse.json(
-				{ error: errorMessage },
-				{ status: 400 },
-			);
+			const errorMessage = errors.map((err) => err.message).join(", ");
+			return NextResponse.json({ error: errorMessage }, { status: 400 });
 		}
 
 		const { currentPassword, newPassword } = validationResult.data;
@@ -71,10 +68,7 @@ export async function PUT(request: NextRequest) {
 
 		if (updateError) {
 			console.error("パスワード更新エラー:", updateError);
-			return NextResponse.json(
-				{ error: updateError.message },
-				{ status: 500 },
-			);
+			return NextResponse.json({ error: updateError.message }, { status: 500 });
 		}
 
 		return NextResponse.json({ message: "パスワードが正常に更新されました" });
@@ -85,4 +79,4 @@ export async function PUT(request: NextRequest) {
 			{ status: 500 },
 		);
 	}
-} 
+}

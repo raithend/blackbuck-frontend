@@ -1,17 +1,20 @@
 import { createClient } from "@/app/lib/supabase-server";
+import { handleUserFetchError } from "@/app/lib/user-api-utils";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { handleUserFetchError } from "@/app/lib/user-api-utils";
 
 export async function GET(
 	request: NextRequest,
-	{ params }: { params: Promise<{ accountId: string }> }
+	{ params }: { params: Promise<{ accountId: string }> },
 ) {
 	try {
 		const { accountId } = await params;
 
 		if (!accountId) {
-			return NextResponse.json({ error: "Account ID is required" }, { status: 400 });
+			return NextResponse.json(
+				{ error: "Account ID is required" },
+				{ status: 400 },
+			);
 		}
 
 		// Supabaseクライアントを作成（認証不要でユーザー情報を取得）
@@ -36,4 +39,4 @@ export async function GET(
 			{ status: 500 },
 		);
 	}
-} 
+}

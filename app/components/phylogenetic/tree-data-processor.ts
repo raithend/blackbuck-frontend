@@ -1,6 +1,6 @@
 import geologicalAgesData from "@/app/data/geological-ages.json";
 import { load } from "js-yaml";
-import type { TreeNode } from '../../types/types';
+import type { TreeNode } from "../../types/types";
 
 // 地質時代の名前からIDを取得する関数
 const getAgeIdsByName = (ageName: string): number[] => {
@@ -93,7 +93,10 @@ const filterNodeByAge = (
 	}
 
 	// nameがnullまたは空で、かつ子ノードがない場合（末端ノード）は表示しない
-	if ((!node.name || node.name.trim() === '') && (!node.children || node.children.length === 0)) {
+	if (
+		(!node.name || node.name.trim() === "") &&
+		(!node.children || node.children.length === 0)
+	) {
 		return null;
 	}
 
@@ -129,12 +132,11 @@ const filterNodeByAge = (
 	}
 
 	// 子ノードを再帰的にフィルタリング（配列チェック付き）
-	const filteredChildren =
-		Array.isArray(node.children)
-			? node.children
+	const filteredChildren = Array.isArray(node.children)
+		? node.children
 				.map((child) => filterNodeByAge(child, selectedAgeIds))
 				.filter((child): child is TreeNode => child !== null)
-			: [];
+		: [];
 
 	// ノードの表示判定
 	if (shouldDisplayNode || filteredChildren.length > 0) {
@@ -149,34 +151,37 @@ const filterNodeByAge = (
 };
 
 // メインの処理関数
-export const processTreeData = (selectedAgeIds: number[], customData?: TreeNode): TreeNode | null => {
-	console.log('processTreeData - selectedAgeIds:', selectedAgeIds);
-	console.log('processTreeData - customData:', customData);
-	
+export const processTreeData = (
+	selectedAgeIds: number[],
+	customData?: TreeNode,
+): TreeNode | null => {
+	console.log("processTreeData - selectedAgeIds:", selectedAgeIds);
+	console.log("processTreeData - customData:", customData);
+
 	// 使用するデータを決定
 	let dataToUse: TreeNode;
-	
+
 	if (customData) {
 		// カスタムデータを使用（データベースのphylogenetic_tree_fileの内容）
-		console.log('processTreeData - using customData from database');
+		console.log("processTreeData - using customData from database");
 		dataToUse = customData;
 	} else {
 		// カスタムデータがない場合はnullを返す（tree-data.ymlは使用しない）
-		console.log('processTreeData - no custom data provided, returning null');
+		console.log("processTreeData - no custom data provided, returning null");
 		return null;
 	}
 
 	// データの妥当性チェック
-	if (!dataToUse || typeof dataToUse !== 'object') {
-		console.warn('processTreeData - invalid data structure:', dataToUse);
+	if (!dataToUse || typeof dataToUse !== "object") {
+		console.warn("processTreeData - invalid data structure:", dataToUse);
 		return null;
 	}
 
-	console.log('processTreeData - dataToUse before filtering:', dataToUse);
+	console.log("processTreeData - dataToUse before filtering:", dataToUse);
 
 	// データをフィルタリング
 	const filteredData = filterNodeByAge(dataToUse, selectedAgeIds);
-	console.log('processTreeData - filteredData:', filteredData);
-	
+	console.log("processTreeData - filteredData:", filteredData);
+
 	return filteredData;
 };

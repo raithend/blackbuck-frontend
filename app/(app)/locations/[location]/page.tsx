@@ -1,25 +1,28 @@
 "use client";
 
+import { LocationEditButton } from "@/app/components/location/location-edit-button";
 import { PostCards } from "@/app/components/post/post-cards";
-import type { PostWithUser, Location } from "@/app/types/types";
+import type { Location, PostWithUser } from "@/app/types/types";
+import { Info, MapPin } from "lucide-react";
+import Image from "next/image";
 import { useParams } from "next/navigation";
 import useSWR from "swr";
-import Image from "next/image";
-import { MapPin, Info } from "lucide-react";
-import { LocationEditButton } from "@/app/components/location/location-edit-button";
 
 // フェッチャー関数
 const fetcher = async (url: string) => {
 	try {
 		const response = await fetch(url);
 		if (!response.ok) {
-			throw new Error('Failed to fetch data');
+			throw new Error("Failed to fetch data");
 		}
 		return response.json();
 	} catch (error) {
 		// ネットワークエラーの場合は既存データを保持するため、エラーを投げない
-		if (error instanceof TypeError && error.message.includes('fetch')) {
-			console.warn('ネットワークエラーが発生しましたが、既存のデータを表示し続けます:', error);
+		if (error instanceof TypeError && error.message.includes("fetch")) {
+			console.warn(
+				"ネットワークエラーが発生しましたが、既存のデータを表示し続けます:",
+				error,
+			);
 			return null; // nullを返すことで、既存のデータを保持
 		}
 		throw error;
@@ -29,33 +32,44 @@ const fetcher = async (url: string) => {
 export default function LocationPage() {
 	const params = useParams();
 	const rawLocation = params.location as string;
-	
+
 	// locationパラメータをデコード（既にエンコードされている場合があるため）
 	const location = decodeURIComponent(rawLocation);
 
 	// locationの詳細情報を取得
-	const { data: locationData, error: locationError, isLoading: locationLoading } = useSWR<{ location: Location | null }>(
+	const {
+		data: locationData,
+		error: locationError,
+		isLoading: locationLoading,
+	} = useSWR<{ location: Location | null }>(
 		location ? `/api/locations/${encodeURIComponent(location)}` : null,
-		fetcher
+		fetcher,
 	);
 
 	// locationの投稿を取得
-	const { data: postsData, error: postsError, isLoading: postsLoading, mutate: mutatePosts } = useSWR<{ posts: PostWithUser[] }>(
+	const {
+		data: postsData,
+		error: postsError,
+		isLoading: postsLoading,
+		mutate: mutatePosts,
+	} = useSWR<{ posts: PostWithUser[] }>(
 		location ? `/api/posts?location=${encodeURIComponent(location)}` : null,
-		fetcher
+		fetcher,
 	);
 
 	// いいね状態変更のハンドラー
-	const handleLikeChange = (postId: string, likeCount: number, isLiked: boolean) => {
+	const handleLikeChange = (
+		postId: string,
+		likeCount: number,
+		isLiked: boolean,
+	) => {
 		mutatePosts((currentData) => {
 			if (!currentData) return currentData;
 			return {
 				...currentData,
-				posts: currentData.posts.map(post => 
-					post.id === postId 
-						? { ...post, likeCount, isLiked }
-						: post
-				)
+				posts: currentData.posts.map((post) =>
+					post.id === postId ? { ...post, likeCount, isLiked } : post,
+				),
 			};
 		}, false);
 	};
@@ -72,7 +86,7 @@ export default function LocationPage() {
 			if (!currentData) return currentData;
 			return {
 				...currentData,
-				posts: currentData.posts.filter(post => post.id !== postId)
+				posts: currentData.posts.filter((post) => post.id !== postId),
 			};
 		}, false);
 	};
@@ -133,7 +147,7 @@ export default function LocationPage() {
 							</div>
 							{locationInfo && <LocationEditButton location={locationInfo} />}
 						</div>
-						
+
 						{locationInfo?.description ? (
 							<p className="text-gray-600 text-lg mb-4">
 								{locationInfo.description}
@@ -157,7 +171,9 @@ export default function LocationPage() {
 					</div>
 				) : postsError ? (
 					<div className="text-center py-8">
-						<div className="text-lg text-red-600 mb-2">投稿の取得に失敗しました</div>
+						<div className="text-lg text-red-600 mb-2">
+							投稿の取得に失敗しました
+						</div>
 					</div>
 				) : posts.length === 0 ? (
 					<div className="text-center py-12">
@@ -173,8 +189,8 @@ export default function LocationPage() {
 						<p className="text-gray-600 mb-4">
 							{posts.length}件の投稿が見つかりました
 						</p>
-						<PostCards 
-							posts={posts} 
+						<PostCards
+							posts={posts}
 							onLikeChange={handleLikeChange}
 							onPostUpdate={handlePostUpdate}
 							onPostDelete={handlePostDelete}
@@ -184,4 +200,4 @@ export default function LocationPage() {
 			</div>
 		</div>
 	);
-} 
+}

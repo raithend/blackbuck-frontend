@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { PhotoBubble } from "./photo-bubble";
-import { PhotoBubbleEditPanel } from "./photo-bubble-edit-panel";
 import { Button } from "@/app/components/ui/button";
 import type { User } from "@/app/types/types";
 import Image from "next/image";
+import { useEffect, useState } from "react";
+import { PhotoBubble } from "./photo-bubble";
+import { PhotoBubbleEditPanel } from "./photo-bubble-edit-panel";
 
 interface PhotoBubbleData {
 	id: string;
@@ -23,37 +23,40 @@ interface PhotoBubbleEditorProps {
 	isEditable?: boolean;
 }
 
-export function PhotoBubbleEditor({ 
-	user, 
-	photoBubbles, 
+export function PhotoBubbleEditor({
+	user,
+	photoBubbles,
 	onPhotoBubblesChange,
-	isEditable = true
+	isEditable = true,
 }: PhotoBubbleEditorProps) {
 	const [isEditPanelOpen, setIsEditPanelOpen] = useState(false);
 	const [isEditing, setIsEditing] = useState(false);
 	const [clickedPosition, setClickedPosition] = useState({ x: 0, y: 0 });
 	const [showClickMarker, setShowClickMarker] = useState(false);
-	
+
 	// 初期データをAPIから読み込み
 	useEffect(() => {
 		const loadPhotoBubbles = async () => {
 			try {
-				const response = await fetch(`/api/photo-bubbles?page_url=${window.location.pathname}`);
+				const response = await fetch(
+					`/api/photo-bubbles?page_url=${window.location.pathname}`,
+				);
 				if (response.ok) {
 					const data = await response.json();
 					// APIのデータ形式をローカル形式に変換
-					const convertedBubbles = data.photoBubbles?.map((bubble: any) => ({
-						id: bubble.id,
-						x: bubble.x_position,
-						y: bubble.y_position,
-						description: bubble.name,
-						imageUrl: bubble.image_url,
-						targetUrl: bubble.target_url,
-					})) || [];
+					const convertedBubbles =
+						data.photoBubbles?.map((bubble: any) => ({
+							id: bubble.id,
+							x: bubble.x_position,
+							y: bubble.y_position,
+							description: bubble.name,
+							imageUrl: bubble.image_url,
+							targetUrl: bubble.target_url,
+						})) || [];
 					onPhotoBubblesChange(convertedBubbles);
 				}
 			} catch (error) {
-				console.error('Error loading photo bubbles:', error);
+				console.error("Error loading photo bubbles:", error);
 			}
 		};
 
@@ -64,11 +67,11 @@ export function PhotoBubbleEditor({
 		if (isEditing && isEditable) {
 			event.preventDefault();
 			event.stopPropagation();
-			
+
 			const rect = event.currentTarget.getBoundingClientRect();
 			const x = event.clientX - rect.left;
 			const y = event.clientY - rect.top;
-			
+
 			setClickedPosition({ x, y });
 			setShowClickMarker(true);
 			setIsEditPanelOpen(true);
@@ -77,7 +80,7 @@ export function PhotoBubbleEditor({
 
 	const handleEditButtonClick = () => {
 		if (!isEditable) return;
-		
+
 		setIsEditing(!isEditing);
 		if (isEditing) {
 			setIsEditPanelOpen(false);
@@ -94,8 +97,8 @@ export function PhotoBubbleEditor({
 		<>
 			{/* ヘッダー画像 */}
 			<div className="relative w-full h-96 bg-gray-200 rounded-lg overflow-hidden">
-				<div 
-					className={`w-full h-full ${isEditing && isEditable ? 'cursor-crosshair' : ''}`}
+				<div
+					className={`w-full h-full ${isEditing && isEditable ? "cursor-crosshair" : ""}`}
 					onClick={handleHeaderClick}
 				>
 					{user.header_url ? (
@@ -108,7 +111,7 @@ export function PhotoBubbleEditor({
 							className="w-full h-full object-cover"
 							style={{ height: "auto" }}
 							onError={(e) => {
-								e.currentTarget.style.display = 'none';
+								e.currentTarget.style.display = "none";
 							}}
 						/>
 					) : (
@@ -124,9 +127,9 @@ export function PhotoBubbleEditor({
 				{showClickMarker && (
 					<div
 						className="absolute w-6 h-6 bg-red-500 border-2 border-white rounded-full shadow-lg animate-pulse"
-						style={{ 
-							left: clickedPosition.x - 12, 
-							top: clickedPosition.y - 12 
+						style={{
+							left: clickedPosition.x - 12,
+							top: clickedPosition.y - 12,
 						}}
 					>
 						<div className="w-full h-full bg-red-500 rounded-full flex items-center justify-center">
@@ -142,9 +145,13 @@ export function PhotoBubbleEditor({
 						id={bubble.id}
 						x={bubble.x}
 						y={bubble.y}
-						onDelete={(id) => onPhotoBubblesChange(photoBubbles.filter(b => b.id !== id))}
-						onPositionChange={(id, x, y) => 
-							onPhotoBubblesChange(photoBubbles.map(b => b.id === id ? { ...b, x, y } : b))
+						onDelete={(id) =>
+							onPhotoBubblesChange(photoBubbles.filter((b) => b.id !== id))
+						}
+						onPositionChange={(id, x, y) =>
+							onPhotoBubblesChange(
+								photoBubbles.map((b) => (b.id === id ? { ...b, x, y } : b)),
+							)
 						}
 						userAvatarUrl={user.avatar_url || undefined}
 						username={user.username}
@@ -163,7 +170,7 @@ export function PhotoBubbleEditor({
 						onClick={handleEditButtonClick}
 						variant={isEditing ? "destructive" : "default"}
 					>
-						{isEditing ? '編集終了' : 'フォトバブルを追加・編集する'}
+						{isEditing ? "編集終了" : "フォトバブルを追加・編集する"}
 					</Button>
 				</div>
 			)}
@@ -186,4 +193,4 @@ export function PhotoBubbleEditor({
 			)}
 		</>
 	);
-} 
+}

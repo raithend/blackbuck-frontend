@@ -1,7 +1,11 @@
 import { createClient } from "@/app/lib/supabase-server";
-import { NextResponse } from "next/server";
-import { safeYamlParse, findRelatedClassifications, collectAllChildrenNamesWithLinkedTree } from "@/app/lib/yaml-utils";
+import {
+	collectAllChildrenNamesWithLinkedTree,
+	findRelatedClassifications,
+	safeYamlParse,
+} from "@/app/lib/yaml-utils";
 import Anthropic from "@anthropic-ai/sdk";
+import { NextResponse } from "next/server";
 
 const anthropic = new Anthropic({
 	apiKey: process.env.ANTHROPIC_API_KEY,
@@ -58,7 +62,7 @@ async function fetchAndFormatPosts(
 	supabase: any,
 	classifications: string[],
 	userLikes: string[],
-	phase: string
+	phase: string,
 ): Promise<FormattedPost[]> {
 	// 配列を分割するサイズ（Supabaseの制限を考慮）
 	const BATCH_SIZE = 100;
@@ -67,8 +71,10 @@ async function fetchAndFormatPosts(
 	// 配列を分割して処理
 	for (let i = 0; i < classifications.length; i += BATCH_SIZE) {
 		const batch = classifications.slice(i, i + BATCH_SIZE);
-		console.log(`${phase} バッチ処理: ${i + 1}-${Math.min(i + BATCH_SIZE, classifications.length)}/${classifications.length} (${batch.length}個)`);
-		
+		console.log(
+			`${phase} バッチ処理: ${i + 1}-${Math.min(i + BATCH_SIZE, classifications.length)}/${classifications.length} (${batch.length}個)`,
+		);
+
 		const { data: posts, error } = await supabase
 			.from("posts")
 			.select(`
@@ -96,17 +102,24 @@ async function fetchAndFormatPosts(
 			.order("created_at", { ascending: false });
 
 		if (error) {
-			console.error(`${phase} バッチ${Math.floor(i / BATCH_SIZE) + 1} 投稿取得エラー:`, error);
+			console.error(
+				`${phase} バッチ${Math.floor(i / BATCH_SIZE) + 1} 投稿取得エラー:`,
+				error,
+			);
 			continue; // エラーが発生しても次のバッチを処理
 		}
 
-		const formattedPosts = posts?.map((post: Post) => ({
-			...post,
-			user: post.users,
-			likeCount: post.likes?.length || 0,
-			isLiked: userLikes.includes(post.id),
-			images: post.post_images?.sort((a: PostImage, b: PostImage) => a.order_index - b.order_index) || [],
-		})) || [];
+		const formattedPosts =
+			posts?.map((post: Post) => ({
+				...post,
+				user: post.users,
+				likeCount: post.likes?.length || 0,
+				isLiked: userLikes.includes(post.id),
+				images:
+					post.post_images?.sort(
+						(a: PostImage, b: PostImage) => a.order_index - b.order_index,
+					) || [],
+			})) || [];
 
 		allPosts.push(...formattedPosts);
 	}
@@ -117,17 +130,14 @@ async function fetchAndFormatPosts(
 
 export async function GET(
 	request: Request,
-	{ params }: { params: Promise<{ name: string }> }
+	{ params }: { params: Promise<{ name: string }> },
 ) {
 	try {
 		const { name } = await params;
 		const decodedName = decodeURIComponent(name);
 
 		if (!decodedName) {
-			return NextResponse.json(
-				{ error: "分類名が必要です" },
-				{ status: 400 }
-			);
+			return NextResponse.json({ error: "分類名が必要です" }, { status: 400 });
 		}
 
 		const supabase = await createClient();
@@ -140,7 +150,9 @@ export async function GET(
 		if (authHeader?.startsWith("Bearer ")) {
 			const token = authHeader.split(" ")[1];
 			const authSupabase = await createClient(token);
-			const { data: { user: authUser } } = await authSupabase.auth.getUser();
+			const {
+				data: { user: authUser },
+			} = await authSupabase.auth.getUser();
 			user = authUser;
 
 			// ユーザーのいいね状態を取得
@@ -149,26 +161,39 @@ export async function GET(
 					.from("likes")
 					.select("post_id")
 					.eq("user_id", user.id);
-				userLikes = likes?.map(like => like.post_id) || [];
+				userLikes = likes?.map((like) => like.post_id) || [];
 			}
 		}
 
 		const results = {
 			phase1: { posts: [] as FormattedPost[], count: 0, phase: "完全一致" },
-			phase2: { posts: [] as FormattedPost[], count: 0, phase: "分類ページ系統樹" },
-			phase3: { posts: [] as FormattedPost[], count: 0, phase: "データベース系統樹" },
-			phase4: { posts: [] as FormattedPost[], count: 0, phase: "Claudeマッチ" }
+			phase2: {
+				posts: [] as FormattedPost[],
+				count: 0,
+				phase: "分類ページ系統樹",
+			},
+			phase3: {
+				posts: [] as FormattedPost[],
+				count: 0,
+				phase: "データベース系統樹",
+			},
+			phase4: { posts: [] as FormattedPost[], count: 0, phase: "Claudeマッチ" },
 		};
 
 		// Phase 1: 完全一致の投稿を取得
-		console.log('=== Phase 1: 完全一致の投稿を取得 ===');
-		const phase1Posts = await fetchAndFormatPosts(supabase, [decodedName], userLikes, "Phase 1");
+		console.log("=== Phase 1: 完全一致の投稿を取得 ===");
+		const phase1Posts = await fetchAndFormatPosts(
+			supabase,
+			[decodedName],
+			userLikes,
+			"Phase 1",
+		);
 		results.phase1.posts = phase1Posts;
 		results.phase1.count = phase1Posts.length;
 		console.log(`Phase 1 完了: ${phase1Posts.length}件の投稿を取得`);
 
 		// Phase 2: 分類ページに紐づけられている系統樹から子要素を取得（常に実行）
-		console.log('=== Phase 2: 分類ページ系統樹から子要素を取得 ===');
+		console.log("=== Phase 2: 分類ページ系統樹から子要素を取得 ===");
 		let hasLinkedTree = false;
 		const { data: classification, error: classificationError } = await supabase
 			.from("classifications")
@@ -176,9 +201,9 @@ export async function GET(
 			.eq("name", decodedName)
 			.single();
 		if (classificationError) {
-			console.error('Phase 2: 分類名取得エラー:', classificationError);
+			console.error("Phase 2: 分類名取得エラー:", classificationError);
 		}
-		console.log('Phase 2: classification:', classification);
+		console.log("Phase 2: classification:", classification);
 
 		if (classification) {
 			const { data: phylogeneticTree, error: treeError } = await supabase
@@ -187,42 +212,56 @@ export async function GET(
 				.eq("classification_id", classification.id)
 				.single();
 			if (treeError) {
-				console.error('Phase 2: 系統樹取得エラー:', treeError);
+				console.error("Phase 2: 系統樹取得エラー:", treeError);
 			}
-			console.log('Phase 2: phylogeneticTree取得完了');
+			console.log("Phase 2: phylogeneticTree取得完了");
 
 			if (phylogeneticTree?.content) {
 				hasLinkedTree = true;
 				const treeData = safeYamlParse(phylogeneticTree.content);
-				console.log('Phase 2: treeData:', treeData);
+				console.log("Phase 2: treeData:", treeData);
 				if (treeData) {
 					// linked_tree対応の子要素収集
-					const children = await collectAllChildrenNamesWithLinkedTree(treeData, supabase);
-					console.log('Phase 2: collectAllChildrenNamesWithLinkedTree result:', children);
+					const children = await collectAllChildrenNamesWithLinkedTree(
+						treeData,
+						supabase,
+					);
+					console.log(
+						"Phase 2: collectAllChildrenNamesWithLinkedTree result:",
+						children,
+					);
 					if (children.length > 0) {
-						console.log(`Phase 2: ${children.length}個の子要素を発見:`, children);
-						const phase2Posts = await fetchAndFormatPosts(supabase, children, userLikes, "Phase 2");
-						console.log('Phase 2: fetchAndFormatPosts result:', phase2Posts);
+						console.log(
+							`Phase 2: ${children.length}個の子要素を発見:`,
+							children,
+						);
+						const phase2Posts = await fetchAndFormatPosts(
+							supabase,
+							children,
+							userLikes,
+							"Phase 2",
+						);
+						console.log("Phase 2: fetchAndFormatPosts result:", phase2Posts);
 						results.phase2.posts = phase2Posts;
 						results.phase2.count = phase2Posts.length;
 						console.log(`Phase 2 完了: ${phase2Posts.length}件の投稿を取得`);
 					} else {
-						console.log('Phase 2: 子要素が見つかりませんでした');
+						console.log("Phase 2: 子要素が見つかりませんでした");
 					}
 				} else {
-					console.log('Phase 2: treeDataがnullです');
+					console.log("Phase 2: treeDataがnullです");
 				}
 			} else {
-				console.log('Phase 2: phylogeneticTree.contentがありません');
+				console.log("Phase 2: phylogeneticTree.contentがありません");
 			}
 		} else {
-			console.log('Phase 2: classificationがありません');
+			console.log("Phase 2: classificationがありません");
 		}
 
 		// Phase 3: データベース系統樹から関連分類名を取得（Phase 2で系統樹が設定されていない場合のみ実行）
 		if (!hasLinkedTree) {
-			console.log('Phase 2で系統樹が設定されていないため、Phase 3を実行');
-			console.log('=== Phase 3: データベース系統樹から関連分類名を取得 ===');
+			console.log("Phase 2で系統樹が設定されていないため、Phase 3を実行");
+			console.log("=== Phase 3: データベース系統樹から関連分類名を取得 ===");
 			const { data: phylogeneticTrees } = await supabase
 				.from("phylogenetic_trees")
 				.select("id, content, classification_id")
@@ -230,13 +269,16 @@ export async function GET(
 
 			if (phylogeneticTrees && phylogeneticTrees.length > 0) {
 				const allChildren: string[] = [];
-				
+
 				for (const tree of phylogeneticTrees) {
 					try {
 						const treeData = safeYamlParse(tree.content);
 						if (treeData) {
 							// linked_tree対応の子要素収集
-							const children = await collectAllChildrenNamesWithLinkedTree(treeData, supabase);
+							const children = await collectAllChildrenNamesWithLinkedTree(
+								treeData,
+								supabase,
+							);
 							for (const child of children) {
 								if (!allChildren.includes(child)) {
 									allChildren.push(child);
@@ -249,21 +291,29 @@ export async function GET(
 				}
 
 				if (allChildren.length > 0) {
-					console.log(`Phase 3: ${allChildren.length}個の関連分類名を発見:`, allChildren);
-					const phase3Posts = await fetchAndFormatPosts(supabase, allChildren, userLikes, "Phase 3");
+					console.log(
+						`Phase 3: ${allChildren.length}個の関連分類名を発見:`,
+						allChildren,
+					);
+					const phase3Posts = await fetchAndFormatPosts(
+						supabase,
+						allChildren,
+						userLikes,
+						"Phase 3",
+					);
 					results.phase3.posts = phase3Posts;
 					results.phase3.count = phase3Posts.length;
 					console.log(`Phase 3 完了: ${phase3Posts.length}件の投稿を取得`);
 				}
 			}
 		} else {
-			console.log('Phase 2で系統樹が設定されているため、Phase 3はスキップ');
+			console.log("Phase 2で系統樹が設定されているため、Phase 3はスキップ");
 		}
 
 		// Phase 4: Claudeマッチ（Phase 2で系統樹が設定されていない場合のみ実行）
 		if (!hasLinkedTree) {
-			console.log('Phase 2で系統樹が設定されていないため、Phase 4を実行');
-			console.log('=== Phase 4: Claudeマッチ ===');
+			console.log("Phase 2で系統樹が設定されていないため、Phase 4を実行");
+			console.log("=== Phase 4: Claudeマッチ ===");
 			try {
 				// すべての投稿からclassificationを取得
 				const { data: allPosts } = await supabase
@@ -275,7 +325,9 @@ export async function GET(
 					// 重複を除去した分類名の配列を作成し、検索対象の分類名を除外
 					const classifications = Array.from(
 						new Set(allPosts.map((post) => post.classification)),
-					).filter(Boolean).filter(name => name !== decodedName) as string[];
+					)
+						.filter(Boolean)
+						.filter((name) => name !== decodedName) as string[];
 
 					if (classifications.length > 0) {
 						// Claude APIに分類名と配列を送信
@@ -299,19 +351,32 @@ ${JSON.stringify(classifications)}`,
 							],
 						});
 
-						const response = message.content[0].type === "text" ? message.content[0].text : "";
+						const response =
+							message.content[0].type === "text" ? message.content[0].text : "";
 						const jsonMatch = response.match(/\{[\s\S]*\}/);
-						
+
 						if (jsonMatch) {
-							const parsedResponse: { matchedClassifications?: string[] } = JSON.parse(jsonMatch[0]);
-							const matchedClassifications: string[] = parsedResponse.matchedClassifications || [];
+							const parsedResponse: { matchedClassifications?: string[] } =
+								JSON.parse(jsonMatch[0]);
+							const matchedClassifications: string[] =
+								parsedResponse.matchedClassifications || [];
 
 							if (matchedClassifications.length > 0) {
-								console.log(`Phase 4: Claude APIで${matchedClassifications.length}個の分類名をマッチ:`, matchedClassifications);
-								const phase4Posts = await fetchAndFormatPosts(supabase, matchedClassifications, userLikes, "Phase 4");
+								console.log(
+									`Phase 4: Claude APIで${matchedClassifications.length}個の分類名をマッチ:`,
+									matchedClassifications,
+								);
+								const phase4Posts = await fetchAndFormatPosts(
+									supabase,
+									matchedClassifications,
+									userLikes,
+									"Phase 4",
+								);
 								results.phase4.posts = phase4Posts;
 								results.phase4.count = phase4Posts.length;
-								console.log(`Phase 4 完了: ${phase4Posts.length}件の投稿を取得`);
+								console.log(
+									`Phase 4 完了: ${phase4Posts.length}件の投稿を取得`,
+								);
 							}
 						}
 					}
@@ -320,31 +385,31 @@ ${JSON.stringify(classifications)}`,
 				console.error("Phase 4 Claude API エラー:", error);
 			}
 		} else {
-			console.log('Phase 2で系統樹が設定されているため、Phase 4はスキップ');
+			console.log("Phase 2で系統樹が設定されているため、Phase 4はスキップ");
 		}
 
 		// 全フェーズの結果を統合（重複を除去）
 		const allPosts = new Map<string, FormattedPost>();
-		
+
 		// Phase 1の投稿を追加
 		for (const post of results.phase1.posts) {
 			allPosts.set(post.id, post);
 		}
-		
+
 		// Phase 2の投稿を追加（重複しないもののみ）
 		for (const post of results.phase2.posts) {
 			if (!allPosts.has(post.id)) {
 				allPosts.set(post.id, post);
 			}
 		}
-		
+
 		// Phase 3の投稿を追加（重複しないもののみ）
 		for (const post of results.phase3.posts) {
 			if (!allPosts.has(post.id)) {
 				allPosts.set(post.id, post);
 			}
 		}
-		
+
 		// Phase 4の投稿を追加（重複しないもののみ）
 		for (const post of results.phase4.posts) {
 			if (!allPosts.has(post.id)) {
@@ -352,25 +417,22 @@ ${JSON.stringify(classifications)}`,
 			}
 		}
 
-		const finalPosts = Array.from(allPosts.values()).sort((a, b) => 
-			new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+		const finalPosts = Array.from(allPosts.values()).sort(
+			(a, b) =>
+				new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
 		);
 
-		console.log('=== 全フェーズ完了 ===');
-		console.log('最終投稿数:', finalPosts.length);
-		console.log('フェーズ別結果:', results);
+		console.log("=== 全フェーズ完了 ===");
+		console.log("最終投稿数:", finalPosts.length);
+		console.log("フェーズ別結果:", results);
 
 		return NextResponse.json({
 			posts: finalPosts,
 			phaseResults: results,
-			totalCount: finalPosts.length
+			totalCount: finalPosts.length,
 		});
-
 	} catch (error) {
 		console.error("Phased posts API error:", error);
-		return NextResponse.json(
-			{ error: "内部サーバーエラー" },
-			{ status: 500 }
-		);
+		return NextResponse.json({ error: "内部サーバーエラー" }, { status: 500 });
 	}
-} 
+}

@@ -27,11 +27,13 @@ export interface UploadConfig {
 export async function uploadToS3(
 	file: File,
 	config: UploadConfig,
-	userId?: string
+	userId?: string,
 ): Promise<{ url: string; key: string }> {
 	// ファイルサイズチェック
 	if (file.size > config.maxSize) {
-		throw new Error(`ファイルサイズが大きすぎます。最大${config.maxSize / (1024 * 1024)}MBまで`);
+		throw new Error(
+			`ファイルサイズが大きすぎます。最大${config.maxSize / (1024 * 1024)}MBまで`,
+		);
 	}
 
 	// ファイル形式チェック
@@ -95,14 +97,26 @@ export const UPLOAD_CONFIGS = {
 	},
 	photoBubble: {
 		maxSize: 5 * 1024 * 1024, // 5MB
-		allowedTypes: ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"] as string[],
+		allowedTypes: [
+			"image/jpeg",
+			"image/jpg",
+			"image/png",
+			"image/gif",
+			"image/webp",
+		] as string[],
 		directory: "photo-bubbles",
 		requireAuth: true,
 	},
 	posts: {
 		maxSize: 10 * 1024 * 1024, // 10MB
-		allowedTypes: ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"] as string[],
+		allowedTypes: [
+			"image/jpeg",
+			"image/jpg",
+			"image/png",
+			"image/gif",
+			"image/webp",
+		] as string[],
 		directory: "posts",
 		requireAuth: true,
 	},
-} as const; 
+} as const;

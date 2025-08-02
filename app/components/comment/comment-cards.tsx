@@ -1,18 +1,38 @@
 "use client";
 
 import { CommentButton } from "@/app/components/comment/comment-button";
+import {
+	Avatar,
+	AvatarFallback,
+	AvatarImage,
+} from "@/app/components/ui/avatar";
 import { Button } from "@/app/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/app/components/ui/avatar";
-import { Card, CardContent, CardFooter, CardHeader } from "@/app/components/ui/card";
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/app/components/ui/carousel";
+import {
+	Card,
+	CardContent,
+	CardFooter,
+	CardHeader,
+} from "@/app/components/ui/card";
+import {
+	Carousel,
+	CarouselContent,
+	CarouselItem,
+	CarouselNext,
+	CarouselPrevious,
+} from "@/app/components/ui/carousel";
 import { Dialog, DialogTrigger } from "@/app/components/ui/dialog";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/app/components/ui/dropdown-menu";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+} from "@/app/components/ui/dropdown-menu";
+import { useUser } from "@/app/contexts/user-context";
 import { formatDistanceToNow } from "date-fns";
 import { ja } from "date-fns/locale";
-import { MoreHorizontal, Edit, Trash2, UserRound } from "lucide-react";
+import { Edit, MoreHorizontal, Trash2, UserRound } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useUser } from "@/app/contexts/user-context";
 import { useState } from "react";
 import { CommentHeartButton } from "./comment-heart-button";
 
@@ -62,7 +82,11 @@ interface CommentWithPost {
 
 interface CommentCardsProps {
 	comments: CommentWithPost[];
-	onLikeChange?: (commentId: string, likeCount: number, isLiked: boolean) => void;
+	onLikeChange?: (
+		commentId: string,
+		likeCount: number,
+		isLiked: boolean,
+	) => void;
 	onCommentUpdate?: (commentId: string) => void;
 	onCommentDelete?: (commentId: string) => void;
 }
@@ -70,7 +94,7 @@ interface CommentCardsProps {
 // 日付を安全にフォーマットする関数
 const formatDateSafely = (dateString: string | undefined) => {
 	if (!dateString) return "日時不明";
-	
+
 	try {
 		const date = new Date(dateString);
 		if (Number.isNaN(date.getTime())) {
@@ -82,11 +106,20 @@ const formatDateSafely = (dateString: string | undefined) => {
 	}
 };
 
-export function CommentCards({ comments, onLikeChange, onCommentUpdate, onCommentDelete }: CommentCardsProps) {
+export function CommentCards({
+	comments,
+	onLikeChange,
+	onCommentUpdate,
+	onCommentDelete,
+}: CommentCardsProps) {
 	const { user: currentUser } = useUser();
 	const [isEditDialogOpen, setIsEditDialogOpen] = useState<string | null>(null);
 
-	const handleLikeChange = (commentId: string, likeCount: number, isLiked: boolean) => {
+	const handleLikeChange = (
+		commentId: string,
+		likeCount: number,
+		isLiked: boolean,
+	) => {
 		onLikeChange?.(commentId, likeCount, isLiked);
 	};
 
@@ -94,17 +127,24 @@ export function CommentCards({ comments, onLikeChange, onCommentUpdate, onCommen
 		setIsEditDialogOpen(commentId);
 	};
 
-	const handleEditSubmit = async (commentId: string, data: {
-		content?: string;
-		location?: string;
-		event?: string;
-		classification?: string;
-		imageUrls: string[];
-	}) => {
+	const handleEditSubmit = async (
+		commentId: string,
+		data: {
+			content?: string;
+			location?: string;
+			event?: string;
+			classification?: string;
+			imageUrls: string[];
+		},
+	) => {
 		try {
-			const supabase = await import("@/app/lib/supabase-browser").then(m => m.createClient());
-			const { data: { session } } = await supabase.auth.getSession();
-			
+			const supabase = await import("@/app/lib/supabase-browser").then((m) =>
+				m.createClient(),
+			);
+			const {
+				data: { session },
+			} = await supabase.auth.getSession();
+
 			if (!session?.access_token) {
 				throw new Error("認証トークンが取得できません");
 			}
@@ -112,7 +152,7 @@ export function CommentCards({ comments, onLikeChange, onCommentUpdate, onCommen
 			const response = await fetch(`/api/comments/${commentId}`, {
 				method: "PUT",
 				headers: {
-					"Authorization": `Bearer ${session.access_token}`,
+					Authorization: `Bearer ${session.access_token}`,
 					"Content-Type": "application/json",
 				},
 				body: JSON.stringify(data),
@@ -131,9 +171,13 @@ export function CommentCards({ comments, onLikeChange, onCommentUpdate, onCommen
 
 	const handleDelete = async (commentId: string) => {
 		try {
-			const supabase = await import("@/app/lib/supabase-browser").then(m => m.createClient());
-			const { data: { session } } = await supabase.auth.getSession();
-			
+			const supabase = await import("@/app/lib/supabase-browser").then((m) =>
+				m.createClient(),
+			);
+			const {
+				data: { session },
+			} = await supabase.auth.getSession();
+
 			if (!session?.access_token) {
 				throw new Error("認証トークンが取得できません");
 			}
@@ -143,22 +187,27 @@ export function CommentCards({ comments, onLikeChange, onCommentUpdate, onCommen
 			const response = await fetch(`/api/comments/${commentId}`, {
 				method: "DELETE",
 				headers: {
-					"Authorization": `Bearer ${session.access_token}`,
+					Authorization: `Bearer ${session.access_token}`,
 				},
 			});
 
 			console.log("レスポンスステータス:", response.status);
-			console.log("レスポンスヘッダー:", Object.fromEntries(response.headers.entries()));
+			console.log(
+				"レスポンスヘッダー:",
+				Object.fromEntries(response.headers.entries()),
+			);
 
 			if (!response.ok) {
 				const responseText = await response.text();
 				console.log("エラーレスポンス:", responseText);
-				
+
 				try {
 					const errorData = JSON.parse(responseText);
 					throw new Error(errorData.error || "コメントの削除に失敗しました");
 				} catch (parseError) {
-					throw new Error(`コメントの削除に失敗しました (${response.status}): ${responseText}`);
+					throw new Error(
+						`コメントの削除に失敗しました (${response.status}): ${responseText}`,
+					);
 				}
 			}
 
@@ -171,12 +220,16 @@ export function CommentCards({ comments, onLikeChange, onCommentUpdate, onCommen
 	return (
 		<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 			{comments.map((comment) => {
-				const isOwnComment = currentUser?.account_id === comment.user.account_id;
-				
+				const isOwnComment =
+					currentUser?.account_id === comment.user.account_id;
+
 				return (
 					<Card key={comment.id} className="grid gap-2 p-0 md:px-16">
 						<CardHeader className="flex-row items-center justify-between p-0 m-4 md:m-0">
-							<Link href={`/users/${comment.user.account_id}`} className="flex items-center hover:opacity-80 transition-opacity">
+							<Link
+								href={`/users/${comment.user.account_id}`}
+								className="flex items-center hover:opacity-80 transition-opacity"
+							>
 								<Avatar>
 									<AvatarImage src={comment.user.avatar_url || undefined} />
 									<AvatarFallback>
@@ -184,11 +237,13 @@ export function CommentCards({ comments, onLikeChange, onCommentUpdate, onCommen
 									</AvatarFallback>
 								</Avatar>
 								<div className="pl-2">
-									<div className="text-base font-semibold">{comment.user.username}</div>
+									<div className="text-base font-semibold">
+										{comment.user.username}
+									</div>
 									<div>{comment.user.account_id}</div>
 								</div>
 							</Link>
-							
+
 							{/* 自分のコメントの場合のみドットメニューを表示 */}
 							{isOwnComment && (
 								<DropdownMenu>
@@ -202,7 +257,10 @@ export function CommentCards({ comments, onLikeChange, onCommentUpdate, onCommen
 											<Edit className="mr-2 h-4 w-4" />
 											<span>編集</span>
 										</DropdownMenuItem>
-										<DropdownMenuItem onClick={() => handleDelete(comment.id)} className="text-red-600">
+										<DropdownMenuItem
+											onClick={() => handleDelete(comment.id)}
+											className="text-red-600"
+										>
 											<Trash2 className="mr-2 h-4 w-4" />
 											<span>削除</span>
 										</DropdownMenuItem>
@@ -246,14 +304,10 @@ export function CommentCards({ comments, onLikeChange, onCommentUpdate, onCommen
 								<div className="grid gap-1">
 									<div>{comment.content}</div>
 									{comment.location && (
-										<div className="text-sm">
-											撮影地：{comment.location}
-										</div>
+										<div className="text-sm">撮影地：{comment.location}</div>
 									)}
 									{comment.event && (
-										<div className="text-sm">
-											イベント：{comment.event}
-										</div>
+										<div className="text-sm">イベント：{comment.event}</div>
 									)}
 									{comment.classification && (
 										<div className="text-sm">
@@ -261,25 +315,27 @@ export function CommentCards({ comments, onLikeChange, onCommentUpdate, onCommen
 										</div>
 									)}
 								</div>
-															<div className="flex justify-between items-center">
-								<div className="flex gap-2">
-									<CommentHeartButton 
-										commentId={comment.id}
-										initialLikeCount={comment.likeCount || 0}
-										initialIsLiked={comment.isLiked || false}
-										onLikeChange={(likeCount, isLiked) => handleLikeChange(comment.id, likeCount, isLiked)}
-									/>
-									<CommentButton 
-										postId={comment.post_id || comment.post?.id || ""} 
-										commentCount={0} 
-										isReply={true} 
-										parentCommentId={comment.id} 
-									/>
+								<div className="flex justify-between items-center">
+									<div className="flex gap-2">
+										<CommentHeartButton
+											commentId={comment.id}
+											initialLikeCount={comment.likeCount || 0}
+											initialIsLiked={comment.isLiked || false}
+											onLikeChange={(likeCount, isLiked) =>
+												handleLikeChange(comment.id, likeCount, isLiked)
+											}
+										/>
+										<CommentButton
+											postId={comment.post_id || comment.post?.id || ""}
+											commentCount={0}
+											isReply={true}
+											parentCommentId={comment.id}
+										/>
+									</div>
+									<div className="text-sm text-gray-500 text-right">
+										<div>最終更新：{formatDateSafely(comment.updated_at)}</div>
+									</div>
 								</div>
-								<div className="text-sm text-gray-500 text-right">
-									<div>最終更新：{formatDateSafely(comment.updated_at)}</div>
-								</div>
-							</div>
 							</div>
 						</CardFooter>
 					</Card>
@@ -287,4 +343,4 @@ export function CommentCards({ comments, onLikeChange, onCommentUpdate, onCommen
 			})}
 		</div>
 	);
-} 
+}

@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 
 export async function GET(
 	request: NextRequest,
-	{ params }: { params: Promise<{ event: string }> }
+	{ params }: { params: Promise<{ event: string }> },
 ) {
 	try {
 		const { event } = await params;
@@ -13,7 +13,7 @@ export async function GET(
 		if (!decodedEvent) {
 			return NextResponse.json(
 				{ error: "Event name is required" },
-				{ status: 400 }
+				{ status: 400 },
 			);
 		}
 
@@ -39,7 +39,7 @@ export async function GET(
 	} catch (error) {
 		return NextResponse.json(
 			{ error: "Internal Server Error" },
-			{ status: 500 }
+			{ status: 500 },
 		);
 	}
-} 
+}

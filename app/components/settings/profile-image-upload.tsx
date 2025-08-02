@@ -1,11 +1,11 @@
 "use client";
 
 import { Button } from "@/app/components/ui/button";
-import { Label } from "@/app/components/ui/label";
-import { toast } from "sonner";
-import { useCallback, useState } from "react";
 import { ImageUploadCropper } from "@/app/components/ui/image-upload-cropper";
+import { Label } from "@/app/components/ui/label";
+import { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
+import { toast } from "sonner";
 
 interface ProfileImageUploadProps {
 	type: "avatar" | "header";
@@ -47,10 +47,14 @@ export function ProfileImageUpload({
 
 				const { url } = await response.json();
 				onUploadComplete(url);
-				toast.success(`${type === "avatar" ? "アバター" : "ヘッダー"}画像をアップロードしました`);
+				toast.success(
+					`${type === "avatar" ? "アバター" : "ヘッダー"}画像をアップロードしました`,
+				);
 			} catch (error) {
 				console.error("アップロードエラー:", error);
-				toast.error(error instanceof Error ? error.message : "アップロードに失敗しました");
+				toast.error(
+					error instanceof Error ? error.message : "アップロードに失敗しました",
+				);
 			} finally {
 				setIsUploading(false);
 			}
@@ -82,10 +86,14 @@ export function ProfileImageUpload({
 
 				const { url } = await response.json();
 				onUploadComplete(url);
-				toast.success(`${type === "avatar" ? "アバター" : "ヘッダー"}画像をアップロードしました`);
+				toast.success(
+					`${type === "avatar" ? "アバター" : "ヘッダー"}画像をアップロードしました`,
+				);
 			} catch (error) {
 				console.error("アップロードエラー:", error);
-				toast.error(error instanceof Error ? error.message : "アップロードに失敗しました");
+				toast.error(
+					error instanceof Error ? error.message : "アップロードに失敗しました",
+				);
 			} finally {
 				setIsUploading(false);
 			}
@@ -128,7 +136,9 @@ export function ProfileImageUpload({
 					{...getRootProps()}
 					className={
 						`border-2 border-dashed rounded-lg p-4 cursor-pointer transition-colors ` +
-						(isDragActive ? "border-blue-500 bg-blue-50" : "border-gray-300 hover:border-gray-400") +
+						(isDragActive
+							? "border-blue-500 bg-blue-50"
+							: "border-gray-300 hover:border-gray-400") +
 						(isUploading ? " opacity-50 cursor-not-allowed" : "")
 					}
 				>
@@ -139,7 +149,9 @@ export function ProfileImageUpload({
 							{isUploading ? (
 								<p className="text-sm text-gray-600">アップロード中...</p>
 							) : isDragActive ? (
-								<p className="text-sm text-blue-600">ここにファイルをドロップしてください</p>
+								<p className="text-sm text-blue-600">
+									ここにファイルをドロップしてください
+								</p>
 							) : (
 								<div className="space-y-1">
 									<p className="text-sm text-gray-600">
@@ -159,4 +171,4 @@ export function ProfileImageUpload({
 			)}
 		</div>
 	);
-} 
+}

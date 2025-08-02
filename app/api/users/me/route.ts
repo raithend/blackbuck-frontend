@@ -34,13 +34,17 @@ export async function GET(request: NextRequest) {
 			.single();
 
 		// プロフィールが存在しない場合、自動的に作成
-		if (profileError && profileError.code === 'PGRST116') {
+		if (profileError && profileError.code === "PGRST116") {
 			console.log("プロフィールが存在しないため、自動作成します:", user.id);
-			
+
 			// OAuthユーザーの場合、名前を取得
-			const name = user.user_metadata?.name || user.user_metadata?.full_name || user.email?.split('@')[0] || 'ユーザー';
+			const name =
+				user.user_metadata?.name ||
+				user.user_metadata?.full_name ||
+				user.email?.split("@")[0] ||
+				"ユーザー";
 			const accountId = user.email || `user_${user.id}`;
-			
+
 			// プロフィールを作成
 			const { data: newProfile, error: createError } = await supabase
 				.from("users")
@@ -116,7 +120,10 @@ export async function PUT(request: NextRequest) {
 		const { username, bio, header_url, avatar_url } = await request.json();
 
 		// 更新データのバリデーション
-		if (username !== undefined && (typeof username !== "string" || username.length > 50)) {
+		if (
+			username !== undefined &&
+			(typeof username !== "string" || username.length > 50)
+		) {
 			return NextResponse.json(
 				{ error: "ユーザー名は50文字以内で入力してください" },
 				{ status: 400 },
@@ -145,11 +152,11 @@ export async function PUT(request: NextRequest) {
 		}
 
 		// 更新するフィールドを準備
-		const updateData: { 
-			username?: string; 
-			bio?: string; 
-			header_url?: string | null; 
-			avatar_url?: string | null; 
+		const updateData: {
+			username?: string;
+			bio?: string;
+			header_url?: string | null;
+			avatar_url?: string | null;
 		} = {};
 		if (username !== undefined) updateData.username = username;
 		if (bio !== undefined) updateData.bio = bio;
@@ -166,10 +173,7 @@ export async function PUT(request: NextRequest) {
 
 		if (updateError) {
 			console.error("プロフィール更新エラー:", updateError);
-			return NextResponse.json(
-				{ error: updateError.message },
-				{ status: 500 },
-			);
+			return NextResponse.json({ error: updateError.message }, { status: 500 });
 		}
 
 		return NextResponse.json({ user: updatedProfile });

@@ -1,8 +1,8 @@
 "use client";
 
+import { EventDropdownMenu } from "@/app/components/post/event-dropdown-menu";
 import { ImageUpload } from "@/app/components/post/image-upload";
 import { LocationDropdownMenu } from "@/app/components/post/location-dropdown-menu";
-import { EventDropdownMenu } from "@/app/components/post/event-dropdown-menu";
 import { Button } from "@/app/components/ui/button";
 import {
 	DialogContent,
@@ -102,7 +102,10 @@ export function PostDialog({ onPost }: PostDialogProps) {
 				<ImageUpload value={imageFiles} onChange={setImageFiles} />
 				<Button
 					onClick={handleSubmit}
-					disabled={isSubmitting || ((!content || content.trim() === "") && imageFiles.length === 0)}
+					disabled={
+						isSubmitting ||
+						((!content || content.trim() === "") && imageFiles.length === 0)
+					}
 					className="w-full"
 				>
 					{isSubmitting ? "投稿中..." : "投稿する"}

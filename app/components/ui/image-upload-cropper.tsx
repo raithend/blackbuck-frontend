@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
-import { Upload, X } from "lucide-react";
 import { Button } from "@/app/components/ui/button";
-import { useDropzone } from "react-dropzone";
+import { Upload, X } from "lucide-react";
 import Image from "next/image";
+import { useCallback, useRef, useState } from "react";
+import { useDropzone } from "react-dropzone";
 
 interface ImageUploadCropperProps {
 	onImageSelected: (file: File, croppedImageUrl: string) => void;
@@ -21,12 +21,14 @@ export function ImageUploadCropper({
 	onRemoveImage,
 	currentImageUrl,
 	className = "",
-	accept = { 'image/*': ['.jpeg', '.jpg', '.png', '.gif', '.webp'] },
+	accept = { "image/*": [".jpeg", ".jpg", ".png", ".gif", ".webp"] },
 	maxSize = 5 * 1024 * 1024, // 5MB
-	placeholder = "クリックまたはドラッグ&ドロップで画像をアップロード"
+	placeholder = "クリックまたはドラッグ&ドロップで画像をアップロード",
 }: ImageUploadCropperProps) {
 	const [selectedFile, setSelectedFile] = useState<File | null>(null);
-	const [previewUrl, setPreviewUrl] = useState<string | null>(currentImageUrl || null);
+	const [previewUrl, setPreviewUrl] = useState<string | null>(
+		currentImageUrl || null,
+	);
 	const [isCropping, setIsCropping] = useState(false);
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 	const imageRef = useRef<HTMLImageElement>(null);
@@ -45,14 +47,14 @@ export function ImageUploadCropper({
 		onDrop,
 		accept,
 		maxSize,
-		multiple: false
+		multiple: false,
 	});
 
 	const cropImage = useCallback(() => {
 		if (!canvasRef.current || !imageRef.current) return;
 
 		const canvas = canvasRef.current;
-		const ctx = canvas.getContext('2d');
+		const ctx = canvas.getContext("2d");
 		if (!ctx) return;
 
 		const image = imageRef.current;
@@ -75,16 +77,24 @@ export function ImageUploadCropper({
 		ctx.restore();
 
 		// キャンバスからBlobを取得
-		canvas.toBlob((blob) => {
-			if (blob) {
-				const croppedFile = new File([blob], selectedFile?.name || 'cropped-image.webp', {
-					type: 'image/webp'
-				});
-				const croppedUrl = URL.createObjectURL(blob);
-				onImageSelected(croppedFile, croppedUrl);
-				setIsCropping(false);
-			}
-		}, 'image/webp', 0.9); // WebP形式で品質0.9に設定
+		canvas.toBlob(
+			(blob) => {
+				if (blob) {
+					const croppedFile = new File(
+						[blob],
+						selectedFile?.name || "cropped-image.webp",
+						{
+							type: "image/webp",
+						},
+					);
+					const croppedUrl = URL.createObjectURL(blob);
+					onImageSelected(croppedFile, croppedUrl);
+					setIsCropping(false);
+				}
+			},
+			"image/webp",
+			0.9,
+		); // WebP形式で品質0.9に設定
 	}, [selectedFile, onImageSelected]);
 
 	const handleRemoveImage = () => {
@@ -108,7 +118,9 @@ export function ImageUploadCropper({
 				<div
 					{...getRootProps()}
 					className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
-						isDragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'
+						isDragActive
+							? "border-blue-500 bg-blue-50"
+							: "border-gray-300 hover:border-gray-400"
 					}`}
 				>
 					<input {...getInputProps()} />
@@ -132,7 +144,7 @@ export function ImageUploadCropper({
 						<div className="absolute inset-0 bg-gray-300 rounded-lg overflow-hidden">
 							<Image
 								ref={imageRef}
-								src={previewUrl || ''}
+								src={previewUrl || ""}
 								alt="切り抜き対象"
 								width={320}
 								height={320}
@@ -140,12 +152,12 @@ export function ImageUploadCropper({
 								style={{ width: "auto", height: "auto" }}
 							/>
 						</div>
-						
+
 						{/* 円形マスク */}
 						<div className="absolute inset-0 flex items-center justify-center">
 							<div className="w-64 h-64 rounded-full border-4 border-white shadow-lg overflow-hidden ring-4 ring-blue-500 ring-opacity-50">
 								<Image
-									src={previewUrl || ''}
+									src={previewUrl || ""}
 									alt="切り抜きプレビュー"
 									width={256}
 									height={256}
@@ -154,7 +166,7 @@ export function ImageUploadCropper({
 								/>
 							</div>
 						</div>
-						
+
 						{/* 切り抜きガイド */}
 						<div className="absolute inset-0 flex items-center justify-center pointer-events-none">
 							<div className="w-64 h-64 rounded-full border-2 border-dashed border-white opacity-75"></div>
@@ -169,7 +181,11 @@ export function ImageUploadCropper({
 						<Button onClick={cropImage} variant="default" className="px-6">
 							確定
 						</Button>
-						<Button onClick={handleCancelCrop} variant="outline" className="px-6">
+						<Button
+							onClick={handleCancelCrop}
+							variant="outline"
+							className="px-6"
+						>
 							キャンセル
 						</Button>
 					</div>
@@ -199,4 +215,4 @@ export function ImageUploadCropper({
 			)}
 		</div>
 	);
-} 
+}

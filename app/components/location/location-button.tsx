@@ -4,9 +4,9 @@ import { LocationDialog } from "@/app/components/location/location-dialog";
 import { Button } from "@/app/components/ui/button";
 import { Dialog, DialogTrigger } from "@/app/components/ui/dialog";
 import { useUser } from "@/app/contexts/user-context";
+import { Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Plus } from "lucide-react";
 
 export function LocationButton() {
 	const [open, setOpen] = useState(false);
@@ -64,4 +64,4 @@ export function LocationButton() {
 			<LocationDialog onSave={handleSave} />
 		</Dialog>
 	);
-} 
+}

@@ -20,7 +20,10 @@ export function PostButton() {
 	}) => {
 		try {
 			// 投稿内容または画像のいずれかが必要
-			if ((!data.content || data.content.trim() === "") && (!data.imageUrls || data.imageUrls.length === 0)) {
+			if (
+				(!data.content || data.content.trim() === "") &&
+				(!data.imageUrls || data.imageUrls.length === 0)
+			) {
 				toast.error("投稿内容または画像のいずれかが必要です");
 				return;
 			}

@@ -6,10 +6,10 @@ import {
 	TabsList,
 	TabsTrigger,
 } from "@/app/components/ui/tabs";
+import { useEffect, useState } from "react";
 import { AccountSettings } from "./account-settings";
 import { HelpSupport } from "./help-support";
 import { SecuritySettings } from "./security-settings";
-import { useEffect, useState } from "react";
 
 export function SettingsLayout() {
 	const [isClient, setIsClient] = useState(false);

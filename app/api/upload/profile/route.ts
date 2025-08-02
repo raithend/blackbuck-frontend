@@ -43,7 +43,9 @@ export async function POST(request: NextRequest) {
 		const maxSize = type === "avatar" ? 5 * 1024 * 1024 : 10 * 1024 * 1024; // アバター5MB、ヘッダー10MB
 		if (file.size > maxSize) {
 			return NextResponse.json(
-				{ error: `ファイルサイズが大きすぎます。最大${type === "avatar" ? "5MB" : "10MB"}まで` },
+				{
+					error: `ファイルサイズが大きすぎます。最大${type === "avatar" ? "5MB" : "10MB"}まで`,
+				},
 				{ status: 400 },
 			);
 		}
@@ -88,7 +90,7 @@ export async function POST(request: NextRequest) {
 	} catch (error) {
 		return NextResponse.json(
 			{ error: "プロフィール画像のアップロードに失敗しました" },
-			{ status: 500 }
+			{ status: 500 },
 		);
 	}
-} 
+}

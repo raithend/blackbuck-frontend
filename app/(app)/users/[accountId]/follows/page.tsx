@@ -5,13 +5,16 @@ const fetcher = async (url: string) => {
 	try {
 		const response = await fetch(url);
 		if (!response.ok) {
-			throw new Error('Failed to fetch data');
+			throw new Error("Failed to fetch data");
 		}
 		return response.json();
 	} catch (error) {
 		// ネットワークエラーの場合は既存データを保持するため、エラーを投げない
-		if (error instanceof TypeError && error.message.includes('fetch')) {
-			console.warn('ネットワークエラーが発生しましたが、既存のデータを表示し続けます:', error);
+		if (error instanceof TypeError && error.message.includes("fetch")) {
+			console.warn(
+				"ネットワークエラーが発生しましたが、既存のデータを表示し続けます:",
+				error,
+			);
 			return null; // nullを返すことで、既存のデータを保持
 		}
 		throw error;
@@ -19,7 +22,7 @@ const fetcher = async (url: string) => {
 };
 
 import { UserCards } from "@/app/components/follow/user-cards";
-import { User } from "@/app/types/types";
+import type { User } from "@/app/types/types";
 import { useParams } from "next/navigation";
 import useSWR from "swr";
 
@@ -28,15 +31,23 @@ export default function FollowsPage() {
 	const accountId = params.accountId as string;
 
 	// フォロー中のユーザーを取得
-	const { data: followingData, error: followingError, isLoading: followingLoading } = useSWR<{ users: User[] }>(
+	const {
+		data: followingData,
+		error: followingError,
+		isLoading: followingLoading,
+	} = useSWR<{ users: User[] }>(
 		`/api/users/account/${accountId}/follows?type=following`,
-		fetcher
+		fetcher,
 	);
 
 	// フォロワーを取得
-	const { data: followersData, error: followersError, isLoading: followersLoading } = useSWR<{ users: User[] }>(
+	const {
+		data: followersData,
+		error: followersError,
+		isLoading: followersLoading,
+	} = useSWR<{ users: User[] }>(
 		`/api/users/account/${accountId}/follows?type=followers`,
-		fetcher
+		fetcher,
 	);
 
 	if (followingLoading || followersLoading) {

@@ -4,13 +4,16 @@ import { NextResponse } from "next/server";
 
 export async function GET(
 	request: NextRequest,
-	{ params }: { params: Promise<{ accountId: string }> }
+	{ params }: { params: Promise<{ accountId: string }> },
 ) {
 	try {
 		const { accountId } = await params;
 
 		if (!accountId) {
-			return NextResponse.json({ error: "Account ID is required" }, { status: 400 });
+			return NextResponse.json(
+				{ error: "Account ID is required" },
+				{ status: 400 },
+			);
 		}
 
 		// Supabaseクライアントを作成
@@ -65,16 +68,17 @@ export async function GET(
 			console.error("コメント取得エラー:", commentsError);
 			return NextResponse.json(
 				{ error: "コメントの取得に失敗しました" },
-				{ status: 500 }
+				{ status: 500 },
 			);
 		}
 
 		// 各コメントのいいね数を取得
-		const commentIds = comments?.map(comment => comment.id) || [];
-		const { data: commentLikeCounts, error: commentLikeCountsError } = await supabase
-			.from("comment_likes")
-			.select("comment_id")
-			.in("comment_id", commentIds);
+		const commentIds = comments?.map((comment) => comment.id) || [];
+		const { data: commentLikeCounts, error: commentLikeCountsError } =
+			await supabase
+				.from("comment_likes")
+				.select("comment_id")
+				.in("comment_id", commentIds);
 
 		if (commentLikeCountsError) {
 			console.error("コメントいいね数取得エラー:", commentLikeCountsError);
@@ -95,60 +99,72 @@ export async function GET(
 		const authHeader = request.headers.get("Authorization");
 		if (authHeader?.startsWith("Bearer ")) {
 			const token = authHeader.split(" ")[1];
-			const { data: { user: authUser }, error: authError } = await supabase.auth.getUser(token);
-			
+			const {
+				data: { user: authUser },
+				error: authError,
+			} = await supabase.auth.getUser(token);
+
 			if (authUser && !authError) {
 				currentUser = authUser;
-				
+
 				const { data: userLikes, error: userLikesError } = await supabase
 					.from("comment_likes")
 					.select("comment_id")
 					.eq("user_id", authUser.id);
 
 				if (!userLikesError) {
-					userCommentLikes = userLikes?.map(like => like.comment_id) || [];
+					userCommentLikes = userLikes?.map((like) => like.comment_id) || [];
 				}
 			}
 		}
 
 		// コメントデータを整形
-		const formattedComments = comments?.map(comment => ({
-			id: comment.id,
-			content: comment.content,
-			location: comment.location,
-			event: (comment as any).event, // 型定義にeventフィールドが含まれていないためanyを使用
-			classification: comment.classification,
-			created_at: comment.created_at,
-			updated_at: comment.updated_at,
-			likeCount: commentLikeCountMap.get(comment.id) || 0,
-			isLiked: userCommentLikes.includes(comment.id),
-			post_id: comment.post_id,
-			user: {
-				id: user.id,
-				account_id: user.account_id,
-				username: user.username,
-				avatar_url: user.avatar_url,
-			},
-			post: comment.posts ? {
-				id: comment.posts.id,
-				content: comment.posts.content,
-				location: comment.posts.location,
-				event: comment.posts.event,
-				classification: comment.posts.classification,
-				created_at: comment.posts.created_at,
-				updated_at: comment.posts.updated_at,
-				user: comment.posts.users,
-				post_images: comment.posts.post_images?.sort((a, b) => a.order_index - b.order_index) || [],
-			} : null,
-			comment_images: comment.comment_images?.sort((a, b) => a.order_index - b.order_index) || [],
-		})) || [];
+		const formattedComments =
+			comments?.map((comment) => ({
+				id: comment.id,
+				content: comment.content,
+				location: comment.location,
+				event: (comment as any).event, // 型定義にeventフィールドが含まれていないためanyを使用
+				classification: comment.classification,
+				created_at: comment.created_at,
+				updated_at: comment.updated_at,
+				likeCount: commentLikeCountMap.get(comment.id) || 0,
+				isLiked: userCommentLikes.includes(comment.id),
+				post_id: comment.post_id,
+				user: {
+					id: user.id,
+					account_id: user.account_id,
+					username: user.username,
+					avatar_url: user.avatar_url,
+				},
+				post: comment.posts
+					? {
+							id: comment.posts.id,
+							content: comment.posts.content,
+							location: comment.posts.location,
+							event: comment.posts.event,
+							classification: comment.posts.classification,
+							created_at: comment.posts.created_at,
+							updated_at: comment.posts.updated_at,
+							user: comment.posts.users,
+							post_images:
+								comment.posts.post_images?.sort(
+									(a, b) => a.order_index - b.order_index,
+								) || [],
+						}
+					: null,
+				comment_images:
+					comment.comment_images?.sort(
+						(a, b) => a.order_index - b.order_index,
+					) || [],
+			})) || [];
 
 		return NextResponse.json({ comments: formattedComments });
 	} catch (error) {
 		console.error("コメント取得エラー:", error);
 		return NextResponse.json(
 			{ error: "サーバーエラーが発生しました" },
-			{ status: 500 }
+			{ status: 500 },
 		);
 	}
-} 
+}

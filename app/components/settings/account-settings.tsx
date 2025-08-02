@@ -1,18 +1,22 @@
 "use client";
 
 import { LogoutButton } from "@/app/components/auth/logout-button";
-import { ModeRadioGroup } from "@/app/components/settings/mode-radio-group";
 import { DeleteAccountDialog } from "@/app/components/settings/delete-account-dialog";
-import { Avatar, AvatarFallback, AvatarImage } from "@/app/components/ui/avatar";
+import { ModeRadioGroup } from "@/app/components/settings/mode-radio-group";
+import { ProfileImageUpload } from "@/app/components/settings/profile-image-upload";
+import {
+	Avatar,
+	AvatarFallback,
+	AvatarImage,
+} from "@/app/components/ui/avatar";
 import { Button } from "@/app/components/ui/button";
 import { Input } from "@/app/components/ui/input";
 import { Label } from "@/app/components/ui/label";
 import { Textarea } from "@/app/components/ui/textarea";
-import { ProfileImageUpload } from "@/app/components/settings/profile-image-upload";
 import { useUser } from "@/app/contexts/user-context";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import Image from "next/image";
 
 export function AccountSettings() {
 	const { user, loading, error, refreshUser, session } = useUser();
@@ -40,7 +44,10 @@ export function AccountSettings() {
 	useEffect(() => {
 		if (error) {
 			// ネットワークエラーの場合は既存データを保持
-			if (error.message.includes('fetch') || error.message.includes('network')) {
+			if (
+				error.message.includes("fetch") ||
+				error.message.includes("network")
+			) {
 				setHasNetworkError(true);
 			}
 		} else {
@@ -72,7 +79,11 @@ export function AccountSettings() {
 			toast.success("ヘッダー画像を更新しました");
 		} catch (error) {
 			console.error("ヘッダー画像更新エラー:", error);
-			toast.error(error instanceof Error ? error.message : "ヘッダー画像の保存に失敗しました");
+			toast.error(
+				error instanceof Error
+					? error.message
+					: "ヘッダー画像の保存に失敗しました",
+			);
 		} finally {
 			setIsHeaderSaving(false);
 		}
@@ -102,7 +113,11 @@ export function AccountSettings() {
 			toast.success("アバター画像を更新しました");
 		} catch (error) {
 			console.error("アバター画像更新エラー:", error);
-			toast.error(error instanceof Error ? error.message : "アバター画像の保存に失敗しました");
+			toast.error(
+				error instanceof Error
+					? error.message
+					: "アバター画像の保存に失敗しました",
+			);
 		} finally {
 			setIsAvatarSaving(false);
 		}
@@ -123,9 +138,9 @@ export function AccountSettings() {
 					"Content-Type": "application/json",
 					Authorization: `Bearer ${session.access_token}`,
 				},
-				body: JSON.stringify({ 
-					username, 
-					bio
+				body: JSON.stringify({
+					username,
+					bio,
 				}),
 			});
 
@@ -136,13 +151,15 @@ export function AccountSettings() {
 
 			// レスポンスから更新されたユーザー情報を取得
 			const { user: updatedUser } = await response.json();
-			
+
 			// ユーザー情報を再取得してコンテキストを更新（楽観的更新）
 			await refreshUser();
 			toast.success("プロフィールを更新しました");
 		} catch (error) {
 			console.error("プロフィール更新エラー:", error);
-			toast.error(error instanceof Error ? error.message : "保存に失敗しました");
+			toast.error(
+				error instanceof Error ? error.message : "保存に失敗しました",
+			);
 		} finally {
 			setIsSaving(false);
 		}
@@ -188,7 +205,7 @@ export function AccountSettings() {
 								サーバーとの接続が不安定です。表示されている内容は最新ではない可能性があります。
 							</p>
 						</div>
-						<button 
+						<button
 							onClick={handleRetry}
 							className="ml-4 px-3 py-1 bg-yellow-500 text-white text-sm rounded hover:bg-yellow-600 transition-colors"
 						>
@@ -200,7 +217,7 @@ export function AccountSettings() {
 				{/* 既存のユーザー情報を表示 */}
 				<div className="space-y-4">
 					<h2 className="text-xl font-semibold">プロフィール情報</h2>
-					
+
 					{/* ヘッダー画像 */}
 					<ProfileImageUpload
 						type="header"
@@ -212,15 +229,15 @@ export function AccountSettings() {
 					>
 						<div className="w-32 h-20 bg-gray-200 rounded-lg overflow-hidden">
 							{headerUrl ? (
-								<Image 
-									src={headerUrl} 
-									alt="ヘッダー画像" 
+								<Image
+									src={headerUrl}
+									alt="ヘッダー画像"
 									width={128}
 									height={80}
 									className="w-full h-full object-cover"
 									style={{ width: "auto", height: "auto" }}
 									onError={(e) => {
-										e.currentTarget.style.display = 'none';
+										e.currentTarget.style.display = "none";
 									}}
 								/>
 							) : (
@@ -287,8 +304,10 @@ export function AccountSettings() {
 				<div className="space-y-4">
 					<h2 className="text-xl font-semibold">プロフィール情報</h2>
 					<div className="text-center">
-						<p className="text-red-500 mb-4">プロフィールの読み込みに失敗しました</p>
-						<button 
+						<p className="text-red-500 mb-4">
+							プロフィールの読み込みに失敗しました
+						</p>
+						<button
 							onClick={handleRetry}
 							className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
 						>
@@ -305,9 +324,7 @@ export function AccountSettings() {
 			<div className="space-y-6">
 				<div className="space-y-4">
 					<h2 className="text-xl font-semibold">プロフィール情報</h2>
-					<div className="text-center text-red-500">
-						ログインが必要です
-					</div>
+					<div className="text-center text-red-500">ログインが必要です</div>
 				</div>
 			</div>
 		);
@@ -317,7 +334,7 @@ export function AccountSettings() {
 		<div className="space-y-6">
 			<div className="space-y-4">
 				<h2 className="text-xl font-semibold">プロフィール情報</h2>
-				
+
 				{/* ヘッダー画像 */}
 				<ProfileImageUpload
 					type="header"
@@ -329,15 +346,15 @@ export function AccountSettings() {
 				>
 					<div className="w-32 h-20 bg-gray-200 rounded-lg overflow-hidden">
 						{headerUrl ? (
-							<Image 
-								src={headerUrl} 
-								alt="ヘッダー画像" 
+							<Image
+								src={headerUrl}
+								alt="ヘッダー画像"
 								width={128}
 								height={80}
 								className="w-full h-full object-cover"
 								style={{ width: "auto", height: "auto" }}
 								onError={(e) => {
-									e.currentTarget.style.display = 'none';
+									e.currentTarget.style.display = "none";
 								}}
 							/>
 						) : (
@@ -406,14 +423,14 @@ export function AccountSettings() {
 				<p className="text-sm text-gray-500">
 					アカウントを削除すると、すべてのデータが永久に削除されます。この操作は元に戻せません。
 				</p>
-				<Button 
-					variant="destructive" 
+				<Button
+					variant="destructive"
 					onClick={() => setIsDeleteDialogOpen(true)}
 				>
 					アカウントを削除
 				</Button>
 			</div>
-			<DeleteAccountDialog 
+			<DeleteAccountDialog
 				isOpen={isDeleteDialogOpen}
 				onClose={() => setIsDeleteDialogOpen(false)}
 			/>

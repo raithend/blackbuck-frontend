@@ -1,10 +1,10 @@
 "use client";
 
+import { useUser } from "@/app/contexts/user-context";
 import { createClient } from "@/app/lib/supabase-browser";
+import { Spinner } from "@radix-ui/themes";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Spinner } from "@radix-ui/themes";
-import { useUser } from "@/app/contexts/user-context";
 
 export default function AuthCallbackPage() {
 	const router = useRouter();
@@ -15,14 +15,14 @@ export default function AuthCallbackPage() {
 		const handleAuthCallback = async () => {
 			try {
 				const supabase = createClient();
-				
+
 				// ブラウザサイドでPKCEフローを処理
 				const { data, error } = await supabase.auth.getSession();
-				
-				console.log("Auth callback - session check:", { 
+
+				console.log("Auth callback - session check:", {
 					hasSession: !!data.session,
 					user: data.session?.user?.id ? "present" : "missing",
-					error: error?.message
+					error: error?.message,
 				});
 
 				if (error) {
@@ -37,10 +37,10 @@ export default function AuthCallbackPage() {
 				if (data.session) {
 					console.log("Auth successful, waiting for user context update");
 					setMessage("認証完了！ユーザー情報を確認中...");
-					
+
 					// ユーザーコンテキストの更新を待つ（SWRが自動的に処理）
 					// 手動でrefreshUserを呼び出す必要はない
-					
+
 					setMessage("認証完了！ホームページに移動します...");
 					setTimeout(() => {
 						router.replace("/");
@@ -72,4 +72,4 @@ export default function AuthCallbackPage() {
 			</div>
 		</div>
 	);
-} 
+}

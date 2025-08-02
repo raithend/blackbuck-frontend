@@ -1,13 +1,13 @@
 "use client";
 
 import { Button } from "@/app/components/ui/button";
-import { useUser } from "@/app/contexts/user-context";
-import { UserPlus, UserMinus } from "lucide-react";
-import { useState, useEffect } from "react";
-import { toast } from "sonner";
 import type { ButtonProps } from "@/app/components/ui/button";
+import { useUser } from "@/app/contexts/user-context";
+import { UserMinus, UserPlus } from "lucide-react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
-interface FollowButtonProps extends Omit<ButtonProps, 'onClick'> {
+interface FollowButtonProps extends Omit<ButtonProps, "onClick"> {
 	targetAccountId: string;
 	initialIsFollowing?: boolean;
 }
@@ -29,12 +29,19 @@ export function FollowButton({
 	// 初期状態でフォロー状態を取得
 	useEffect(() => {
 		const fetchFollowStatus = async () => {
-			if (!user || isInitialized || user?.account_id === targetAccountId) return;
+			if (!user || isInitialized || user?.account_id === targetAccountId)
+				return;
 
 			// UUID形式の場合はフォロー状態を取得しない
-			const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(targetAccountId);
+			const isUuid =
+				/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+					targetAccountId,
+				);
 			if (isUuid) {
-				console.warn('UUID形式のアカウントIDではフォロー状態を取得しません:', targetAccountId);
+				console.warn(
+					"UUID形式のアカウントIDではフォロー状態を取得しません:",
+					targetAccountId,
+				);
 				setIsInitialized(true);
 				return;
 			}
@@ -43,18 +50,23 @@ export function FollowButton({
 				// 認証トークンを取得
 				const { createClient } = await import("@/app/lib/supabase-browser");
 				const supabase = createClient();
-				const { data: { session } } = await supabase.auth.getSession();
-				
+				const {
+					data: { session },
+				} = await supabase.auth.getSession();
+
 				if (!session?.access_token) {
 					return;
 				}
 
-				const response = await fetch(`/api/users/account/${targetAccountId}/follow`, {
-					method: "GET",
-					headers: {
-						"Authorization": `Bearer ${session.access_token}`,
+				const response = await fetch(
+					`/api/users/account/${targetAccountId}/follow`,
+					{
+						method: "GET",
+						headers: {
+							Authorization: `Bearer ${session.access_token}`,
+						},
 					},
-				});
+				);
 
 				if (response.ok) {
 					const data = await response.json();
@@ -82,9 +94,15 @@ export function FollowButton({
 		}
 
 		// UUID形式の場合はフォロー操作を無効化
-		const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(targetAccountId);
+		const isUuid =
+			/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+				targetAccountId,
+			);
 		if (isUuid) {
-			console.warn('UUID形式のアカウントIDではフォロー操作を無効化します:', targetAccountId);
+			console.warn(
+				"UUID形式のアカウントIDではフォロー操作を無効化します:",
+				targetAccountId,
+			);
 			toast.error("このユーザーはフォローできません");
 			return;
 		}
@@ -98,8 +116,10 @@ export function FollowButton({
 			// 認証トークンを取得
 			const { createClient } = await import("@/app/lib/supabase-browser");
 			const supabase = createClient();
-			const { data: { session } } = await supabase.auth.getSession();
-			
+			const {
+				data: { session },
+			} = await supabase.auth.getSession();
+
 			if (!session?.access_token) {
 				throw new Error("認証トークンが取得できません");
 			}
@@ -110,11 +130,14 @@ export function FollowButton({
 				method,
 				headers: {
 					"Content-Type": "application/json",
-					"Authorization": `Bearer ${session.access_token}`,
+					Authorization: `Bearer ${session.access_token}`,
 				},
 			});
 
-			console.log("フォロー操作レスポンス:", { status: response.status, ok: response.ok });
+			console.log("フォロー操作レスポンス:", {
+				status: response.status,
+				ok: response.ok,
+			});
 
 			if (!response.ok) {
 				const errorData = await response.json();
@@ -126,12 +149,11 @@ export function FollowButton({
 			console.log("フォロー操作成功:", result);
 
 			setIsFollowing(!isFollowing);
-			toast.success(
-				isFollowing ? "アンフォローしました" : "フォローしました"
-			);
+			toast.success(isFollowing ? "アンフォローしました" : "フォローしました");
 		} catch (error) {
 			console.error("フォロー操作エラー:", error);
-			const errorMessage = error instanceof Error ? error.message : "操作に失敗しました";
+			const errorMessage =
+				error instanceof Error ? error.message : "操作に失敗しました";
 			toast.error(errorMessage);
 		} finally {
 			setIsLoading(false);
@@ -143,24 +165,26 @@ export function FollowButton({
 		if (isLoading) {
 			return isFollowing ? "アンフォロー中..." : "フォロー中...";
 		}
-		
+
 		if (isFollowing) {
 			return isHovered ? "フォローをはずす" : "フォロー中";
 		}
-		
+
 		return "フォロー";
 	};
 
 	// ボタンのアイコンを決定
 	const getButtonIcon = () => {
 		if (isLoading) {
-			return <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />;
+			return (
+				<div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+			);
 		}
-		
+
 		if (isFollowing) {
 			return <UserMinus className="h-4 w-4" />;
 		}
-		
+
 		return <UserPlus className="h-4 w-4" />;
 	};
 

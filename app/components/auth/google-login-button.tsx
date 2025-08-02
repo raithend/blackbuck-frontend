@@ -1,8 +1,8 @@
 "use client";
 
 import { Button } from "@/app/components/ui/button";
-import { createClient } from "@/app/lib/supabase-browser";
 import { useUser } from "@/app/contexts/user-context";
+import { createClient } from "@/app/lib/supabase-browser";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -12,50 +12,50 @@ interface GoogleLoginButtonProps {
 	children?: React.ReactNode;
 }
 
-export function GoogleLoginButton({ className, children }: GoogleLoginButtonProps) {
+export function GoogleLoginButton({
+	className,
+	children,
+}: GoogleLoginButtonProps) {
 	const router = useRouter();
 	const { refreshUser } = useUser();
 	const [isLoading, setIsLoading] = useState(false);
 
 	const handleGoogleLogin = async () => {
 		setIsLoading(true);
-		
+
 		const redirectUrl = `${window.location.origin}/callback`;
-		
+
 		try {
 			const supabase = createClient();
-			
+
 			const { data, error } = await supabase.auth.signInWithOAuth({
-				provider: 'google',
+				provider: "google",
 				options: {
 					redirectTo: redirectUrl,
 					queryParams: {
-						access_type: 'offline',
-						prompt: 'consent',
+						access_type: "offline",
+						prompt: "consent",
 					},
 				},
 			});
-			
-
 
 			if (error) {
-				console.error('Supabase OAuth error:', error);
-				console.error('Error details:', {
+				console.error("Supabase OAuth error:", error);
+				console.error("Error details:", {
 					message: error.message,
 					status: error.status,
-					name: error.name
+					name: error.name,
 				});
 				throw error;
 			}
 
 			// OAuthフローが開始されました
 			// PKCEフローでは、ブラウザが自動的にリダイレクトされます
-			
 		} catch (error: any) {
-			console.error('Google OAuth error:', error);
-			
+			console.error("Google OAuth error:", error);
+
 			let errorMessage = "Googleログインに失敗しました";
-			
+
 			if (error?.message) {
 				if (error.message.includes("popup_closed")) {
 					errorMessage = "ログインウィンドウが閉じられました";
@@ -69,7 +69,7 @@ export function GoogleLoginButton({ className, children }: GoogleLoginButtonProp
 					errorMessage = error.message;
 				}
 			}
-			
+
 			toast.error(errorMessage);
 		} finally {
 			setIsLoading(false);
@@ -114,4 +114,4 @@ export function GoogleLoginButton({ className, children }: GoogleLoginButtonProp
 			)}
 		</Button>
 	);
-} 
+}

@@ -1,11 +1,11 @@
+import { deleteMultipleFromS3 } from "@/app/lib/s3-utils";
 import { createClient } from "@/app/lib/supabase-server";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { deleteMultipleFromS3 } from "@/app/lib/s3-utils";
 
 export async function PUT(
 	request: NextRequest,
-	{ params }: { params: Promise<{ postId: string }> }
+	{ params }: { params: Promise<{ postId: string }> },
 ) {
 	try {
 		const { postId } = await params;
@@ -14,10 +14,7 @@ export async function PUT(
 		// 認証トークンの取得
 		const authHeader = request.headers.get("Authorization");
 		if (!authHeader?.startsWith("Bearer ")) {
-			return NextResponse.json(
-				{ error: "認証が必要です" },
-				{ status: 401 }
-			);
+			return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
 		}
 
 		const token = authHeader.split(" ")[1];
@@ -26,12 +23,12 @@ export async function PUT(
 		const supabaseWithAuth = await createClient(token);
 
 		// トークンの検証
-		const { data: { user }, error: authError } = await supabaseWithAuth.auth.getUser();
+		const {
+			data: { user },
+			error: authError,
+		} = await supabaseWithAuth.auth.getUser();
 		if (authError || !user) {
-			return NextResponse.json(
-				{ error: "認証が必要です" },
-				{ status: 401 }
-			);
+			return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
 		}
 
 		// 投稿の所有者チェック
@@ -42,15 +39,22 @@ export async function PUT(
 			.single();
 
 		if (postError || !post) {
-			return NextResponse.json({ error: "投稿が見つかりません" }, { status: 404 });
+			return NextResponse.json(
+				{ error: "投稿が見つかりません" },
+				{ status: 404 },
+			);
 		}
 
 		if (post.user_id !== user.id) {
-			return NextResponse.json({ error: "投稿の編集権限がありません" }, { status: 403 });
+			return NextResponse.json(
+				{ error: "投稿の編集権限がありません" },
+				{ status: 403 },
+			);
 		}
 
 		// リクエストボディを取得
-		const { content, location, classification, event, imageUrls } = await request.json();
+		const { content, location, classification, event, imageUrls } =
+			await request.json();
 
 		// 投稿を更新
 		const { error: updateError } = await supabaseWithAuth
@@ -65,17 +69,15 @@ export async function PUT(
 			.eq("id", postId);
 
 		if (updateError) {
-			return NextResponse.json(
-				{ error: updateError.message },
-				{ status: 500 }
-			);
+			return NextResponse.json({ error: updateError.message }, { status: 500 });
 		}
 
 		// 既存の画像URLを取得
-		const { data: existingImages, error: imageFetchError } = await supabaseWithAuth
-			.from("post_images")
-			.select("image_url")
-			.eq("post_id", postId);
+		const { data: existingImages, error: imageFetchError } =
+			await supabaseWithAuth
+				.from("post_images")
+				.select("image_url")
+				.eq("post_id", postId);
 
 		if (imageFetchError) {
 			console.error("既存画像URL取得エラー:", imageFetchError);
@@ -89,9 +91,9 @@ export async function PUT(
 
 		// S3から既存の画像を削除
 		if (existingImages && existingImages.length > 0) {
-			const imageUrls = existingImages.map(img => img.image_url);
+			const imageUrls = existingImages.map((img) => img.image_url);
 			const deleteResults = await deleteMultipleFromS3(imageUrls);
-			
+
 			// 削除結果をログ出力（デバッグ用）
 			console.log("投稿編集時のS3削除結果:", deleteResults);
 		}
@@ -111,7 +113,7 @@ export async function PUT(
 			if (insertImagesError) {
 				return NextResponse.json(
 					{ error: insertImagesError.message },
-					{ status: 500 }
+					{ status: 500 },
 				);
 			}
 		}
@@ -120,14 +122,14 @@ export async function PUT(
 	} catch (error) {
 		return NextResponse.json(
 			{ error: "Internal Server Error" },
-			{ status: 500 }
+			{ status: 500 },
 		);
 	}
 }
 
 export async function DELETE(
 	request: NextRequest,
-	{ params }: { params: Promise<{ postId: string }> }
+	{ params }: { params: Promise<{ postId: string }> },
 ) {
 	try {
 		const { postId } = await params;
@@ -135,7 +137,7 @@ export async function DELETE(
 		if (!postId) {
 			return NextResponse.json(
 				{ error: "Post ID is required" },
-				{ status: 400 }
+				{ status: 400 },
 			);
 		}
 
@@ -153,7 +155,10 @@ export async function DELETE(
 		const supabaseWithAuth = await createClient(accessToken);
 
 		// ユーザー情報を取得
-		const { data: { user }, error: authError } = await supabaseWithAuth.auth.getUser();
+		const {
+			data: { user },
+			error: authError,
+		} = await supabaseWithAuth.auth.getUser();
 		if (authError || !user) {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 		}
@@ -166,16 +171,13 @@ export async function DELETE(
 			.single();
 
 		if (postError || !post) {
-			return NextResponse.json(
-				{ error: "Post not found" },
-				{ status: 404 }
-			);
+			return NextResponse.json({ error: "Post not found" }, { status: 404 });
 		}
 
 		if (post.user_id !== user.id) {
 			return NextResponse.json(
 				{ error: "You can only delete your own posts" },
-				{ status: 403 }
+				{ status: 403 },
 			);
 		}
 
@@ -191,7 +193,7 @@ export async function DELETE(
 
 		// S3から画像を削除
 		if (postImages && postImages.length > 0) {
-			const imageUrls = postImages.map(img => img.image_url);
+			const imageUrls = postImages.map((img) => img.image_url);
 			console.log("投稿削除時の画像URL:", imageUrls);
 			const deleteResults = await deleteMultipleFromS3(imageUrls);
 			console.log("投稿削除時のS3削除結果:", deleteResults);
@@ -218,17 +220,14 @@ export async function DELETE(
 			.eq("id", postId);
 
 		if (deleteError) {
-			return NextResponse.json(
-				{ error: deleteError.message },
-				{ status: 500 }
-			);
+			return NextResponse.json({ error: deleteError.message }, { status: 500 });
 		}
 
 		return NextResponse.json({ success: true });
 	} catch (error) {
 		return NextResponse.json(
 			{ error: "Internal Server Error" },
-			{ status: 500 }
+			{ status: 500 },
 		);
 	}
-} 
+}

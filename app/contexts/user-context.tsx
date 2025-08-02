@@ -42,8 +42,11 @@ const fetcher = async (url: string) => {
 		return response.json();
 	} catch (error) {
 		// ネットワークエラーの場合は既存データを保持するため、エラーを投げない
-		if (error instanceof TypeError && error.message.includes('fetch')) {
-			console.warn('ネットワークエラーが発生しましたが、既存のユーザーデータを保持します:', error);
+		if (error instanceof TypeError && error.message.includes("fetch")) {
+			console.warn(
+				"ネットワークエラーが発生しましたが、既存のユーザーデータを保持します:",
+				error,
+			);
 			return null; // nullを返すことで、既存のデータを保持
 		}
 		throw error;
@@ -54,7 +57,9 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 	const [session, setSession] = useState<Session | null>(null);
 	const [isSessionLoading, setIsSessionLoading] = useState(true);
 	const [hasNetworkError, setHasNetworkError] = useState(false);
-	const [lastSessionUserId, setLastSessionUserId] = useState<string | null>(null);
+	const [lastSessionUserId, setLastSessionUserId] = useState<string | null>(
+		null,
+	);
 
 	useEffect(() => {
 		const supabase = createClient();
@@ -70,7 +75,11 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 		const {
 			data: { subscription },
 		} = supabase.auth.onAuthStateChange((event, session) => {
-			console.log("Auth state change:", event, session ? "session exists" : "no session");
+			console.log(
+				"Auth state change:",
+				event,
+				session ? "session exists" : "no session",
+			);
 			setSession(session);
 			setLastSessionUserId(session?.user?.id || null);
 			setIsSessionLoading(false);
@@ -102,7 +111,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 	useEffect(() => {
 		if (!isSessionLoading) {
 			const currentUserId = session?.user?.id || null;
-			
+
 			// セッションのユーザーIDが変更された場合のみ更新
 			if (lastSessionUserId !== currentUserId) {
 				if (currentUserId && (!user || user.id !== currentUserId)) {
@@ -120,7 +129,10 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 	useEffect(() => {
 		if (error) {
 			// ネットワークエラーの場合は既存データを保持
-			if (error.message.includes('fetch') || error.message.includes('network')) {
+			if (
+				error.message.includes("fetch") ||
+				error.message.includes("network")
+			) {
 				setHasNetworkError(true);
 			} else {
 				setHasNetworkError(false);

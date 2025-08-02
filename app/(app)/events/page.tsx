@@ -1,27 +1,35 @@
 "use client";
 
-import { Button } from "@/app/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card";
-import { Input } from "@/app/components/ui/input";
 import { EventButton } from "@/app/components/event/event-button";
+import { Button } from "@/app/components/ui/button";
+import {
+	Card,
+	CardContent,
+	CardHeader,
+	CardTitle,
+} from "@/app/components/ui/card";
+import { Input } from "@/app/components/ui/input";
+import type { Event } from "@/app/types/types";
 import { Search } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import useSWR from "swr";
-import type { Event } from "@/app/types/types";
 
 // フェッチャー関数
 const fetcher = async (url: string) => {
 	try {
 		const response = await fetch(url);
 		if (!response.ok) {
-			throw new Error('Failed to fetch data');
+			throw new Error("Failed to fetch data");
 		}
 		return response.json();
 	} catch (error) {
 		// ネットワークエラーの場合は既存データを保持するため、エラーを投げない
-		if (error instanceof TypeError && error.message.includes('fetch')) {
-			console.warn('ネットワークエラーが発生しましたが、既存のデータを表示し続けます:', error);
+		if (error instanceof TypeError && error.message.includes("fetch")) {
+			console.warn(
+				"ネットワークエラーが発生しましたが、既存のデータを表示し続けます:",
+				error,
+			);
 			return null; // nullを返すことで、既存のデータを保持
 		}
 		throw error;
@@ -30,12 +38,15 @@ const fetcher = async (url: string) => {
 
 export default function EventsPage() {
 	const [searchQuery, setSearchQuery] = useState("");
-	const { data, error, isLoading } = useSWR<{ events: Event[] }>("/api/events", fetcher);
+	const { data, error, isLoading } = useSWR<{ events: Event[] }>(
+		"/api/events",
+		fetcher,
+	);
 
 	const events: Event[] = data?.events || [];
 
 	const filteredEvents = events.filter((event: Event) =>
-		event.name.toLowerCase().includes(searchQuery.toLowerCase())
+		event.name.toLowerCase().includes(searchQuery.toLowerCase()),
 	);
 
 	if (isLoading) {
@@ -95,19 +106,23 @@ export default function EventsPage() {
 					<div className="text-xl font-semibold mb-2 text-gray-600">
 						まだイベントが登録されていません
 					</div>
-					<p className="text-gray-500">
-						最初のイベントを追加してみましょう
-					</p>
+					<p className="text-gray-500">最初のイベントを追加してみましょう</p>
 				</div>
 			) : (
 				<>
 					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
 						{filteredEvents.map((event: Event) => (
-							<Card key={event.id} className="hover:shadow-lg transition-shadow">
+							<Card
+								key={event.id}
+								className="hover:shadow-lg transition-shadow"
+							>
 								<CardHeader className="pb-2">
 									<CardTitle className="text-lg">
 										<Link href={`/events/${encodeURIComponent(event.name)}`}>
-											<Button variant="ghost" className="w-full justify-start p-0 h-auto">
+											<Button
+												variant="ghost"
+												className="w-full justify-start p-0 h-auto"
+											>
 												{event.name}
 											</Button>
 										</Link>
@@ -136,4 +151,4 @@ export default function EventsPage() {
 			)}
 		</div>
 	);
-} 
+}

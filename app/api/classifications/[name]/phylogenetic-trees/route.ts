@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 
 export async function GET(
 	request: NextRequest,
-	{ params }: { params: Promise<{ name: string }> }
+	{ params }: { params: Promise<{ name: string }> },
 ) {
 	try {
 		const { name } = await params;
@@ -13,7 +13,7 @@ export async function GET(
 		if (!decodedName) {
 			return NextResponse.json(
 				{ error: "Classification name is required" },
-				{ status: 400 }
+				{ status: 400 },
 			);
 		}
 
@@ -32,9 +32,9 @@ export async function GET(
 
 		// 分類が存在しない場合は空のデータを返す
 		if (!classification) {
-			return NextResponse.json({ 
+			return NextResponse.json({
 				phylogeneticTree: null,
-				classification: null
+				classification: null,
 			});
 		}
 
@@ -57,22 +57,22 @@ export async function GET(
 			throw treeError;
 		}
 
-		return NextResponse.json({ 
+		return NextResponse.json({
 			phylogeneticTree: phylogeneticTree || null,
-			classification: classification
+			classification: classification,
 		});
 	} catch (error) {
 		console.error("Phylogenetic tree API error:", error);
 		return NextResponse.json(
 			{ error: "Internal Server Error" },
-			{ status: 500 }
+			{ status: 500 },
 		);
 	}
 }
 
 export async function POST(
 	request: NextRequest,
-	{ params }: { params: Promise<{ name: string }> }
+	{ params }: { params: Promise<{ name: string }> },
 ) {
 	try {
 		const { name } = await params;
@@ -82,7 +82,7 @@ export async function POST(
 		if (!decodedName) {
 			return NextResponse.json(
 				{ error: "Classification name is required" },
-				{ status: 400 }
+				{ status: 400 },
 			);
 		}
 
@@ -91,22 +91,19 @@ export async function POST(
 		const accessToken = authHeader?.replace("Bearer ", "");
 
 		if (!accessToken) {
-			return NextResponse.json(
-				{ error: "認証が必要です" },
-				{ status: 401 }
-			);
+			return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
 		}
 
 		// アクセストークンを使ってSupabaseクライアントを作成
 		const supabase = await createClient(accessToken);
 
 		// ユーザー情報を取得
-		const { data: { user }, error: authError } = await supabase.auth.getUser();
+		const {
+			data: { user },
+			error: authError,
+		} = await supabase.auth.getUser();
 		if (authError || !user) {
-			return NextResponse.json(
-				{ error: "認証が必要です" },
-				{ status: 401 }
-			);
+			return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
 		}
 
 		// 分類が存在するかチェック
@@ -190,7 +187,7 @@ export async function POST(
 			console.error("Phylogenetic tree operation error:", operationError);
 			return NextResponse.json(
 				{ error: "Failed to save phylogenetic tree" },
-				{ status: 500 }
+				{ status: 500 },
 			);
 		}
 
@@ -199,7 +196,7 @@ export async function POST(
 		console.error("Phylogenetic tree API error:", error);
 		return NextResponse.json(
 			{ error: "Internal Server Error" },
-			{ status: 500 }
+			{ status: 500 },
 		);
 	}
-} 
+}

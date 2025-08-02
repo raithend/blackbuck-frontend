@@ -20,7 +20,7 @@ export const createClient = async (accessToken?: string) => {
 	if (!anonKey) {
 		throw new Error("Missing NEXT_PUBLIC_SUPABASE_ANON_KEY");
 	}
-	
+
 	const supabase = createSupabaseClient<Database>(
 		supabaseUrl,
 		anonKey, // 常にanon keyを使用
@@ -45,11 +45,14 @@ export const createClient = async (accessToken?: string) => {
 	if (accessToken) {
 		try {
 			// セッション設定を試行
-			const { data: { session }, error } = await supabase.auth.setSession({
+			const {
+				data: { session },
+				error,
+			} = await supabase.auth.setSession({
 				access_token: accessToken,
 				refresh_token: "",
 			});
-			
+
 			if (error) {
 				console.error("セッション設定エラー:", error);
 				// エラーが発生してもクライアントを返す（認証は別途チェック）

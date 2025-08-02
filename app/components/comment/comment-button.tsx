@@ -1,8 +1,8 @@
 "use client";
 
+import { EventDropdownMenu } from "@/app/components/post/event-dropdown-menu";
 import { ImageUpload } from "@/app/components/post/image-upload";
 import { LocationDropdownMenu } from "@/app/components/post/location-dropdown-menu";
-import { EventDropdownMenu } from "@/app/components/post/event-dropdown-menu";
 import {
 	Avatar,
 	AvatarFallback,
@@ -29,7 +29,12 @@ interface CommentProps {
 	parentCommentId?: string;
 }
 
-export function CommentButton({ postId, commentCount = 0, isReply = false, parentCommentId }: CommentProps) {
+export function CommentButton({
+	postId,
+	commentCount = 0,
+	isReply = false,
+	parentCommentId,
+}: CommentProps) {
 	const [content, setContent] = useState("");
 	const [location, setLocation] = useState("");
 	const [event, setEvent] = useState("");
@@ -44,9 +49,13 @@ export function CommentButton({ postId, commentCount = 0, isReply = false, paren
 		formData.append("file", file);
 
 		// 認証トークンを取得
-		const supabase = await import("@/app/lib/supabase-browser").then(m => m.createClient());
-		const { data: { session } } = await supabase.auth.getSession();
-		
+		const supabase = await import("@/app/lib/supabase-browser").then((m) =>
+			m.createClient(),
+		);
+		const {
+			data: { session },
+		} = await supabase.auth.getSession();
+
 		if (!session?.access_token) {
 			throw new Error("認証トークンが取得できません");
 		}
@@ -54,7 +63,7 @@ export function CommentButton({ postId, commentCount = 0, isReply = false, paren
 		const response = await fetch("/api/upload/posts", {
 			method: "POST",
 			headers: {
-				"Authorization": `Bearer ${session.access_token}`,
+				Authorization: `Bearer ${session.access_token}`,
 			},
 			body: formData,
 		});
@@ -88,9 +97,13 @@ export function CommentButton({ postId, commentCount = 0, isReply = false, paren
 			);
 
 			// 認証トークンを取得
-			const supabase = await import("@/app/lib/supabase-browser").then(m => m.createClient());
-			const { data: { session } } = await supabase.auth.getSession();
-			
+			const supabase = await import("@/app/lib/supabase-browser").then((m) =>
+				m.createClient(),
+			);
+			const {
+				data: { session },
+			} = await supabase.auth.getSession();
+
 			if (!session?.access_token) {
 				throw new Error("認証トークンが取得できません");
 			}
@@ -98,7 +111,7 @@ export function CommentButton({ postId, commentCount = 0, isReply = false, paren
 			const response = await fetch(`/api/posts/${postId}/comments`, {
 				method: "POST",
 				headers: {
-					"Authorization": `Bearer ${session.access_token}`,
+					Authorization: `Bearer ${session.access_token}`,
 					"Content-Type": "application/json",
 				},
 				body: JSON.stringify({
@@ -182,9 +195,12 @@ export function CommentButton({ postId, commentCount = 0, isReply = false, paren
 						>
 							キャンセル
 						</Button>
-						<Button 
+						<Button
 							onClick={handleSubmit}
-							disabled={isSubmitting || ((!content || content.trim() === "") && imageFiles.length === 0)}
+							disabled={
+								isSubmitting ||
+								((!content || content.trim() === "") && imageFiles.length === 0)
+							}
 						>
 							{isSubmitting ? "投稿中..." : "投稿"}
 						</Button>

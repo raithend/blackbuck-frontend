@@ -7,14 +7,14 @@ import {
 } from "@/app/components/ui/avatar";
 import { Button } from "@/app/components/ui/button";
 import { Card } from "@/app/components/ui/card";
+import { useUser } from "@/app/contexts/user-context";
 import type { User } from "@/app/types/types";
-import { EditProfileButton } from "./edit-profile-button";
-import { PhotoBubbleEditor } from "../photo-bubble/photo-bubble-editor";
+import { useState } from "react";
+import useSWR from "swr";
 import { FollowButton } from "../follow/follow-button";
 import { FollowCounts } from "../follow/follow-counts";
-import { useState } from "react";
-import { useUser } from "@/app/contexts/user-context";
-import useSWR from "swr";
+import { PhotoBubbleEditor } from "../photo-bubble/photo-bubble-editor";
+import { EditProfileButton } from "./edit-profile-button";
 
 interface ProfileHeaderProps {
 	user: User;
@@ -47,7 +47,7 @@ export function ProfileHeader({ user }: ProfileHeaderProps) {
 		async (url) => {
 			const response = await fetch(url);
 			if (!response.ok) {
-				throw new Error('Failed to fetch follow counts');
+				throw new Error("Failed to fetch follow counts");
 			}
 			return response.json();
 		},
@@ -56,7 +56,7 @@ export function ProfileHeader({ user }: ProfileHeaderProps) {
 			revalidateOnReconnect: true,
 			shouldRetryOnError: false,
 			dedupingInterval: 30000,
-		}
+		},
 	);
 
 	return (
@@ -83,25 +83,17 @@ export function ProfileHeader({ user }: ProfileHeaderProps) {
 			<div className="pt-16 px-6">
 				<div className="flex justify-between items-start">
 					<div className="space-y-2 flex-1">
-						<h1 className="text-2xl font-bold">
-							{user.username}
-						</h1>
-						<p>
-							@{user.account_id}
-						</p>
-						{user.bio && (
-							<p className="text-gray-700 mt-2">
-								{user.bio}
-							</p>
-						)}
+						<h1 className="text-2xl font-bold">{user.username}</h1>
+						<p>@{user.account_id}</p>
+						{user.bio && <p className="text-gray-700 mt-2">{user.bio}</p>}
 					</div>
-					
+
 					{/* アクションボタン */}
 					<div className="flex gap-2 ml-4">
 						{isOwnProfile ? (
 							<EditProfileButton />
 						) : (
-							<FollowButton 
+							<FollowButton
 								targetAccountId={user.account_id}
 								variant="outline"
 								size="default"

@@ -1,8 +1,8 @@
+import { createClient } from "@/app/lib/supabase-server";
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { createClient } from "@/app/lib/supabase-server";
 
 if (
 	!process.env.AWS_ACCESS_KEY_ID ||
@@ -27,22 +27,19 @@ export async function POST(request: NextRequest) {
 		const accessToken = authHeader?.replace("Bearer ", "");
 
 		if (!accessToken) {
-			return NextResponse.json(
-				{ error: "認証が必要です" },
-				{ status: 401 }
-			);
+			return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
 		}
 
 		// アクセストークンを使ってSupabaseクライアントを作成
 		const supabase = await createClient(accessToken);
 
 		// ユーザー情報を取得
-		const { data: { user }, error: authError } = await supabase.auth.getUser();
+		const {
+			data: { user },
+			error: authError,
+		} = await supabase.auth.getUser();
 		if (authError || !user) {
-			return NextResponse.json(
-				{ error: "認証が必要です" },
-				{ status: 401 }
-			);
+			return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
 		}
 
 		const formData = await request.formData();
@@ -58,16 +55,22 @@ export async function POST(request: NextRequest) {
 		if (file.size > 10 * 1024 * 1024) {
 			return NextResponse.json(
 				{ error: "ファイルサイズは10MB以下にしてください" },
-				{ status: 400 }
+				{ status: 400 },
 			);
 		}
 
 		// ファイル形式チェック
-		const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+		const allowedTypes = [
+			"image/jpeg",
+			"image/jpg",
+			"image/png",
+			"image/gif",
+			"image/webp",
+		];
 		if (!allowedTypes.includes(file.type)) {
 			return NextResponse.json(
 				{ error: "対応していないファイル形式です" },
-				{ status: 400 }
+				{ status: 400 },
 			);
 		}
 
@@ -100,7 +103,7 @@ export async function POST(request: NextRequest) {
 	} catch (error) {
 		return NextResponse.json(
 			{ error: "投稿画像のアップロードに失敗しました" },
-			{ status: 500 }
+			{ status: 500 },
 		);
 	}
-} 
+}

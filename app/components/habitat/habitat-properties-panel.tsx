@@ -1,12 +1,20 @@
-import React, { memo } from "react";
+import {
+	Card,
+	CardContent,
+	CardHeader,
+	CardTitle,
+} from "@/app/components/ui/card";
 import { Input } from "@/app/components/ui/input";
 import { Label } from "@/app/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card";
+import React, { memo } from "react";
 import type { HabitatElement } from "./types";
 
 interface HabitatPropertiesPanelProps {
 	selectedPoint: HabitatElement | null;
-	onPropertyChange: (field: keyof HabitatElement, value: string | number | undefined) => void;
+	onPropertyChange: (
+		field: keyof HabitatElement,
+		value: string | number | undefined,
+	) => void;
 }
 
 export const HabitatPropertiesPanel = memo(function HabitatPropertiesPanel({
@@ -25,8 +33,8 @@ export const HabitatPropertiesPanel = memo(function HabitatPropertiesPanel({
 							<Label htmlFor="point-label">ラベル</Label>
 							<Input
 								id="point-label"
-								value={selectedPoint.label || ''}
-								onChange={(e) => onPropertyChange('label', e.target.value)}
+								value={selectedPoint.label || ""}
+								onChange={(e) => onPropertyChange("label", e.target.value)}
 								placeholder="ポイント名"
 							/>
 						</div>
@@ -35,8 +43,8 @@ export const HabitatPropertiesPanel = memo(function HabitatPropertiesPanel({
 							<Input
 								id="point-color-edit"
 								type="color"
-								value={selectedPoint.color || '#ff0000'}
-								onChange={(e) => onPropertyChange('color', e.target.value)}
+								value={selectedPoint.color || "#ff0000"}
+								onChange={(e) => onPropertyChange("color", e.target.value)}
 							/>
 						</div>
 						<div>
@@ -45,19 +53,21 @@ export const HabitatPropertiesPanel = memo(function HabitatPropertiesPanel({
 								id="point-size-edit"
 								type="number"
 								value={selectedPoint.size || 20}
-								onChange={(e) => onPropertyChange('size', Number(e.target.value))}
+								onChange={(e) =>
+									onPropertyChange("size", Number(e.target.value))
+								}
 								min="5"
 								max="100"
 							/>
 						</div>
-						{selectedPoint.shape === 'text' && (
+						{selectedPoint.shape === "text" && (
 							<>
 								<div>
 									<Label htmlFor="point-text-edit">テキスト</Label>
 									<Input
 										id="point-text-edit"
-										value={selectedPoint.text || ''}
-										onChange={(e) => onPropertyChange('text', e.target.value)}
+										value={selectedPoint.text || ""}
+										onChange={(e) => onPropertyChange("text", e.target.value)}
 										placeholder="テキスト内容"
 									/>
 								</div>
@@ -67,7 +77,9 @@ export const HabitatPropertiesPanel = memo(function HabitatPropertiesPanel({
 										id="point-font-size-edit"
 										type="number"
 										value={selectedPoint.fontSize || 16}
-										onChange={(e) => onPropertyChange('fontSize', Number(e.target.value))}
+										onChange={(e) =>
+											onPropertyChange("fontSize", Number(e.target.value))
+										}
 										min="8"
 										max="72"
 									/>
@@ -79,8 +91,13 @@ export const HabitatPropertiesPanel = memo(function HabitatPropertiesPanel({
 							<Input
 								id="point-range"
 								type="number"
-								value={selectedPoint.maxR || ''}
-								onChange={(e) => onPropertyChange('maxR', e.target.value ? Number(e.target.value) : undefined)}
+								value={selectedPoint.maxR || ""}
+								onChange={(e) =>
+									onPropertyChange(
+										"maxR",
+										e.target.value ? Number(e.target.value) : undefined,
+									)
+								}
 								placeholder="500"
 							/>
 						</div>
@@ -93,4 +110,4 @@ export const HabitatPropertiesPanel = memo(function HabitatPropertiesPanel({
 			</CardContent>
 		</Card>
 	);
-}); 
+});

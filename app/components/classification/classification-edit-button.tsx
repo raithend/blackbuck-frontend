@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
 import { Button } from "@/app/components/ui/button";
-import { Edit, Plus } from "lucide-react";
-import { ClassificationEditDialog } from "./classification-edit-dialog";
 import { useUser } from "@/app/contexts/user-context";
-import { useParams } from "next/navigation";
 import type { Classification } from "@/app/types/types";
+import { Edit, Plus } from "lucide-react";
+import { useParams } from "next/navigation";
+import { useState } from "react";
+import { ClassificationEditDialog } from "./classification-edit-dialog";
 
 interface ClassificationEditButtonProps {
 	classification: Classification | null;
@@ -25,9 +25,13 @@ export function ClassificationEditButton({
 	const handleSave = async (data: Partial<Classification>) => {
 		console.log("handleSaveが呼び出されました", { classification, data });
 		try {
-			const supabase = await import("@/app/lib/supabase-browser").then(m => m.createClient());
-			const { data: { session } } = await supabase.auth.getSession();
-			
+			const supabase = await import("@/app/lib/supabase-browser").then((m) =>
+				m.createClient(),
+			);
+			const {
+				data: { session },
+			} = await supabase.auth.getSession();
+
 			if (!session?.access_token) {
 				throw new Error("認証トークンが取得できません");
 			}
@@ -35,14 +39,17 @@ export function ClassificationEditButton({
 			if (classification) {
 				// 既存の分類情報を更新
 				console.log("既存の分類情報を更新します", classification.name);
-				const response = await fetch(`/api/classifications/${encodeURIComponent(classification.name)}`, {
-					method: "PUT",
-					headers: {
-						"Authorization": `Bearer ${session.access_token}`,
-						"Content-Type": "application/json",
+				const response = await fetch(
+					`/api/classifications/${encodeURIComponent(classification.name)}`,
+					{
+						method: "PUT",
+						headers: {
+							Authorization: `Bearer ${session.access_token}`,
+							"Content-Type": "application/json",
+						},
+						body: JSON.stringify(data),
 					},
-					body: JSON.stringify(data),
-				});
+				);
 
 				if (!response.ok) {
 					const errorData = await response.json();
@@ -54,7 +61,7 @@ export function ClassificationEditButton({
 				const response = await fetch("/api/classifications", {
 					method: "POST",
 					headers: {
-						"Authorization": `Bearer ${session.access_token}`,
+						Authorization: `Bearer ${session.access_token}`,
 						"Content-Type": "application/json",
 					},
 					body: JSON.stringify({
@@ -107,4 +114,4 @@ export function ClassificationEditButton({
 			/>
 		</>
 	);
-} 
+}

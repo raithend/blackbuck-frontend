@@ -1,19 +1,24 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { Button } from "@/app/components/ui/button";
-import { ArrowLeft } from "lucide-react";
-import { createClient } from "@/app/lib/supabase-browser";
-import FabricHabitatEditor from "@/app/components/habitat/habitat-editor";
-import HabitatJsonEditor from "@/app/components/habitat/habitat-json-editor";
-import Globe from "@/app/components/habitat/globe";
 import { GeologicalAgeCard } from "@/app/components/geological/geological-age-card";
 import { GeologicalAgeProvider } from "@/app/components/geological/geological-context";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/components/ui/tabs";
-import { toast } from "sonner";
-import type { MutableRefObject } from "react";
+import Globe from "@/app/components/habitat/globe";
+import FabricHabitatEditor from "@/app/components/habitat/habitat-editor";
+import HabitatJsonEditor from "@/app/components/habitat/habitat-json-editor";
 import type { EraGroup, HabitatElement } from "@/app/components/habitat/types";
+import { Button } from "@/app/components/ui/button";
+import {
+	Tabs,
+	TabsContent,
+	TabsList,
+	TabsTrigger,
+} from "@/app/components/ui/tabs";
+import { createClient } from "@/app/lib/supabase-browser";
+import { ArrowLeft } from "lucide-react";
+import { useParams, useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import type { MutableRefObject } from "react";
+import { toast } from "sonner";
 
 interface HabitatData {
 	lat: number;
@@ -26,10 +31,6 @@ interface HabitatData {
 	fontSize?: number;
 }
 
-
-
-
-
 export default function HabitatEditPage() {
 	const params = useParams();
 	const router = useRouter();
@@ -37,12 +38,16 @@ export default function HabitatEditPage() {
 	const [habitatData, setHabitatData] = useState<EraGroup[]>([]);
 	const [isLoading, setIsLoading] = useState(false);
 	const [isSaving, setIsSaving] = useState(false);
-	const [currentMap, setCurrentMap] = useState("Map1a_PALEOMAP_PaleoAtlas_000.jpg");
+	const [currentMap, setCurrentMap] = useState(
+		"Map1a_PALEOMAP_PaleoAtlas_000.jpg",
+	);
 	const [activeTab, setActiveTab] = useState("canvas");
-	const habitatEditorRef = useRef<{ getHabitatPoints: () => HabitatElement[] } | null>(null);
-	const monacoEditorRef = useRef<{ getHabitatPoints: () => HabitatElement[] } | null>(null);
-
-
+	const habitatEditorRef = useRef<{
+		getHabitatPoints: () => HabitatElement[];
+	} | null>(null);
+	const monacoEditorRef = useRef<{
+		getHabitatPoints: () => HabitatElement[];
+	} | null>(null);
 
 	// EraGroupからHabitatDataを抽出
 	const extractHabitatData = (eraGroups: EraGroup[]): HabitatElement[] => {
@@ -76,26 +81,32 @@ export default function HabitatEditPage() {
 		const fetchData = async () => {
 			setIsLoading(true);
 			try {
-				const response = await fetch(`/api/classifications/${encodeURIComponent(decodedName)}/habitat-data`);
+				const response = await fetch(
+					`/api/classifications/${encodeURIComponent(decodedName)}/habitat-data`,
+				);
 				if (response.ok) {
 					const data = await response.json();
 					if (data.habitatData?.content) {
 						try {
 							const parsedData = JSON.parse(data.habitatData.content);
 							// EraGroup[]構造のデータをそのまま使用
-							if (Array.isArray(parsedData) && parsedData.length > 0 && 'era' in parsedData[0]) {
+							if (
+								Array.isArray(parsedData) &&
+								parsedData.length > 0 &&
+								"era" in parsedData[0]
+							) {
 								setHabitatData(parsedData);
 							} else {
 								setHabitatData([]);
 							}
 						} catch (error) {
-							console.error('生息地データのパースに失敗しました:', error);
+							console.error("生息地データのパースに失敗しました:", error);
 							setHabitatData([]);
 						}
 					}
 				}
 			} catch (error) {
-				console.error('データの取得に失敗しました:', error);
+				console.error("データの取得に失敗しました:", error);
 			} finally {
 				setIsLoading(false);
 			}
@@ -107,38 +118,45 @@ export default function HabitatEditPage() {
 	// 保存処理
 	const handleSave = async (habitatData: EraGroup[]) => {
 		const supabase = createClient();
-		const { data: { user } } = await supabase.auth.getUser();
-		
+		const {
+			data: { user },
+		} = await supabase.auth.getUser();
+
 		if (!user) return;
-		
+
 		setIsSaving(true);
 		try {
-			const { data: { session } } = await supabase.auth.getSession();
-			
+			const {
+				data: { session },
+			} = await supabase.auth.getSession();
+
 			// EraGroup[]構造をJSON文字列に変換
 			const habitatContent = JSON.stringify(habitatData);
-			
-			console.log('保存する生息地データ:', habitatData);
-			
-			const response = await fetch(`/api/classifications/${encodeURIComponent(decodedName)}/habitat-data`, {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-					'Authorization': `Bearer ${session?.access_token}`,
+
+			console.log("保存する生息地データ:", habitatData);
+
+			const response = await fetch(
+				`/api/classifications/${encodeURIComponent(decodedName)}/habitat-data`,
+				{
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+						Authorization: `Bearer ${session?.access_token}`,
+					},
+					body: JSON.stringify({
+						content: habitatContent,
+					}),
 				},
-				body: JSON.stringify({
-					content: habitatContent
-				}),
-			});
+			);
 
 			if (!response.ok) {
-				throw new Error('保存に失敗しました');
+				throw new Error("保存に失敗しました");
 			}
 
-			toast.success('生息地データを保存しました');
+			toast.success("生息地データを保存しました");
 		} catch (error) {
-			console.error('保存エラー:', error);
-			toast.error('保存に失敗しました');
+			console.error("保存エラー:", error);
+			toast.error("保存に失敗しました");
 		} finally {
 			setIsSaving(false);
 		}
@@ -186,7 +204,9 @@ export default function HabitatEditPage() {
 				<div className="flex items-center gap-4 mb-6">
 					<Button
 						variant="outline"
-						onClick={() => router.push(`/classifications/${encodeURIComponent(decodedName)}`)}
+						onClick={() =>
+							router.push(`/classifications/${encodeURIComponent(decodedName)}`)
+						}
 					>
 						<ArrowLeft className="h-4 w-4 mr-2" />
 						戻る
@@ -196,12 +216,16 @@ export default function HabitatEditPage() {
 
 				{/* 編集エリア */}
 				<div className="mb-8">
-					<Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+					<Tabs
+						value={activeTab}
+						onValueChange={setActiveTab}
+						className="w-full"
+					>
 						<TabsList className="grid w-full grid-cols-2">
 							<TabsTrigger value="canvas">キャンバス編集</TabsTrigger>
 							<TabsTrigger value="json">JSON編集</TabsTrigger>
 						</TabsList>
-						
+
 						<TabsContent value="canvas" className="mt-6">
 							<FabricHabitatEditor
 								ref={habitatEditorRef}
@@ -213,7 +237,7 @@ export default function HabitatEditPage() {
 								height={480}
 							/>
 						</TabsContent>
-						
+
 						<TabsContent value="json" className="mt-6">
 							<HabitatJsonEditor
 								ref={monacoEditorRef}
@@ -234,19 +258,26 @@ export default function HabitatEditPage() {
 					<h2 className="text-xl font-semibold mb-4">プレビュー</h2>
 					<div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
 						{/* 地球儀エリアを大きく、余白なしで表示 */}
-						<div className="rounded-lg border p-0 bg-black" style={{ width: '100%', height: '600px', position: 'relative' }}>
-							<h3 className="text-lg font-medium mb-3 text-white px-4 pt-4">地球儀ビュー</h3>
-							<div className="w-full h-full" style={{ height: '500px' }}>
-								<Globe 
+						<div
+							className="rounded-lg border p-0 bg-black"
+							style={{ width: "100%", height: "600px", position: "relative" }}
+						>
+							<h3 className="text-lg font-medium mb-3 text-white px-4 pt-4">
+								地球儀ビュー
+							</h3>
+							<div className="w-full h-full" style={{ height: "500px" }}>
+								<Globe
 									customTexture={`/PALEOMAP_PaleoAtlas_Rasters_v3/${currentMap}`}
 									habitatPoints={getCurrentHabitatPoints()}
 								/>
 							</div>
 							<div className="flex justify-end px-4 pb-4">
-								<Button onClick={() => {
-									// 現在のエディターからデータを取得して更新
-									setCurrentMap(`${currentMap}?t=${Date.now()}`);
-								}}>
+								<Button
+									onClick={() => {
+										// 現在のエディターからデータを取得して更新
+										setCurrentMap(`${currentMap}?t=${Date.now()}`);
+									}}
+								>
 									編集内容を反映
 								</Button>
 							</div>
@@ -256,4 +287,4 @@ export default function HabitatEditPage() {
 			</div>
 		</GeologicalAgeProvider>
 	);
-} 
+}

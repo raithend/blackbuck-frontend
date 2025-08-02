@@ -1,10 +1,10 @@
 import { CommentButton } from "@/app/components/comment/comment-button";
-import { Button } from "@/app/components/ui/button";
 import {
 	Avatar,
 	AvatarFallback,
 	AvatarImage,
 } from "@/app/components/ui/avatar";
+import { Button } from "@/app/components/ui/button";
 import {
 	Card,
 	CardContent,
@@ -18,26 +18,23 @@ import {
 	CarouselNext,
 	CarouselPrevious,
 } from "@/app/components/ui/carousel";
-import {
-	Dialog,
-	DialogTrigger,
-} from "@/app/components/ui/dialog";
+import { Dialog, DialogTrigger } from "@/app/components/ui/dialog";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from "@/app/components/ui/dropdown-menu";
+import { useUser } from "@/app/contexts/user-context";
 import type { PostWithUser } from "@/app/types/types";
 import { formatDistanceToNow } from "date-fns";
 import { ja } from "date-fns/locale";
-import { MoreHorizontal, Edit, Trash2, UserRound } from "lucide-react";
+import { Edit, MoreHorizontal, Trash2, UserRound } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useUser } from "@/app/contexts/user-context";
+import { useState } from "react";
 import { HeartButton } from "./heart-button";
 import { PostEditDialog } from "./post-edit-dialog";
-import { useState } from "react";
 
 interface PostCardProps {
 	post: PostWithUser;
@@ -49,7 +46,7 @@ interface PostCardProps {
 // 日付を安全にフォーマットする関数
 const formatDateSafely = (dateString: string | undefined) => {
 	if (!dateString) return "日時不明";
-	
+
 	try {
 		const date = new Date(dateString);
 		if (Number.isNaN(date.getTime())) {
@@ -61,7 +58,12 @@ const formatDateSafely = (dateString: string | undefined) => {
 	}
 };
 
-export function PostCard({ post, onLikeChange, onPostUpdate, onPostDelete }: PostCardProps) {
+export function PostCard({
+	post,
+	onLikeChange,
+	onPostUpdate,
+	onPostDelete,
+}: PostCardProps) {
 	const { user: currentUser } = useUser();
 	const isOwnPost = currentUser?.account_id === post.user.account_id;
 	const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -74,17 +76,24 @@ export function PostCard({ post, onLikeChange, onPostUpdate, onPostDelete }: Pos
 		setIsEditDialogOpen(true);
 	};
 
-	const handleEditSubmit = async (postId: string, data: {
-		content?: string;
-		location?: string;
-		event?: string;
-		classification?: string;
-		imageUrls: string[];
-	}) => {
+	const handleEditSubmit = async (
+		postId: string,
+		data: {
+			content?: string;
+			location?: string;
+			event?: string;
+			classification?: string;
+			imageUrls: string[];
+		},
+	) => {
 		try {
-			const supabase = await import("@/app/lib/supabase-browser").then(m => m.createClient());
-			const { data: { session } } = await supabase.auth.getSession();
-			
+			const supabase = await import("@/app/lib/supabase-browser").then((m) =>
+				m.createClient(),
+			);
+			const {
+				data: { session },
+			} = await supabase.auth.getSession();
+
 			if (!session?.access_token) {
 				throw new Error("認証トークンが取得できません");
 			}
@@ -92,7 +101,7 @@ export function PostCard({ post, onLikeChange, onPostUpdate, onPostDelete }: Pos
 			const response = await fetch(`/api/posts/${postId}`, {
 				method: "PUT",
 				headers: {
-					"Authorization": `Bearer ${session.access_token}`,
+					Authorization: `Bearer ${session.access_token}`,
 					"Content-Type": "application/json",
 				},
 				body: JSON.stringify(data),
@@ -111,9 +120,13 @@ export function PostCard({ post, onLikeChange, onPostUpdate, onPostDelete }: Pos
 
 	const handleDelete = async () => {
 		try {
-			const supabase = await import("@/app/lib/supabase-browser").then(m => m.createClient());
-			const { data: { session } } = await supabase.auth.getSession();
-			
+			const supabase = await import("@/app/lib/supabase-browser").then((m) =>
+				m.createClient(),
+			);
+			const {
+				data: { session },
+			} = await supabase.auth.getSession();
+
 			if (!session?.access_token) {
 				throw new Error("認証トークンが取得できません");
 			}
@@ -121,7 +134,7 @@ export function PostCard({ post, onLikeChange, onPostUpdate, onPostDelete }: Pos
 			const response = await fetch(`/api/posts/${post.id}`, {
 				method: "DELETE",
 				headers: {
-					"Authorization": `Bearer ${session.access_token}`,
+					Authorization: `Bearer ${session.access_token}`,
 				},
 			});
 
@@ -140,7 +153,10 @@ export function PostCard({ post, onLikeChange, onPostUpdate, onPostDelete }: Pos
 		<>
 			<Card className="grid gap-2 p-0 md:px-16">
 				<CardHeader className="flex-row items-center justify-between p-0 m-4 md:m-0">
-					<Link href={`/users/${post.user.account_id}`} className="flex items-center hover:opacity-80 transition-opacity">
+					<Link
+						href={`/users/${post.user.account_id}`}
+						className="flex items-center hover:opacity-80 transition-opacity"
+					>
 						<Avatar>
 							<AvatarImage src={post.user.avatar_url || undefined} />
 							<AvatarFallback>
@@ -148,11 +164,13 @@ export function PostCard({ post, onLikeChange, onPostUpdate, onPostDelete }: Pos
 							</AvatarFallback>
 						</Avatar>
 						<div className="pl-2">
-							<div className="text-base font-semibold">{post.user.username}</div>
+							<div className="text-base font-semibold">
+								{post.user.username}
+							</div>
 							<div>{post.user.account_id}</div>
 						</div>
 					</Link>
-					
+
 					{/* 自分の投稿の場合のみドットメニューを表示 */}
 					{isOwnPost && (
 						<DropdownMenu>
@@ -162,7 +180,10 @@ export function PostCard({ post, onLikeChange, onPostUpdate, onPostDelete }: Pos
 								</Button>
 							</DropdownMenuTrigger>
 							<DropdownMenuContent align="end">
-								<Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+								<Dialog
+									open={isEditDialogOpen}
+									onOpenChange={setIsEditDialogOpen}
+								>
 									<DialogTrigger asChild>
 										<DropdownMenuItem onClick={handleEdit}>
 											<Edit className="mr-2 h-4 w-4" />
@@ -170,7 +191,10 @@ export function PostCard({ post, onLikeChange, onPostUpdate, onPostDelete }: Pos
 										</DropdownMenuItem>
 									</DialogTrigger>
 								</Dialog>
-								<DropdownMenuItem onClick={handleDelete} className="text-red-600">
+								<DropdownMenuItem
+									onClick={handleDelete}
+									className="text-red-600"
+								>
 									<Trash2 className="mr-2 h-4 w-4" />
 									<span>削除</span>
 								</DropdownMenuItem>
@@ -216,7 +240,7 @@ export function PostCard({ post, onLikeChange, onPostUpdate, onPostDelete }: Pos
 							{post.location && (
 								<div className="text-sm">
 									撮影地：
-									<Link 
+									<Link
 										href={`/locations/${encodeURIComponent(post.location)}`}
 										className="hover:underline cursor-pointer"
 									>
@@ -227,7 +251,7 @@ export function PostCard({ post, onLikeChange, onPostUpdate, onPostDelete }: Pos
 							{post.event && (
 								<div className="text-sm">
 									イベント：
-									<Link 
+									<Link
 										href={`/events/${encodeURIComponent(post.event)}`}
 										className="hover:underline cursor-pointer"
 									>
@@ -238,7 +262,7 @@ export function PostCard({ post, onLikeChange, onPostUpdate, onPostDelete }: Pos
 							{post.classification && (
 								<div className="text-sm">
 									分類：
-									<Link 
+									<Link
 										href={`/classifications/${encodeURIComponent(post.classification)}`}
 										className="hover:underline cursor-pointer"
 									>
@@ -249,13 +273,16 @@ export function PostCard({ post, onLikeChange, onPostUpdate, onPostDelete }: Pos
 						</div>
 						<div className="flex justify-between items-center">
 							<div className="flex gap-2">
-								<HeartButton 
+								<HeartButton
 									postId={post.id}
 									initialLikeCount={post.likeCount || 0}
 									initialIsLiked={post.isLiked || false}
 									onLikeChange={handleLikeChange}
 								/>
-								<CommentButton postId={post.id.toString()} commentCount={post.commentCount || 0} />
+								<CommentButton
+									postId={post.id.toString()}
+									commentCount={post.commentCount || 0}
+								/>
 							</div>
 							<div className="text-sm text-gray-500 text-right">
 								<div>最終更新：{formatDateSafely(post.updated_at)}</div>

@@ -1,19 +1,19 @@
-import React from "react";
 import { Button } from "@/app/components/ui/button";
 import { Input } from "@/app/components/ui/input";
 import { Label } from "@/app/components/ui/label";
-import { 
-	MousePointer, 
+import {
 	Circle as LucideCircle,
-	Type,
-	Undo,
+	MousePointer,
 	Redo,
 	Save,
-} from 'lucide-react';
+	Type,
+	Undo,
+} from "lucide-react";
+import React from "react";
 
 interface HabitatToolbarProps {
-	selectedTool: 'select' | 'circle' | 'text';
-	onToolChange: (tool: 'select' | 'circle' | 'text') => void;
+	selectedTool: "select" | "circle" | "text";
+	onToolChange: (tool: "select" | "circle" | "text") => void;
 	pointColor: string;
 	onColorChange: (color: string) => void;
 	pointSize: number;
@@ -46,30 +46,30 @@ export function HabitatToolbar({
 		<div className="flex items-center gap-2 mb-4 p-4 bg-gray-100 rounded-lg">
 			<div className="flex items-center gap-1">
 				<Button
-					variant={selectedTool === 'select' ? 'default' : 'outline'}
+					variant={selectedTool === "select" ? "default" : "outline"}
 					size="sm"
-					onClick={() => onToolChange('select')}
+					onClick={() => onToolChange("select")}
 				>
 					<MousePointer className="h-4 w-4" />
 				</Button>
 				<Button
-					variant={selectedTool === 'circle' ? 'default' : 'outline'}
+					variant={selectedTool === "circle" ? "default" : "outline"}
 					size="sm"
-					onClick={() => onToolChange('circle')}
+					onClick={() => onToolChange("circle")}
 				>
 					<LucideCircle className="h-4 w-4" />
 				</Button>
 				<Button
-					variant={selectedTool === 'text' ? 'default' : 'outline'}
+					variant={selectedTool === "text" ? "default" : "outline"}
 					size="sm"
-					onClick={() => onToolChange('text')}
+					onClick={() => onToolChange("text")}
 				>
 					<Type className="h-4 w-4" />
 				</Button>
 			</div>
 
 			<div className="flex items-center gap-2 ml-4">
-				{selectedTool !== 'select' && (
+				{selectedTool !== "select" && (
 					<>
 						<Label htmlFor="point-color">色:</Label>
 						<Input
@@ -81,7 +81,7 @@ export function HabitatToolbar({
 						/>
 					</>
 				)}
-				{selectedTool === 'circle' && (
+				{selectedTool === "circle" && (
 					<>
 						<Label htmlFor="point-size">サイズ:</Label>
 						<Input
@@ -95,7 +95,7 @@ export function HabitatToolbar({
 						/>
 					</>
 				)}
-				{selectedTool === 'text' && (
+				{selectedTool === "text" && (
 					<>
 						<Label htmlFor="text-content">テキスト:</Label>
 						<Input
@@ -126,14 +126,17 @@ export function HabitatToolbar({
 				<Button variant="outline" size="sm" onClick={onRedo}>
 					<Redo className="h-4 w-4" />
 				</Button>
-				<Button size="sm" onClick={() => {
-					console.log('保存ボタンがクリックされました（toolbar）');
-					onSave();
-				}}>
+				<Button
+					size="sm"
+					onClick={() => {
+						console.log("保存ボタンがクリックされました（toolbar）");
+						onSave();
+					}}
+				>
 					<Save className="h-4 w-4 mr-2" />
 					保存
 				</Button>
 			</div>
 		</div>
 	);
-} 
+}

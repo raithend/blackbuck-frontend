@@ -1,50 +1,50 @@
-import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
-import { createClient } from '@/app/lib/supabase-server';
+import { createClient } from "@/app/lib/supabase-server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ name: string }> }
+	request: NextRequest,
+	{ params }: { params: Promise<{ name: string }> },
 ) {
-  try {
-    const { name } = await params;
-    const decodedName = decodeURIComponent(name);
-    
-    // Authorizationヘッダーからアクセストークンを取得
-    const authHeader = request.headers.get("authorization");
-    const accessToken = authHeader?.replace("Bearer ", "");
+	try {
+		const { name } = await params;
+		const decodedName = decodeURIComponent(name);
 
-    if (!accessToken) {
-      return NextResponse.json(
-        { error: "認証が必要です" },
-        { status: 401 }
-      );
-    }
+		// Authorizationヘッダーからアクセストークンを取得
+		const authHeader = request.headers.get("authorization");
+		const accessToken = authHeader?.replace("Bearer ", "");
 
-    // アクセストークンを使ってSupabaseクライアントを作成
-    const supabase = await createClient(accessToken);
+		if (!accessToken) {
+			return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
+		}
 
-    // ユーザー情報を取得
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return NextResponse.json(
-        { error: "認証が必要です" },
-        { status: 401 }
-      );
-    }
-    
-    // Claude APIの設定
-    const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
-    if (!ANTHROPIC_API_KEY) {
-      return NextResponse.json({ error: 'Claude APIキーが設定されていません' }, { status: 500 });
-    }
+		// アクセストークンを使ってSupabaseクライアントを作成
+		const supabase = await createClient(accessToken);
 
-    // WikipediaのURLを構築
-    const wikipediaUrl = `https://ja.wikipedia.org/wiki/${encodeURIComponent(decodedName)}`;
-    console.log('Wikipedia URL:', wikipediaUrl);
-    
-    // Claude APIに送信するプロンプト
-    const prompt = `以下のWikipediaページから系統樹データを抽出し、YAML形式で返してください：
+		// ユーザー情報を取得
+		const {
+			data: { user },
+			error: authError,
+		} = await supabase.auth.getUser();
+		if (authError || !user) {
+			return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
+		}
+
+		// Claude APIの設定
+		const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
+		if (!ANTHROPIC_API_KEY) {
+			return NextResponse.json(
+				{ error: "Claude APIキーが設定されていません" },
+				{ status: 500 },
+			);
+		}
+
+		// WikipediaのURLを構築
+		const wikipediaUrl = `https://ja.wikipedia.org/wiki/${encodeURIComponent(decodedName)}`;
+		console.log("Wikipedia URL:", wikipediaUrl);
+
+		// Claude APIに送信するプロンプト
+		const prompt = `以下のWikipediaページから系統樹データを抽出し、YAML形式で返してください：
 
 URL: ${wikipediaUrl}
 
@@ -108,90 +108,107 @@ children:
 - post_branch: 非リーフノードだが投稿取得に含めたい場合にtrueを設定
 - link_only: この系統樹はlinked_treeのみを参照し、自身のnameは投稿取得対象にしない場合にtrueを設定`;
 
-    // Claude APIにリクエスト
-    const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01'
-      },
-      body: JSON.stringify({
-        model: 'claude-3-5-sonnet-20241022',
-        max_tokens: 4000,
-        temperature: 0.1,
-        messages: [
-          {
-            role: 'user',
-            content: prompt
-          }
-        ]
-      })
-    });
+		// Claude APIにリクエスト
+		const claudeResponse = await fetch(
+			"https://api.anthropic.com/v1/messages",
+			{
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+					"x-api-key": ANTHROPIC_API_KEY,
+					"anthropic-version": "2023-06-01",
+				},
+				body: JSON.stringify({
+					model: "claude-3-5-sonnet-20241022",
+					max_tokens: 4000,
+					temperature: 0.1,
+					messages: [
+						{
+							role: "user",
+							content: prompt,
+						},
+					],
+				}),
+			},
+		);
 
-    if (!claudeResponse.ok) {
-      const errorText = await claudeResponse.text();
-      console.error('Claude API error:', errorText);
-      return NextResponse.json({ 
-        error: 'Claude APIからの応答に失敗しました',
-        details: errorText
-      }, { status: 500 });
-    }
+		if (!claudeResponse.ok) {
+			const errorText = await claudeResponse.text();
+			console.error("Claude API error:", errorText);
+			return NextResponse.json(
+				{
+					error: "Claude APIからの応答に失敗しました",
+					details: errorText,
+				},
+				{ status: 500 },
+			);
+		}
 
-    const claudeData = await claudeResponse.json();
-    const generatedYaml = claudeData.content[0].text;
+		const claudeData = await claudeResponse.json();
+		const generatedYaml = claudeData.content[0].text;
 
-    // YAMLの妥当性をチェック（基本的なチェック）
-    if (!generatedYaml.includes('name:') || !generatedYaml.includes('children:')) {
-      return NextResponse.json({ 
-        error: '生成されたデータが正しいYAML形式ではありません',
-        generatedContent: generatedYaml
-      }, { status: 400 });
-    }
+		// YAMLの妥当性をチェック（基本的なチェック）
+		if (
+			!generatedYaml.includes("name:") ||
+			!generatedYaml.includes("children:")
+		) {
+			return NextResponse.json(
+				{
+					error: "生成されたデータが正しいYAML形式ではありません",
+					generatedContent: generatedYaml,
+				},
+				{ status: 400 },
+			);
+		}
 
-    // 分類IDを取得（保存用、なくてもエラーにしない）
-    const { data: classification } = await supabase
-      .from('classifications')
-      .select('id')
-      .eq('name', decodedName)
-      .single();
+		// 分類IDを取得（保存用、なくてもエラーにしない）
+		const { data: classification } = await supabase
+			.from("classifications")
+			.select("id")
+			.eq("name", decodedName)
+			.single();
 
-    if (classification) {
-      // 生成されたYAMLをphylogenetic_treesテーブルにupsert
-      const { error: upsertError } = await supabase
-        .from('phylogenetic_trees')
-        .upsert({
-          classification_id: classification.id,
-          content: generatedYaml,
-          creator: user.id,
-          updated_at: new Date().toISOString(),
-        }, { onConflict: 'classification_id' });
+		if (classification) {
+			// 生成されたYAMLをphylogenetic_treesテーブルにupsert
+			const { error: upsertError } = await supabase
+				.from("phylogenetic_trees")
+				.upsert(
+					{
+						classification_id: classification.id,
+						content: generatedYaml,
+						creator: user.id,
+						updated_at: new Date().toISOString(),
+					},
+					{ onConflict: "classification_id" },
+				);
 
-      if (upsertError) {
-        console.error('系統樹データ保存エラー:', upsertError);
-        // 保存エラーは警告として返すが、生成データは返す
-        return NextResponse.json({ 
-          warning: '系統樹データの保存に失敗しました',
-          yaml: generatedYaml,
-          message: 'Wikipediaから系統樹データを生成しました（保存は失敗）',
-          source: wikipediaUrl
-        });
-      }
-    }
+			if (upsertError) {
+				console.error("系統樹データ保存エラー:", upsertError);
+				// 保存エラーは警告として返すが、生成データは返す
+				return NextResponse.json({
+					warning: "系統樹データの保存に失敗しました",
+					yaml: generatedYaml,
+					message: "Wikipediaから系統樹データを生成しました（保存は失敗）",
+					source: wikipediaUrl,
+				});
+			}
+		}
 
-    // 分類がなくても生成データは返す
-    return NextResponse.json({ 
-      success: true, 
-      yaml: generatedYaml,
-      message: 'Wikipediaから系統樹データを生成しました',
-      source: wikipediaUrl
-    });
-
-  } catch (error) {
-    console.error('系統樹生成エラー:', error);
-    return NextResponse.json({ 
-      error: '系統樹の生成に失敗しました',
-      details: error instanceof Error ? error.message : 'Unknown error'
-    }, { status: 500 });
-  }
-} 
+		// 分類がなくても生成データは返す
+		return NextResponse.json({
+			success: true,
+			yaml: generatedYaml,
+			message: "Wikipediaから系統樹データを生成しました",
+			source: wikipediaUrl,
+		});
+	} catch (error) {
+		console.error("系統樹生成エラー:", error);
+		return NextResponse.json(
+			{
+				error: "系統樹の生成に失敗しました",
+				details: error instanceof Error ? error.message : "Unknown error",
+			},
+			{ status: 500 },
+		);
+	}
+}

@@ -1,40 +1,40 @@
+import { deleteFromS3, extractKeyFromS3Url } from "@/app/lib/s3-utils";
+import { createClient } from "@/app/lib/supabase-server";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { createClient } from "@/app/lib/supabase-server";
-import { deleteFromS3, extractKeyFromS3Url } from "@/app/lib/s3-utils";
 
 export async function GET(request: NextRequest) {
 	try {
 		const { searchParams } = new URL(request.url);
-		const pageUrl = searchParams.get('page_url');
+		const pageUrl = searchParams.get("page_url");
 
 		if (!pageUrl) {
 			return NextResponse.json(
-				{ error: 'page_url parameter is required' },
-				{ status: 400 }
+				{ error: "page_url parameter is required" },
+				{ status: 400 },
 			);
 		}
 
 		const supabase = await createClient();
 
 		const { data: photoBubbles, error } = await supabase
-			.from('photo_bubbles')
-			.select('*')
-			.eq('page_url', pageUrl)
-			.order('created_at', { ascending: true });
+			.from("photo_bubbles")
+			.select("*")
+			.eq("page_url", pageUrl)
+			.order("created_at", { ascending: true });
 
 		if (error) {
 			return NextResponse.json(
-				{ error: 'Failed to fetch photo bubbles' },
-				{ status: 500 }
+				{ error: "Failed to fetch photo bubbles" },
+				{ status: 500 },
 			);
 		}
 
 		return NextResponse.json({ photoBubbles: photoBubbles || [] });
 	} catch (error) {
 		return NextResponse.json(
-			{ error: 'Internal server error' },
-			{ status: 500 }
+			{ error: "Internal server error" },
+			{ status: 500 },
 		);
 	}
 }
@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
 	try {
 		const supabase = await createClient();
-		
+
 		// Authorizationヘッダーからアクセストークンを取得
 		const authHeader = request.headers.get("authorization");
 		const accessToken = authHeader?.replace("Bearer ", "");
@@ -80,7 +80,8 @@ export async function POST(request: NextRequest) {
 
 		// リクエストボディからデータを取得
 		const body = await request.json();
-		const { name, page_url, image_url, target_url, x_position, y_position } = body;
+		const { name, page_url, image_url, target_url, x_position, y_position } =
+			body;
 
 		if (!name || !page_url || !image_url) {
 			return NextResponse.json(
@@ -105,10 +106,7 @@ export async function POST(request: NextRequest) {
 			.single();
 
 		if (insertError) {
-			return NextResponse.json(
-				{ error: insertError.message },
-				{ status: 500 },
-			);
+			return NextResponse.json({ error: insertError.message }, { status: 500 });
 		}
 
 		return NextResponse.json({ photoBubble });
@@ -123,7 +121,7 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
 	try {
 		const supabase = await createClient();
-		
+
 		// Authorizationヘッダーからアクセストークンを取得
 		const authHeader = request.headers.get("authorization");
 		const accessToken = authHeader?.replace("Bearer ", "");
@@ -150,15 +148,13 @@ export async function PUT(request: NextRequest) {
 		const id = searchParams.get("id");
 
 		if (!id) {
-			return NextResponse.json(
-				{ error: "ID is required" },
-				{ status: 400 },
-			);
+			return NextResponse.json({ error: "ID is required" }, { status: 400 });
 		}
 
 		// リクエストボディから更新データを取得
 		const body = await request.json();
-		const { name, page_url, image_url, target_url, x_position, y_position } = body;
+		const { name, page_url, image_url, target_url, x_position, y_position } =
+			body;
 
 		// photo_bubblesテーブルを更新
 		const updateData: any = {};
@@ -169,19 +165,17 @@ export async function PUT(request: NextRequest) {
 		if (x_position !== undefined) updateData.x_position = x_position;
 		if (y_position !== undefined) updateData.y_position = y_position;
 
-		const { data: updatedPhotoBubble, error: updateError } = await supabaseWithAuth
-			.from("photo_bubbles")
-			.update(updateData)
-			.eq("id", id)
-			.eq("user_id", user.id)
-			.select()
-			.single();
+		const { data: updatedPhotoBubble, error: updateError } =
+			await supabaseWithAuth
+				.from("photo_bubbles")
+				.update(updateData)
+				.eq("id", id)
+				.eq("user_id", user.id)
+				.select()
+				.single();
 
 		if (updateError) {
-			return NextResponse.json(
-				{ error: updateError.message },
-				{ status: 500 },
-			);
+			return NextResponse.json({ error: updateError.message }, { status: 500 });
 		}
 
 		return NextResponse.json({ photoBubble: updatedPhotoBubble });
@@ -196,7 +190,7 @@ export async function PUT(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
 	try {
 		const supabase = await createClient();
-		
+
 		// Authorizationヘッダーからアクセストークンを取得
 		const authHeader = request.headers.get("authorization");
 		const accessToken = authHeader?.replace("Bearer ", "");
@@ -223,10 +217,7 @@ export async function DELETE(request: NextRequest) {
 		const id = searchParams.get("id");
 
 		if (!id) {
-			return NextResponse.json(
-				{ error: "ID is required" },
-				{ status: 400 },
-			);
+			return NextResponse.json({ error: "ID is required" }, { status: 400 });
 		}
 
 		// フォトバブルの画像URLを取得
@@ -260,10 +251,7 @@ export async function DELETE(request: NextRequest) {
 			.eq("user_id", user.id);
 
 		if (deleteError) {
-			return NextResponse.json(
-				{ error: deleteError.message },
-				{ status: 500 },
-			);
+			return NextResponse.json({ error: deleteError.message }, { status: 500 });
 		}
 
 		return NextResponse.json({ success: true });
@@ -273,4 +261,4 @@ export async function DELETE(request: NextRequest) {
 			{ status: 500 },
 		);
 	}
-} 
+}

@@ -11,7 +11,7 @@ export interface HabitatElement {
 	lng: number;
 	color: string;
 	size: number;
-	shape: 'circle' | 'text';
+	shape: "circle" | "text";
 	label?: string;
 	maxR?: number;
 	text?: string;
@@ -33,6 +33,6 @@ export interface FabricHabitatEditorProps {
 	onMapChange?: (mapFile: string) => void;
 }
 
-
-
-export type FabricObjectWithHabitatId = FabricObject & { habitatPointId?: string }; 
+export type FabricObjectWithHabitatId = FabricObject & {
+	habitatPointId?: string;
+};

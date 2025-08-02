@@ -1,11 +1,11 @@
 "use client";
 
+import { safeYamlParse } from "@/app/lib/yaml-utils";
 import * as d3 from "d3";
 import React, { useEffect, useRef, useState } from "react";
+import type { TreeNode } from "../../types/types";
 import { useGeologicalAge } from "../geological/geological-context";
 import { processTreeData } from "./tree-data-processor";
-import { safeYamlParse } from "@/app/lib/yaml-utils";
-import type { TreeNode } from '../../types/types';
 
 // d3の階層ノードの型を拡張
 interface ExtendedHierarchyNode extends d3.HierarchyNode<TreeNode> {
@@ -20,7 +20,11 @@ interface PhylogeneticTreeProps {
 	onError?: (error: string) => void;
 }
 
-export function PhylogeneticTree({ customTreeFile, customTreeContent, onError }: PhylogeneticTreeProps) {
+export function PhylogeneticTree({
+	customTreeFile,
+	customTreeContent,
+	onError,
+}: PhylogeneticTreeProps) {
 	const svgRef = useRef<SVGSVGElement>(null);
 	const { selectedAgeIds } = useGeologicalAge();
 	const [customTreeData, setCustomTreeData] = useState<TreeNode | null>(null);
@@ -37,18 +41,25 @@ export function PhylogeneticTree({ customTreeFile, customTreeContent, onError }:
 			setIsLoading(true);
 			try {
 				let data: TreeNode | null = null;
-				
+
 				if (customTreeContent) {
 					// データベースから直接コンテンツを読み込み（YAML形式）
 					try {
 						const parsedData = safeYamlParse(customTreeContent);
-						if (parsedData && typeof parsedData === 'object' && 'name' in parsedData) {
+						if (
+							parsedData &&
+							typeof parsedData === "object" &&
+							"name" in parsedData
+						) {
 							data = parsedData as TreeNode;
 						}
 					} catch (yamlError) {
-						console.warn('YAMLデータの解析に失敗しました（無視されます）:', yamlError);
+						console.warn(
+							"YAMLデータの解析に失敗しました（無視されます）:",
+							yamlError,
+						);
 						if (onError) {
-							onError('YAMLの構文エラーがあります。無効な部分は無視されます。');
+							onError("YAMLの構文エラーがあります。無効な部分は無視されます。");
 						}
 					}
 				} else if (customTreeFile) {
@@ -56,21 +67,28 @@ export function PhylogeneticTree({ customTreeFile, customTreeContent, onError }:
 					try {
 						const response = await fetch(customTreeFile);
 						if (!response.ok) {
-							throw new Error('Failed to load custom tree data');
+							throw new Error("Failed to load custom tree data");
 						}
 						const text = await response.text();
 						const parsedData = safeYamlParse(text);
-						if (parsedData && typeof parsedData === 'object' && 'name' in parsedData) {
+						if (
+							parsedData &&
+							typeof parsedData === "object" &&
+							"name" in parsedData
+						) {
 							data = parsedData as TreeNode;
 						}
 					} catch (yamlError) {
-						console.warn('YAMLファイルの解析に失敗しました（無視されます）:', yamlError);
+						console.warn(
+							"YAMLファイルの解析に失敗しました（無視されます）:",
+							yamlError,
+						);
 					}
 				}
-				
+
 				setCustomTreeData(data);
 			} catch (error) {
-				console.error('カスタムツリーデータの読み込みに失敗しました:', error);
+				console.error("カスタムツリーデータの読み込みに失敗しました:", error);
 				setCustomTreeData(null);
 			} finally {
 				setIsLoading(false);
@@ -83,12 +101,12 @@ export function PhylogeneticTree({ customTreeFile, customTreeContent, onError }:
 	useEffect(() => {
 		if (!svgRef.current || isLoading) return;
 
-		console.log('PhylogeneticTree useEffect - selectedAgeIds:', selectedAgeIds);
-		console.log('PhylogeneticTree useEffect - customTreeData:', customTreeData);
+		console.log("PhylogeneticTree useEffect - selectedAgeIds:", selectedAgeIds);
+		console.log("PhylogeneticTree useEffect - customTreeData:", customTreeData);
 
 		// データの処理
 		let processedData: TreeNode | null;
-		
+
 		if (customTreeData) {
 			// カスタムツリーデータを使用（地質時代によるフィルタリングを適用）
 			processedData = processTreeData(selectedAgeIds, customTreeData);
@@ -97,7 +115,7 @@ export function PhylogeneticTree({ customTreeFile, customTreeContent, onError }:
 			processedData = processTreeData(selectedAgeIds);
 		}
 
-		console.log('PhylogeneticTree useEffect - processedData:', processedData);
+		console.log("PhylogeneticTree useEffect - processedData:", processedData);
 
 		if (!processedData) {
 			return;

@@ -34,16 +34,22 @@ export async function POST(request: NextRequest) {
 		if (file.size > 5 * 1024 * 1024) {
 			return NextResponse.json(
 				{ error: "ファイルサイズは5MB以下にしてください" },
-				{ status: 400 }
+				{ status: 400 },
 			);
 		}
 
 		// ファイル形式チェック
-		const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+		const allowedTypes = [
+			"image/jpeg",
+			"image/jpg",
+			"image/png",
+			"image/gif",
+			"image/webp",
+		];
 		if (!allowedTypes.includes(file.type)) {
 			return NextResponse.json(
 				{ error: "対応していないファイル形式です" },
-				{ status: 400 }
+				{ status: 400 },
 			);
 		}
 
@@ -76,7 +82,7 @@ export async function POST(request: NextRequest) {
 	} catch (error) {
 		return NextResponse.json(
 			{ error: "Failed to upload photo bubble image" },
-			{ status: 500 }
+			{ status: 500 },
 		);
 	}
-} 
+}

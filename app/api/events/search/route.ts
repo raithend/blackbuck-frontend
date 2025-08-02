@@ -5,9 +5,9 @@ import { NextResponse } from "next/server";
 export async function GET(request: NextRequest) {
 	try {
 		const { searchParams } = new URL(request.url);
-		const query = searchParams.get('q');
+		const query = searchParams.get("q");
 
-		if (!query || query.trim() === '') {
+		if (!query || query.trim() === "") {
 			return NextResponse.json({ events: [] });
 		}
 
@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
 			console.error("イベント検索エラー:", error);
 			return NextResponse.json(
 				{ error: "イベント検索に失敗しました" },
-				{ status: 500 }
+				{ status: 500 },
 			);
 		}
 
@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
 		console.error("イベント検索エラー:", error);
 		return NextResponse.json(
 			{ error: "サーバーエラーが発生しました" },
-			{ status: 500 }
+			{ status: 500 },
 		);
 	}
-} 
+}

@@ -1,4 +1,8 @@
-import { DeleteObjectCommand, S3Client, HeadObjectCommand } from "@aws-sdk/client-s3";
+import {
+	DeleteObjectCommand,
+	HeadObjectCommand,
+	S3Client,
+} from "@aws-sdk/client-s3";
 
 if (
 	!process.env.AWS_ACCESS_KEY_ID ||
@@ -37,7 +41,9 @@ console.log("S3クライアント詳細:", {
  */
 export async function checkS3ObjectExists(key: string): Promise<boolean> {
 	try {
-		console.log(`S3オブジェクト存在確認開始: bucket=${process.env.AWS_S3_BUCKET}, key=${key}`);
+		console.log(
+			`S3オブジェクト存在確認開始: bucket=${process.env.AWS_S3_BUCKET}, key=${key}`,
+		);
 		const command = new HeadObjectCommand({
 			Bucket: process.env.AWS_S3_BUCKET || "",
 			Key: key,
@@ -62,15 +68,17 @@ export async function checkS3ObjectExists(key: string): Promise<boolean> {
  */
 export async function deleteFromS3(key: string): Promise<boolean> {
 	try {
-		console.log(`S3削除開始: bucket=${process.env.AWS_S3_BUCKET}, region=${process.env.AWS_REGION}, key=${key}`);
-		
+		console.log(
+			`S3削除開始: bucket=${process.env.AWS_S3_BUCKET}, region=${process.env.AWS_REGION}, key=${key}`,
+		);
+
 		// 削除前にファイルの存在確認
 		const exists = await checkS3ObjectExists(key);
 		if (!exists) {
 			console.log(`S3削除スキップ: ${key} は存在しないため`);
 			return true; // 存在しない場合は削除成功として扱う
 		}
-		
+
 		const command = new DeleteObjectCommand({
 			Bucket: process.env.AWS_S3_BUCKET || "",
 			Key: key,
@@ -118,7 +126,7 @@ export function extractKeyFromS3Url(url: string): string {
  */
 export async function deleteMultipleFromS3(urls: string[]): Promise<boolean[]> {
 	console.log(`複数S3削除開始: ${urls.length}個のファイル`);
-	
+
 	const deletePromises = urls.map(async (url) => {
 		try {
 			const key = extractKeyFromS3Url(url);
@@ -130,7 +138,9 @@ export async function deleteMultipleFromS3(urls: string[]): Promise<boolean[]> {
 	});
 
 	const results = await Promise.all(deletePromises);
-	console.log(`複数S3削除完了: 成功=${results.filter(r => r).length}/${urls.length}`);
+	console.log(
+		`複数S3削除完了: 成功=${results.filter((r) => r).length}/${urls.length}`,
+	);
 	return results;
 }
 
@@ -143,8 +153,8 @@ export async function testS3ObjectExists(key: string): Promise<void> {
 	console.log(`テスト対象キー: ${key}`);
 	console.log(`バケット: ${process.env.AWS_S3_BUCKET}`);
 	console.log(`リージョン: ${process.env.AWS_REGION}`);
-	
+
 	const exists = await checkS3ObjectExists(key);
 	console.log(`存在確認結果: ${exists}`);
 	console.log("=== テスト完了 ===");
-} 
+}

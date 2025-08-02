@@ -11,17 +11,20 @@ import {
 } from "@/app/components/ui/dialog";
 import { Input } from "@/app/components/ui/input";
 import { Label } from "@/app/components/ui/label";
+import { createClient } from "@/app/lib/supabase-browser";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
-import { createClient } from "@/app/lib/supabase-browser";
 
 interface DeleteAccountDialogProps {
 	isOpen: boolean;
 	onClose: () => void;
 }
 
-export function DeleteAccountDialog({ isOpen, onClose }: DeleteAccountDialogProps) {
+export function DeleteAccountDialog({
+	isOpen,
+	onClose,
+}: DeleteAccountDialogProps) {
 	const [confirmationText, setConfirmationText] = useState("");
 	const [isDeleting, setIsDeleting] = useState(false);
 	const router = useRouter();
@@ -35,9 +38,11 @@ export function DeleteAccountDialog({ isOpen, onClose }: DeleteAccountDialogProp
 		setIsDeleting(true);
 		try {
 			const supabase = createClient();
-			
+
 			// セッションからアクセストークンを取得
-			const { data: { session } } = await supabase.auth.getSession();
+			const {
+				data: { session },
+			} = await supabase.auth.getSession();
 			if (!session) {
 				throw new Error("セッションが見つかりません");
 			}
@@ -62,7 +67,11 @@ export function DeleteAccountDialog({ isOpen, onClose }: DeleteAccountDialogProp
 			router.push("/");
 		} catch (error) {
 			console.error("アカウント削除エラー:", error);
-			toast.error(error instanceof Error ? error.message : "アカウントの削除に失敗しました");
+			toast.error(
+				error instanceof Error
+					? error.message
+					: "アカウントの削除に失敗しました",
+			);
 		} finally {
 			setIsDeleting(false);
 			onClose();
@@ -97,7 +106,11 @@ export function DeleteAccountDialog({ isOpen, onClose }: DeleteAccountDialogProp
 					</div>
 				</div>
 				<DialogFooter>
-					<Button variant="outline" onClick={handleCancel} disabled={isDeleting}>
+					<Button
+						variant="outline"
+						onClick={handleCancel}
+						disabled={isDeleting}
+					>
 						キャンセル
 					</Button>
 					<Button
@@ -111,4 +124,4 @@ export function DeleteAccountDialog({ isOpen, onClose }: DeleteAccountDialogProp
 			</DialogContent>
 		</Dialog>
 	);
-} 
+}

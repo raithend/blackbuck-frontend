@@ -4,13 +4,16 @@ import { NextResponse } from "next/server";
 
 export async function GET(
 	request: NextRequest,
-	{ params }: { params: Promise<{ location: string }> }
+	{ params }: { params: Promise<{ location: string }> },
 ) {
 	try {
 		const { location } = await params;
 
 		if (!location) {
-			return NextResponse.json({ error: "Location is required" }, { status: 400 });
+			return NextResponse.json(
+				{ error: "Location is required" },
+				{ status: 400 },
+			);
 		}
 
 		const supabase = await createClient();
@@ -28,26 +31,29 @@ export async function GET(
 		// エラーが発生した場合でも、データが見つからない場合はnullを返す（404エラーは返さない）
 		if (locationError) {
 			// データが見つからない場合はnullを返す
-			if (locationError.code === 'PGRST116') {
+			if (locationError.code === "PGRST116") {
 				return NextResponse.json({ location: null });
 			}
 			// その他のエラーの場合は500エラーを返す
 			console.error("location取得エラー:", locationError);
-			return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+			return NextResponse.json(
+				{ error: "Internal Server Error" },
+				{ status: 500 },
+			);
 		}
 
 		return NextResponse.json({ location: locationData });
 	} catch (error) {
 		return NextResponse.json(
 			{ error: "Internal Server Error" },
-			{ status: 500 }
+			{ status: 500 },
 		);
 	}
 }
 
 export async function PUT(
 	request: NextRequest,
-	{ params }: { params: Promise<{ location: string }> }
+	{ params }: { params: Promise<{ location: string }> },
 ) {
 	try {
 		const { location: locationName } = await params;
@@ -55,7 +61,7 @@ export async function PUT(
 		if (!locationName) {
 			return NextResponse.json(
 				{ error: "Location name is required" },
-				{ status: 400 }
+				{ status: 400 },
 			);
 		}
 
@@ -73,7 +79,10 @@ export async function PUT(
 		const supabaseWithAuth = await createClient(accessToken);
 
 		// ユーザー情報を取得
-		const { data: { user }, error: authError } = await supabaseWithAuth.auth.getUser();
+		const {
+			data: { user },
+			error: authError,
+		} = await supabaseWithAuth.auth.getUser();
 		if (authError || !user) {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 		}
@@ -98,17 +107,14 @@ export async function PUT(
 			.single();
 
 		if (updateError) {
-			return NextResponse.json(
-				{ error: updateError.message },
-				{ status: 500 }
-			);
+			return NextResponse.json({ error: updateError.message }, { status: 500 });
 		}
 
 		return NextResponse.json({ location: updatedLocation });
 	} catch (error) {
 		return NextResponse.json(
 			{ error: "Internal Server Error" },
-			{ status: 500 }
+			{ status: 500 },
 		);
 	}
-} 
+}

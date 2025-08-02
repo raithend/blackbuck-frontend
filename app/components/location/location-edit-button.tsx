@@ -4,10 +4,10 @@ import { LocationDialog } from "@/app/components/location/location-dialog";
 import { Button } from "@/app/components/ui/button";
 import { Dialog, DialogTrigger } from "@/app/components/ui/dialog";
 import { useUser } from "@/app/contexts/user-context";
+import type { Location } from "@/app/types/types";
+import { Edit } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Edit } from "lucide-react";
-import type { Location } from "@/app/types/types";
 
 interface LocationEditButtonProps {
 	location: Location;
@@ -28,14 +28,17 @@ export function LocationEditButton({ location }: LocationEditButtonProps) {
 				return;
 			}
 
-			const response = await fetch(`/api/locations/${encodeURIComponent(location.name)}`, {
-				method: "PUT",
-				headers: {
-					"Content-Type": "application/json",
-					Authorization: `Bearer ${session.access_token}`,
+			const response = await fetch(
+				`/api/locations/${encodeURIComponent(location.name)}`,
+				{
+					method: "PUT",
+					headers: {
+						"Content-Type": "application/json",
+						Authorization: `Bearer ${session.access_token}`,
+					},
+					body: JSON.stringify(data),
 				},
-				body: JSON.stringify(data),
-			});
+			);
 
 			if (!response.ok) {
 				const error = await response.json();
@@ -69,4 +72,4 @@ export function LocationEditButton({ location }: LocationEditButtonProps) {
 			<LocationDialog location={location} onSave={handleSave} />
 		</Dialog>
 	);
-} 
+}

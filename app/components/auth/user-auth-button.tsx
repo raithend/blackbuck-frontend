@@ -1,6 +1,11 @@
 "use client";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/app/components/ui/avatar";
+import { LogoutButton } from "@/app/components/auth/logout-button";
+import {
+	Avatar,
+	AvatarFallback,
+	AvatarImage,
+} from "@/app/components/ui/avatar";
 import { Button } from "@/app/components/ui/button";
 import {
 	DropdownMenu,
@@ -11,7 +16,6 @@ import {
 	DropdownMenuTrigger,
 } from "@/app/components/ui/dropdown-menu";
 import { Skeleton } from "@/app/components/ui/skeleton";
-import { LogoutButton } from "@/app/components/auth/logout-button";
 import { useUser } from "@/app/contexts/user-context";
 import { Settings, User } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -31,8 +35,16 @@ export function UserAuthButton() {
 	if (!user) {
 		return (
 			<div className="flex gap-2">
-				<Button variant="ghost" size="sm" onClick={() => router.push("/login")}>ログイン</Button>
-				<Button variant="outline" size="sm" onClick={() => router.push("/signup")}>サインアップ</Button>
+				<Button variant="ghost" size="sm" onClick={() => router.push("/login")}>
+					ログイン
+				</Button>
+				<Button
+					variant="outline"
+					size="sm"
+					onClick={() => router.push("/signup")}
+				>
+					サインアップ
+				</Button>
 			</div>
 		);
 	}
@@ -40,9 +52,16 @@ export function UserAuthButton() {
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger asChild>
-				<Button variant="ghost" size="sm" className="relative h-8 w-8 rounded-full">
+				<Button
+					variant="ghost"
+					size="sm"
+					className="relative h-8 w-8 rounded-full"
+				>
 					<Avatar className="h-8 w-8">
-						<AvatarImage src={user.avatar_url || undefined} alt={user.username} />
+						<AvatarImage
+							src={user.avatar_url || undefined}
+							alt={user.username}
+						/>
 						<AvatarFallback>
 							{user.username ? user.username.charAt(0).toUpperCase() : "U"}
 						</AvatarFallback>
@@ -59,7 +78,9 @@ export function UserAuthButton() {
 					</div>
 				</DropdownMenuLabel>
 				<DropdownMenuSeparator />
-				<DropdownMenuItem onClick={() => router.push(`/users/${user.account_id}`)}>
+				<DropdownMenuItem
+					onClick={() => router.push(`/users/${user.account_id}`)}
+				>
 					<User className="mr-2 h-4 w-4" />
 					<span>プロフィール</span>
 				</DropdownMenuItem>

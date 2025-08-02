@@ -4,13 +4,16 @@ import { NextResponse } from "next/server";
 
 export async function GET(
 	request: NextRequest,
-	{ params }: { params: Promise<{ accountId: string }> }
+	{ params }: { params: Promise<{ accountId: string }> },
 ) {
 	try {
 		const { accountId } = await params;
 
 		if (!accountId) {
-			return NextResponse.json({ error: "Account ID is required" }, { status: 400 });
+			return NextResponse.json(
+				{ error: "Account ID is required" },
+				{ status: 400 },
+			);
 		}
 
 		// Supabaseクライアントを作成
@@ -20,10 +23,7 @@ export async function GET(
 		const authHeader = request.headers.get("Authorization");
 
 		if (!authHeader) {
-			return NextResponse.json(
-				{ error: "認証が必要です" },
-				{ status: 401 }
-			);
+			return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
 		}
 
 		// まずユーザー情報を取得
@@ -52,14 +52,11 @@ export async function GET(
 			.order("created_at", { ascending: false });
 
 		if (postsError) {
-			return NextResponse.json(
-				{ error: postsError.message },
-				{ status: 500 },
-			);
+			return NextResponse.json({ error: postsError.message }, { status: 500 });
 		}
 
 		// 各投稿のいいね数を取得
-		const postIds = posts?.map(post => post.id) || [];
+		const postIds = posts?.map((post) => post.id) || [];
 		const { data: likeCounts, error: likeCountsError } = await supabase
 			.from("likes")
 			.select("post_id")
@@ -98,37 +95,43 @@ export async function GET(
 		// Authorizationヘッダーからトークンを取得
 		if (authHeader?.startsWith("Bearer ")) {
 			const token = authHeader.split(" ")[1];
-			const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-			
+			const {
+				data: { user },
+				error: authError,
+			} = await supabase.auth.getUser(token);
+
 			if (user && !authError) {
 				currentUser = user;
-				
+
 				const { data: likes, error: likesError } = await supabase
 					.from("likes")
 					.select("post_id")
 					.eq("user_id", user.id);
 
 				if (!likesError) {
-					userLikes = likes?.map(like => like.post_id) || [];
+					userLikes = likes?.map((like) => like.post_id) || [];
 				}
 			}
 		}
 
 		// 投稿データを整形（ユーザー情報といいね情報を含める）
-		const formattedPosts = posts?.map(post => {
-			const isLiked = userLikes.includes(post.id);
-			const likeCount = likeCountMap.get(post.id) || 0;
-			const commentCount = commentCountMap.get(post.id) || 0;
-			
-			return {
-			...post,
-			user: user,
-				post_images: post.post_images?.sort((a, b) => a.order_index - b.order_index) || [],
-				likeCount,
-				commentCount,
-				isLiked,
-			};
-		}) || [];
+		const formattedPosts =
+			posts?.map((post) => {
+				const isLiked = userLikes.includes(post.id);
+				const likeCount = likeCountMap.get(post.id) || 0;
+				const commentCount = commentCountMap.get(post.id) || 0;
+
+				return {
+					...post,
+					user: user,
+					post_images:
+						post.post_images?.sort((a, b) => a.order_index - b.order_index) ||
+						[],
+					likeCount,
+					commentCount,
+					isLiked,
+				};
+			}) || [];
 
 		return NextResponse.json({ posts: formattedPosts });
 	} catch (error) {
@@ -137,4 +140,4 @@ export async function GET(
 			{ status: 500 },
 		);
 	}
-} 
+}

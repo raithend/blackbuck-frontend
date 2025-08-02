@@ -4,11 +4,11 @@ import { NextResponse } from "next/server";
 
 export async function GET(
 	request: NextRequest,
-	{ params }: { params: Promise<{ accountId: string }> }
+	{ params }: { params: Promise<{ accountId: string }> },
 ) {
 	try {
 		const supabase = await createClient();
-		
+
 		// paramsをawait
 		const { accountId } = await params;
 
@@ -23,7 +23,7 @@ export async function GET(
 			console.error("対象ユーザー取得エラー:", targetError);
 			return NextResponse.json(
 				{ error: "ユーザーが見つかりません" },
-				{ status: 404 }
+				{ status: 404 },
 			);
 		}
 
@@ -61,12 +61,12 @@ export async function GET(
 			console.error("いいね投稿取得エラー:", likesError);
 			return NextResponse.json(
 				{ error: "いいねした投稿の取得に失敗しました" },
-				{ status: 500 }
+				{ status: 500 },
 			);
 		}
 
 		// 各投稿のいいね数を取得
-		const postIds = likedPosts?.map(like => like.posts.id) || [];
+		const postIds = likedPosts?.map((like) => like.posts.id) || [];
 		const { data: likeCounts, error: likeCountsError } = await supabase
 			.from("likes")
 			.select("post_id")
@@ -103,33 +103,37 @@ export async function GET(
 		}
 
 		// 投稿データを整形
-		const formattedPosts = likedPosts?.map(like => ({
-			id: like.posts.id,
-			content: like.posts.content,
-			location: like.posts.location,
-			event: like.posts.event,
-			classification: like.posts.classification,
-			created_at: like.posts.created_at,
-			updated_at: like.posts.updated_at,
-			likeCount: likeCountMap.get(like.posts.id) || 0,
-			commentCount: commentCountMap.get(like.posts.id) || 0,
-			isLiked: true, // いいねした投稿なので常にtrue
-			likedAt: like.created_at,
-			user: {
-				id: like.posts.users.id,
-				account_id: like.posts.users.account_id,
-				username: like.posts.users.username,
-				avatar_url: like.posts.users.avatar_url,
-			},
-			post_images: like.posts.post_images?.sort((a, b) => a.order_index - b.order_index) || [],
-		})) || [];
+		const formattedPosts =
+			likedPosts?.map((like) => ({
+				id: like.posts.id,
+				content: like.posts.content,
+				location: like.posts.location,
+				event: like.posts.event,
+				classification: like.posts.classification,
+				created_at: like.posts.created_at,
+				updated_at: like.posts.updated_at,
+				likeCount: likeCountMap.get(like.posts.id) || 0,
+				commentCount: commentCountMap.get(like.posts.id) || 0,
+				isLiked: true, // いいねした投稿なので常にtrue
+				likedAt: like.created_at,
+				user: {
+					id: like.posts.users.id,
+					account_id: like.posts.users.account_id,
+					username: like.posts.users.username,
+					avatar_url: like.posts.users.avatar_url,
+				},
+				post_images:
+					like.posts.post_images?.sort(
+						(a, b) => a.order_index - b.order_index,
+					) || [],
+			})) || [];
 
 		return NextResponse.json({ posts: formattedPosts });
 	} catch (error) {
 		console.error("いいね投稿取得エラー:", error);
 		return NextResponse.json(
 			{ error: "サーバーエラーが発生しました" },
-			{ status: 500 }
+			{ status: 500 },
 		);
 	}
-} 
+}

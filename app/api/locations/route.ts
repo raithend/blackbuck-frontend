@@ -21,7 +21,7 @@ export async function GET() {
 	} catch (error) {
 		return NextResponse.json(
 			{ error: "Internal Server Error" },
-			{ status: 500 }
+			{ status: 500 },
 		);
 	}
 }
@@ -29,7 +29,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
 	try {
 		const supabase = await createClient();
-		
+
 		// Authorizationヘッダーからアクセストークンを取得
 		const authHeader = request.headers.get("Authorization");
 		const accessToken = authHeader?.replace("Bearer ", "");
@@ -42,7 +42,10 @@ export async function POST(request: NextRequest) {
 		const supabaseWithAuth = await createClient(accessToken);
 
 		// ユーザー情報を取得
-		const { data: { user }, error: authError } = await supabaseWithAuth.auth.getUser();
+		const {
+			data: { user },
+			error: authError,
+		} = await supabaseWithAuth.auth.getUser();
 		if (authError || !user) {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 		}
@@ -54,7 +57,7 @@ export async function POST(request: NextRequest) {
 		if (!name) {
 			return NextResponse.json(
 				{ error: "Location name is required" },
-				{ status: 400 }
+				{ status: 400 },
 			);
 		}
 
@@ -73,17 +76,14 @@ export async function POST(request: NextRequest) {
 			.single();
 
 		if (insertError) {
-			return NextResponse.json(
-				{ error: insertError.message },
-				{ status: 500 }
-			);
+			return NextResponse.json({ error: insertError.message }, { status: 500 });
 		}
 
 		return NextResponse.json({ location });
 	} catch (error) {
 		return NextResponse.json(
 			{ error: "Internal Server Error" },
-			{ status: 500 }
+			{ status: 500 },
 		);
 	}
-} 
+}

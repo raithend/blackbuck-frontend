@@ -19,10 +19,7 @@ export function FollowCards({ initialUsers = [] }: FollowCardsProps) {
 	return (
 		<div className="grid gap-2">
 			{users.map((user) => (
-				<FollowCard
-					key={user.id}
-					user={user}
-				/>
+				<FollowCard key={user.id} user={user} />
 			))}
 		</div>
 	);

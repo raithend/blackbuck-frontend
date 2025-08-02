@@ -24,20 +24,20 @@ export async function GET(request: NextRequest) {
 			console.error("分類検索エラー:", error);
 			return NextResponse.json(
 				{ error: "分類検索に失敗しました" },
-				{ status: 500 }
+				{ status: 500 },
 			);
 		}
 
 		// 重複を除去してユニークな分類を取得
 		const uniqueClassifications = Array.from(
-			new Set(classifications?.map(c => c.classification).filter(Boolean))
+			new Set(classifications?.map((c) => c.classification).filter(Boolean)),
 		).slice(0, 10);
 
 		return NextResponse.json({ classifications: uniqueClassifications });
 	} catch (error) {
 		return NextResponse.json(
 			{ error: "Internal Server Error" },
-			{ status: 500 }
+			{ status: 500 },
 		);
 	}
-} 
+}

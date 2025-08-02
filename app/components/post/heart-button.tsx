@@ -1,8 +1,8 @@
 "use client";
 
+import { useUser } from "@/app/contexts/user-context";
 import { HeartIcon } from "lucide-react";
 import { useOptimistic, useTransition } from "react";
-import { useUser } from "@/app/contexts/user-context";
 import { toast } from "sonner";
 
 interface HeartButtonProps {
@@ -12,31 +12,31 @@ interface HeartButtonProps {
 	onLikeChange?: (likeCount: number, isLiked: boolean) => void;
 }
 
-export function HeartButton({ 
-	postId, 
-	initialLikeCount = 0, 
+export function HeartButton({
+	postId,
+	initialLikeCount = 0,
 	initialIsLiked = false,
-	onLikeChange 
+	onLikeChange,
 }: HeartButtonProps) {
 	const { user } = useUser();
 	const [isPending, startTransition] = useTransition();
-	
+
 	// useOptimisticを使用して楽観的更新を実装
 	const [optimisticState, addOptimistic] = useOptimistic(
 		{ isLiked: initialIsLiked, likeCount: initialLikeCount },
-		(state, newAction: { action: 'like' | 'unlike' }) => {
-			if (newAction.action === 'like') {
+		(state, newAction: { action: "like" | "unlike" }) => {
+			if (newAction.action === "like") {
 				return {
 					isLiked: true,
-					likeCount: state.likeCount + 1
+					likeCount: state.likeCount + 1,
 				};
 			} else {
 				return {
 					isLiked: false,
-					likeCount: Math.max(0, state.likeCount - 1)
+					likeCount: Math.max(0, state.likeCount - 1),
 				};
 			}
-		}
+		},
 	);
 
 	const handleClick = async () => {
@@ -50,13 +50,17 @@ export function HeartButton({
 		startTransition(async () => {
 			try {
 				// 楽観的更新を即座に適用
-				const action = optimisticState.isLiked ? 'unlike' : 'like';
+				const action = optimisticState.isLiked ? "unlike" : "like";
 				addOptimistic({ action });
 
 				// 認証トークンを取得
-				const supabase = await import("@/app/lib/supabase-browser").then(m => m.createClient());
-				const { data: { session } } = await supabase.auth.getSession();
-				
+				const supabase = await import("@/app/lib/supabase-browser").then((m) =>
+					m.createClient(),
+				);
+				const {
+					data: { session },
+				} = await supabase.auth.getSession();
+
 				if (!session?.access_token) {
 					throw new Error("認証トークンが取得できません");
 				}
@@ -65,7 +69,7 @@ export function HeartButton({
 					method: optimisticState.isLiked ? "DELETE" : "POST",
 					headers: {
 						"Content-Type": "application/json",
-						"Authorization": `Bearer ${session.access_token}`,
+						Authorization: `Bearer ${session.access_token}`,
 					},
 				});
 
@@ -75,10 +79,17 @@ export function HeartButton({
 				}
 
 				// 成功時の処理
-				onLikeChange?.(optimisticState.isLiked ? optimisticState.likeCount - 1 : optimisticState.likeCount + 1, !optimisticState.isLiked);
+				onLikeChange?.(
+					optimisticState.isLiked
+						? optimisticState.likeCount - 1
+						: optimisticState.likeCount + 1,
+					!optimisticState.isLiked,
+				);
 			} catch (error) {
 				console.error("いいね処理エラー:", error);
-				toast.error(error instanceof Error ? error.message : "いいねの処理に失敗しました");
+				toast.error(
+					error instanceof Error ? error.message : "いいねの処理に失敗しました",
+				);
 			}
 		});
 	};
@@ -90,15 +101,15 @@ export function HeartButton({
 				onClick={handleClick}
 				disabled={isPending}
 				className={`flex items-center gap-1 p-2 rounded-full transition-colors ${
-					optimisticState.isLiked 
-						? "text-red-600 hover:bg-red-50" 
+					optimisticState.isLiked
+						? "text-red-600 hover:bg-red-50"
 						: "hover:bg-gray-50"
 				} ${isPending ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
 			>
 				<HeartIcon
 					className={`w-5 h-5 transition-all ${
-						optimisticState.isLiked 
-							? "fill-red-600 text-red-600" 
+						optimisticState.isLiked
+							? "fill-red-600 text-red-600"
 							: "fill-transparent"
 					} ${isPending ? "animate-pulse" : ""}`}
 				/>

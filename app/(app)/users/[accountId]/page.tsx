@@ -1,29 +1,35 @@
 "use client";
 
+import { CommentCards } from "@/app/components/comment/comment-cards";
+import { UserCards } from "@/app/components/follow/user-cards";
 import { PostCards } from "@/app/components/post/post-cards";
 import { ProfileHeader } from "@/app/components/profile/profile-header";
-import { UserCards } from "@/app/components/follow/user-cards";
-import { CommentCards } from "@/app/components/comment/comment-cards";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/components/ui/tabs";
-import { PostWithUser, User } from "@/app/types/types";
+import {
+	Tabs,
+	TabsContent,
+	TabsList,
+	TabsTrigger,
+} from "@/app/components/ui/tabs";
 import { useUser } from "@/app/contexts/user-context";
-import useSWR from "swr";
+import type { PostWithUser, User } from "@/app/types/types";
 import { useEffect, useState } from "react";
-
-
+import useSWR from "swr";
 
 // フェッチャー関数
 const fetcher = async (url: string) => {
 	try {
 		const response = await fetch(url);
 		if (!response.ok) {
-			throw new Error('Failed to fetch data');
+			throw new Error("Failed to fetch data");
 		}
 		return response.json();
 	} catch (error) {
 		// ネットワークエラーの場合は既存データを保持するため、エラーを投げない
-		if (error instanceof TypeError && error.message.includes('fetch')) {
-			console.warn('ネットワークエラーが発生しましたが、既存のデータを表示し続けます:', error);
+		if (error instanceof TypeError && error.message.includes("fetch")) {
+			console.warn(
+				"ネットワークエラーが発生しましたが、既存のデータを表示し続けます:",
+				error,
+			);
 			return null; // nullを返すことで、既存のデータを保持
 		}
 		throw error;
@@ -33,33 +39,42 @@ const fetcher = async (url: string) => {
 // 認証付きフェッチャー関数
 const authFetcher = async (url: string) => {
 	try {
-		const supabase = await import("@/app/lib/supabase-browser").then(m => m.createClient());
-		const { data: { session } } = await supabase.auth.getSession();
-		
+		const supabase = await import("@/app/lib/supabase-browser").then((m) =>
+			m.createClient(),
+		);
+		const {
+			data: { session },
+		} = await supabase.auth.getSession();
+
 		const headers: HeadersInit = {
 			"Content-Type": "application/json",
 		};
-		
+
 		if (session?.access_token) {
 			headers.Authorization = `Bearer ${session.access_token}`;
 		}
-		
+
 		const response = await fetch(url, { headers });
 		if (!response.ok) {
-			throw new Error('Failed to fetch data');
+			throw new Error("Failed to fetch data");
 		}
 		return response.json();
 	} catch (error) {
 		// ネットワークエラーの場合は既存データを保持するため、エラーを投げない
-		if (error instanceof TypeError && error.message.includes('fetch')) {
-			console.warn('ネットワークエラーが発生しましたが、既存のデータを表示し続けます:', error);
+		if (error instanceof TypeError && error.message.includes("fetch")) {
+			console.warn(
+				"ネットワークエラーが発生しましたが、既存のデータを表示し続けます:",
+				error,
+			);
 			return null; // nullを返すことで、既存のデータを保持
 		}
 		throw error;
 	}
 };
 
-export default function UserProfilePage({ params }: { params: Promise<{ accountId: string }> }) {
+export default function UserProfilePage({
+	params,
+}: { params: Promise<{ accountId: string }> }) {
 	const [accountId, setAccountId] = useState<string | null>(null);
 	const { user: currentUser } = useUser();
 
@@ -76,7 +91,12 @@ export default function UserProfilePage({ params }: { params: Promise<{ accountI
 	const isOwnProfile = currentUser?.account_id === accountId;
 
 	// ユーザー情報を取得
-	const { data: userData, error: userError, isLoading: userLoading, mutate: mutateUser } = useSWR<{ user: User }>(
+	const {
+		data: userData,
+		error: userError,
+		isLoading: userLoading,
+		mutate: mutateUser,
+	} = useSWR<{ user: User }>(
 		accountId ? `/api/users/account/${accountId}` : null,
 		fetcher,
 		{
@@ -85,11 +105,16 @@ export default function UserProfilePage({ params }: { params: Promise<{ accountI
 			shouldRetryOnError: false,
 			dedupingInterval: 30000,
 			keepPreviousData: true,
-		}
+		},
 	);
 
 	// ユーザーの投稿を取得
-	const { data: postsData, error: postsError, isLoading: postsLoading, mutate: mutatePosts } = useSWR<{ posts: PostWithUser[] }>(
+	const {
+		data: postsData,
+		error: postsError,
+		isLoading: postsLoading,
+		mutate: mutatePosts,
+	} = useSWR<{ posts: PostWithUser[] }>(
 		accountId ? `/api/users/account/${accountId}/posts` : null,
 		authFetcher,
 		{
@@ -98,11 +123,16 @@ export default function UserProfilePage({ params }: { params: Promise<{ accountI
 			shouldRetryOnError: false,
 			dedupingInterval: 30000,
 			keepPreviousData: true,
-		}
+		},
 	);
 
 	// フィードを取得（自分自身のプロフィールの場合のみ）
-	const { data: feedData, error: feedError, isLoading: feedLoading, mutate: mutateFeed } = useSWR<{ posts: PostWithUser[] }>(
+	const {
+		data: feedData,
+		error: feedError,
+		isLoading: feedLoading,
+		mutate: mutateFeed,
+	} = useSWR<{ posts: PostWithUser[] }>(
 		isOwnProfile ? `/api/users/me/feed` : null,
 		authFetcher,
 		{
@@ -111,11 +141,16 @@ export default function UserProfilePage({ params }: { params: Promise<{ accountI
 			shouldRetryOnError: false,
 			dedupingInterval: 30000,
 			keepPreviousData: true,
-		}
+		},
 	);
 
 	// フォロー中のユーザーを取得
-	const { data: followingData, error: followingError, isLoading: followingLoading, mutate: mutateFollowing } = useSWR<{ users: User[] }>(
+	const {
+		data: followingData,
+		error: followingError,
+		isLoading: followingLoading,
+		mutate: mutateFollowing,
+	} = useSWR<{ users: User[] }>(
 		accountId ? `/api/users/account/${accountId}/follows?type=following` : null,
 		fetcher,
 		{
@@ -124,11 +159,16 @@ export default function UserProfilePage({ params }: { params: Promise<{ accountI
 			shouldRetryOnError: false,
 			dedupingInterval: 30000,
 			keepPreviousData: true,
-		}
+		},
 	);
 
 	// フォロワーを取得
-	const { data: followersData, error: followersError, isLoading: followersLoading, mutate: mutateFollowers } = useSWR<{ users: User[] }>(
+	const {
+		data: followersData,
+		error: followersError,
+		isLoading: followersLoading,
+		mutate: mutateFollowers,
+	} = useSWR<{ users: User[] }>(
 		accountId ? `/api/users/account/${accountId}/follows?type=followers` : null,
 		fetcher,
 		{
@@ -137,11 +177,16 @@ export default function UserProfilePage({ params }: { params: Promise<{ accountI
 			shouldRetryOnError: false,
 			dedupingInterval: 30000,
 			keepPreviousData: true,
-		}
+		},
 	);
 
 	// いいねした投稿を取得
-	const { data: likedPostsData, error: likedPostsError, isLoading: likedPostsLoading, mutate: mutateLikedPosts } = useSWR<{ posts: PostWithUser[] }>(
+	const {
+		data: likedPostsData,
+		error: likedPostsError,
+		isLoading: likedPostsLoading,
+		mutate: mutateLikedPosts,
+	} = useSWR<{ posts: PostWithUser[] }>(
 		accountId ? `/api/users/account/${accountId}/likes` : null,
 		authFetcher,
 		{
@@ -150,11 +195,16 @@ export default function UserProfilePage({ params }: { params: Promise<{ accountI
 			shouldRetryOnError: false,
 			dedupingInterval: 30000,
 			keepPreviousData: true,
-		}
+		},
 	);
 
 	// コメントを取得
-	const { data: commentsData, error: commentsError, isLoading: commentsLoading, mutate: mutateComments } = useSWR<{ comments: any[] }>(
+	const {
+		data: commentsData,
+		error: commentsError,
+		isLoading: commentsLoading,
+		mutate: mutateComments,
+	} = useSWR<{ comments: any[] }>(
 		accountId ? `/api/users/account/${accountId}/comments` : null,
 		authFetcher,
 		{
@@ -163,7 +213,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ accountI
 			shouldRetryOnError: false,
 			dedupingInterval: 30000,
 			keepPreviousData: true,
-		}
+		},
 	);
 
 	// ネットワークエラー時の再試行ボタン
@@ -180,17 +230,19 @@ export default function UserProfilePage({ params }: { params: Promise<{ accountI
 	};
 
 	// いいね状態変更のハンドラー
-	const handleLikeChange = (postId: string, likeCount: number, isLiked: boolean) => {
+	const handleLikeChange = (
+		postId: string,
+		likeCount: number,
+		isLiked: boolean,
+	) => {
 		// 投稿データを更新
 		mutatePosts((currentData) => {
 			if (!currentData) return currentData;
 			return {
 				...currentData,
-				posts: currentData.posts.map(post => 
-					post.id === postId 
-						? { ...post, likeCount, isLiked }
-						: post
-				)
+				posts: currentData.posts.map((post) =>
+					post.id === postId ? { ...post, likeCount, isLiked } : post,
+				),
 			};
 		}, false);
 
@@ -200,11 +252,9 @@ export default function UserProfilePage({ params }: { params: Promise<{ accountI
 				if (!currentData) return currentData;
 				return {
 					...currentData,
-					posts: currentData.posts.map(post => 
-						post.id === postId 
-							? { ...post, likeCount, isLiked }
-							: post
-					)
+					posts: currentData.posts.map((post) =>
+						post.id === postId ? { ...post, likeCount, isLiked } : post,
+					),
 				};
 			}, false);
 		}
@@ -214,11 +264,9 @@ export default function UserProfilePage({ params }: { params: Promise<{ accountI
 			if (!currentData) return currentData;
 			return {
 				...currentData,
-				posts: currentData.posts.map(post => 
-					post.id === postId 
-						? { ...post, likeCount, isLiked }
-						: post
-				)
+				posts: currentData.posts.map((post) =>
+					post.id === postId ? { ...post, likeCount, isLiked } : post,
+				),
 			};
 		}, false);
 	};
@@ -240,7 +288,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ accountI
 			if (!currentData) return currentData;
 			return {
 				...currentData,
-				posts: currentData.posts.filter(post => post.id !== postId)
+				posts: currentData.posts.filter((post) => post.id !== postId),
 			};
 		}, false);
 
@@ -250,7 +298,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ accountI
 				if (!currentData) return currentData;
 				return {
 					...currentData,
-					posts: currentData.posts.filter(post => post.id !== postId)
+					posts: currentData.posts.filter((post) => post.id !== postId),
 				};
 			}, false);
 		}
@@ -260,7 +308,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ accountI
 			if (!currentData) return currentData;
 			return {
 				...currentData,
-				posts: currentData.posts.filter(post => post.id !== postId)
+				posts: currentData.posts.filter((post) => post.id !== postId),
 			};
 		}, false);
 	};
@@ -278,23 +326,29 @@ export default function UserProfilePage({ params }: { params: Promise<{ accountI
 			if (!currentData) return currentData;
 			return {
 				...currentData,
-				comments: currentData.comments.filter(comment => comment.id !== commentId)
+				comments: currentData.comments.filter(
+					(comment) => comment.id !== commentId,
+				),
 			};
 		}, false);
 	};
 
 	// コメントいいね状態変更のハンドラー
-	const handleCommentLikeChange = (commentId: string, likeCount: number, isLiked: boolean) => {
+	const handleCommentLikeChange = (
+		commentId: string,
+		likeCount: number,
+		isLiked: boolean,
+	) => {
 		// コメントデータを更新
 		mutateComments((currentData) => {
 			if (!currentData) return currentData;
 			return {
 				...currentData,
-				comments: currentData.comments.map(comment => 
-					comment.id === commentId 
+				comments: currentData.comments.map((comment) =>
+					comment.id === commentId
 						? { ...comment, likeCount, isLiked }
-						: comment
-				)
+						: comment,
+				),
 			};
 		}, false);
 	};
@@ -318,9 +372,11 @@ export default function UserProfilePage({ params }: { params: Promise<{ accountI
 		return (
 			<div className="container mx-auto px-4 py-8">
 				<div className="text-center">
-					<h1 className="text-2xl font-bold text-red-600 mb-4">エラーが発生しました</h1>
+					<h1 className="text-2xl font-bold text-red-600 mb-4">
+						エラーが発生しました
+					</h1>
 					<p className="text-gray-600 mb-4">ユーザー情報の取得に失敗しました</p>
-					<button 
+					<button
 						onClick={handleRetry}
 						className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
 					>
@@ -336,8 +392,12 @@ export default function UserProfilePage({ params }: { params: Promise<{ accountI
 		return (
 			<div className="container mx-auto px-4 py-8">
 				<div className="text-center">
-					<h1 className="text-2xl font-bold text-gray-600 mb-4">ユーザーが見つかりません</h1>
-					<p className="text-gray-500">指定されたアカウントIDのユーザーは存在しません</p>
+					<h1 className="text-2xl font-bold text-gray-600 mb-4">
+						ユーザーが見つかりません
+					</h1>
+					<p className="text-gray-500">
+						指定されたアカウントIDのユーザーは存在しません
+					</p>
 				</div>
 			</div>
 		);
@@ -362,7 +422,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ accountI
 								サーバーとの接続が不安定です。表示されている内容は最新ではない可能性があります。
 							</p>
 						</div>
-						<button 
+						<button
 							onClick={handleRetry}
 							className="ml-4 px-3 py-1 bg-yellow-500 text-white text-sm rounded hover:bg-yellow-600 transition-colors"
 						>
@@ -377,9 +437,14 @@ export default function UserProfilePage({ params }: { params: Promise<{ accountI
 
 			{/* タブコンテンツ */}
 			<Tabs defaultValue={isOwnProfile ? "feed" : "posts"} className="w-full">
-				<TabsList className="grid w-full" style={{ 
-					gridTemplateColumns: isOwnProfile ? "repeat(6, 1fr)" : "repeat(5, 1fr)" 
-				}}>
+				<TabsList
+					className="grid w-full"
+					style={{
+						gridTemplateColumns: isOwnProfile
+							? "repeat(6, 1fr)"
+							: "repeat(5, 1fr)",
+					}}
+				>
 					{isOwnProfile && <TabsTrigger value="feed">フィード</TabsTrigger>}
 					<TabsTrigger value="posts">投稿</TabsTrigger>
 					<TabsTrigger value="following">フォロー中</TabsTrigger>
@@ -401,13 +466,15 @@ export default function UserProfilePage({ params }: { params: Promise<{ accountI
 							</div>
 						) : feedError ? (
 							<div className="text-center py-8">
-								<p className="text-gray-600 mb-4">フィードの取得に失敗しました</p>
+								<p className="text-gray-600 mb-4">
+									フィードの取得に失敗しました
+								</p>
 								{feedPosts.length > 0 && (
 									<p className="text-sm text-gray-500 mb-4">
 										以前に取得した投稿を表示しています
 									</p>
 								)}
-								<button 
+								<button
 									onClick={handleRetry}
 									className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
 								>
@@ -419,7 +486,12 @@ export default function UserProfilePage({ params }: { params: Promise<{ accountI
 								<p className="text-gray-600">フィードに投稿がありません</p>
 							</div>
 						) : (
-							<PostCards posts={feedPosts} onLikeChange={handleLikeChange} onPostUpdate={handlePostUpdate} onPostDelete={handlePostDelete} />
+							<PostCards
+								posts={feedPosts}
+								onLikeChange={handleLikeChange}
+								onPostUpdate={handlePostUpdate}
+								onPostDelete={handlePostDelete}
+							/>
 						)}
 					</TabsContent>
 				)}
@@ -442,7 +514,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ accountI
 									以前に取得した投稿を表示しています
 								</p>
 							)}
-							<button 
+							<button
 								onClick={handleRetry}
 								className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
 							>
@@ -454,7 +526,12 @@ export default function UserProfilePage({ params }: { params: Promise<{ accountI
 							<p className="text-gray-600">まだ投稿がありません</p>
 						</div>
 					) : (
-						<PostCards posts={posts} onLikeChange={handleLikeChange} onPostUpdate={handlePostUpdate} onPostDelete={handlePostDelete} />
+						<PostCards
+							posts={posts}
+							onLikeChange={handleLikeChange}
+							onPostUpdate={handlePostUpdate}
+							onPostDelete={handlePostDelete}
+						/>
 					)}
 				</TabsContent>
 
@@ -470,8 +547,10 @@ export default function UserProfilePage({ params }: { params: Promise<{ accountI
 						</div>
 					) : followingError ? (
 						<div className="text-center py-8">
-							<p className="text-gray-600 mb-4">フォロー中のユーザー取得に失敗しました</p>
-							<button 
+							<p className="text-gray-600 mb-4">
+								フォロー中のユーザー取得に失敗しました
+							</p>
+							<button
 								onClick={handleRetry}
 								className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
 							>
@@ -496,7 +575,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ accountI
 					) : followersError ? (
 						<div className="text-center py-8">
 							<p className="text-gray-600 mb-4">フォロワー取得に失敗しました</p>
-							<button 
+							<button
 								onClick={handleRetry}
 								className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
 							>
@@ -520,8 +599,10 @@ export default function UserProfilePage({ params }: { params: Promise<{ accountI
 						</div>
 					) : likedPostsError ? (
 						<div className="text-center py-8">
-							<p className="text-gray-600 mb-4">いいねした投稿の取得に失敗しました</p>
-							<button 
+							<p className="text-gray-600 mb-4">
+								いいねした投稿の取得に失敗しました
+							</p>
+							<button
 								onClick={handleRetry}
 								className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
 							>
@@ -533,7 +614,12 @@ export default function UserProfilePage({ params }: { params: Promise<{ accountI
 							<p className="text-gray-600">いいねした投稿がありません</p>
 						</div>
 					) : (
-						<PostCards posts={likedPosts} onLikeChange={handleLikeChange} onPostUpdate={handlePostUpdate} onPostDelete={handlePostDelete} />
+						<PostCards
+							posts={likedPosts}
+							onLikeChange={handleLikeChange}
+							onPostUpdate={handlePostUpdate}
+							onPostDelete={handlePostDelete}
+						/>
 					)}
 				</TabsContent>
 
@@ -550,7 +636,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ accountI
 					) : commentsError ? (
 						<div className="text-center py-8">
 							<p className="text-gray-600 mb-4">コメントの取得に失敗しました</p>
-							<button 
+							<button
 								onClick={handleRetry}
 								className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
 							>
@@ -562,8 +648,8 @@ export default function UserProfilePage({ params }: { params: Promise<{ accountI
 							<p className="text-gray-600">コメントがありません</p>
 						</div>
 					) : (
-						<CommentCards 
-							comments={comments} 
+						<CommentCards
+							comments={comments}
 							onLikeChange={handleCommentLikeChange}
 							onCommentUpdate={handleCommentUpdate}
 							onCommentDelete={handleCommentDelete}

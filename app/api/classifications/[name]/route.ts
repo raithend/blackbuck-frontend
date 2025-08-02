@@ -55,7 +55,7 @@ interface FormattedPost {
 
 export async function GET(
 	request: NextRequest,
-	{ params }: { params: Promise<{ name: string }> }
+	{ params }: { params: Promise<{ name: string }> },
 ) {
 	try {
 		const { name } = await params;
@@ -66,7 +66,7 @@ export async function GET(
 		if (!decodedName) {
 			return NextResponse.json(
 				{ error: "Classification name is required" },
-				{ status: 400 }
+				{ status: 400 },
 			);
 		}
 
@@ -79,7 +79,9 @@ export async function GET(
 			const token = authHeader.split(" ")[1];
 			// 認証トークン付きでSupabaseクライアントを作成
 			supabase = await createClient(token);
-			const { data: { user: authUser } } = await supabase.auth.getUser();
+			const {
+				data: { user: authUser },
+			} = await supabase.auth.getUser();
 			user = authUser;
 		} else {
 			// 認証なしでSupabaseクライアントを作成
@@ -141,23 +143,27 @@ export async function GET(
 					.eq("user_id", user.id);
 
 				if (!likesError) {
-					userLikes = likes?.map(like => like.post_id) || [];
+					userLikes = likes?.map((like) => like.post_id) || [];
 				}
 			}
 
 			// 完全一致する投稿を整形
-			const exactMatchFormattedPosts = exactMatchPosts?.map((post: Post) => ({
-				...post,
-				user: post.users, // usersをuserにリネーム
-				likeCount: post.likes?.length || 0,
-				isLiked: userLikes.includes(post.id),
-				images: post.post_images?.sort((a: PostImage, b: PostImage) => a.order_index - b.order_index) || [],
-			})) || [];
+			const exactMatchFormattedPosts =
+				exactMatchPosts?.map((post: Post) => ({
+					...post,
+					user: post.users, // usersをuserにリネーム
+					likeCount: post.likes?.length || 0,
+					isLiked: userLikes.includes(post.id),
+					images:
+						post.post_images?.sort(
+							(a: PostImage, b: PostImage) => a.order_index - b.order_index,
+						) || [],
+				})) || [];
 
 			posts = exactMatchFormattedPosts;
 
-			console.log('=== 完全一致投稿の取得完了 ===');
-			console.log('完全一致する投稿の数:', exactMatchFormattedPosts.length);
+			console.log("=== 完全一致投稿の取得完了 ===");
+			console.log("完全一致する投稿の数:", exactMatchFormattedPosts.length);
 
 			// 2. バックグラウンドでClaude APIを使用して関連する投稿を取得
 			// 非同期で実行し、結果を待たずにレスポンスを返す
@@ -177,19 +183,23 @@ export async function GET(
 					// 重複を除去した分類名の配列を作成し、検索対象の分類名を除外
 					const classifications = Array.from(
 						new Set(allPosts.map((post) => post.classification)),
-					).filter(Boolean).filter(name => name !== decodedName) as string[];
+					)
+						.filter(Boolean)
+						.filter((name) => name !== decodedName) as string[];
 
-					console.log('=== Claude API バックグラウンド処理開始 ===');
-					console.log('検索対象の分類名:', decodedName);
-					console.log('除外後の分類名数:', classifications.length);
+					console.log("=== Claude API バックグラウンド処理開始 ===");
+					console.log("検索対象の分類名:", decodedName);
+					console.log("除外後の分類名数:", classifications.length);
 
 					if (classifications.length === 0) {
-						console.log('処理対象の分類名がありません');
+						console.log("処理対象の分類名がありません");
 						return;
 					}
 
 					// Claude APIに分類名と配列を送信して階層関係を考慮した分類を取得（リトライ機能付き）
-					const callClaudeAPI = async (retryCount = 0): Promise<Anthropic.Messages.Message> => {
+					const callClaudeAPI = async (
+						retryCount = 0,
+					): Promise<Anthropic.Messages.Message> => {
 						try {
 							const message = await anthropic.messages.create({
 								model: "claude-opus-4-20250514",
@@ -211,17 +221,27 @@ ${JSON.stringify(classifications)}`,
 								],
 							});
 							return message;
-										} catch (error: unknown) {
-					console.error(`Claude API呼び出しエラー (試行 ${retryCount + 1}):`, error);
-					
-					// 過負荷エラー（529）またはレート制限エラーの場合、リトライ
-					if (error && typeof error === 'object' && 'status' in error && 
-						((error.status === 529 || error.status === 429) && retryCount < 3)) {
+						} catch (error: unknown) {
+							console.error(
+								`Claude API呼び出しエラー (試行 ${retryCount + 1}):`,
+								error,
+							);
+
+							// 過負荷エラー（529）またはレート制限エラーの場合、リトライ
+							if (
+								error &&
+								typeof error === "object" &&
+								"status" in error &&
+								(error.status === 529 || error.status === 429) &&
+								retryCount < 3
+							) {
 								console.log(`リトライ中... (${retryCount + 1}/3)`);
-								await new Promise(resolve => setTimeout(resolve, 2000 * (retryCount + 1))); // 指数バックオフ
+								await new Promise((resolve) =>
+									setTimeout(resolve, 2000 * (retryCount + 1)),
+								); // 指数バックオフ
 								return callClaudeAPI(retryCount + 1);
 							}
-							
+
 							// 最大リトライ回数に達した場合、エラーを投げる
 							throw error;
 						}
@@ -233,7 +253,7 @@ ${JSON.stringify(classifications)}`,
 					const response =
 						message.content[0].type === "text" ? message.content[0].text : "";
 
-					console.log('Claude APIの生の応答:', response);
+					console.log("Claude APIの生の応答:", response);
 
 					// JSONの部分を抽出（余分なテキストがある場合に対応）
 					const jsonMatch = response.match(/\{[\s\S]*\}/);
@@ -242,17 +262,26 @@ ${JSON.stringify(classifications)}`,
 						return;
 					}
 
-					const parsedResponse: { matchedClassifications?: string[] } = JSON.parse(jsonMatch[0]);
-					const matchedClassifications: string[] = parsedResponse.matchedClassifications || [];
+					const parsedResponse: { matchedClassifications?: string[] } =
+						JSON.parse(jsonMatch[0]);
+					const matchedClassifications: string[] =
+						parsedResponse.matchedClassifications || [];
 
-					console.log('Claude APIから返されたマッチした分類名:', matchedClassifications);
-					console.log('マッチした分類名の数:', matchedClassifications.length);
+					console.log(
+						"Claude APIから返されたマッチした分類名:",
+						matchedClassifications,
+					);
+					console.log("マッチした分類名の数:", matchedClassifications.length);
 
-					if (Array.isArray(matchedClassifications) && matchedClassifications.length > 0) {
+					if (
+						Array.isArray(matchedClassifications) &&
+						matchedClassifications.length > 0
+					) {
 						// マッチした分類名を持つ投稿を取得
-						const { data: relatedPostsData, error: relatedPostsError } = await supabase
-							.from("posts")
-							.select(`
+						const { data: relatedPostsData, error: relatedPostsError } =
+							await supabase
+								.from("posts")
+								.select(`
 								*,
 								users!posts_user_id_fkey (
 									id,
@@ -273,16 +302,19 @@ ${JSON.stringify(classifications)}`,
 									id
 								)
 							`)
-							.in("classification", matchedClassifications)
-							.order("created_at", { ascending: false });
+								.in("classification", matchedClassifications)
+								.order("created_at", { ascending: false });
 
 						if (relatedPostsError) {
 							console.error("Related posts fetch error:", relatedPostsError);
 							return;
 						}
 
-						console.log('Claude APIで取得された関連投稿の数:', relatedPostsData?.length || 0);
-						console.log('=== Claude API バックグラウンド処理完了 ===');
+						console.log(
+							"Claude APIで取得された関連投稿の数:",
+							relatedPostsData?.length || 0,
+						);
+						console.log("=== Claude API バックグラウンド処理完了 ===");
 					}
 				} catch (error) {
 					console.error("Background Claude API processing error:", error);
@@ -290,26 +322,29 @@ ${JSON.stringify(classifications)}`,
 			}, 0); // 即座に実行
 		}
 
-		return NextResponse.json({ 
-			classification: classification || null,
-			posts: posts
-		}, {
-			headers: {
-				'Cache-Control': 'public, max-age=300, s-maxage=300', // 5分間キャッシュ
-			}
-		});
+		return NextResponse.json(
+			{
+				classification: classification || null,
+				posts: posts,
+			},
+			{
+				headers: {
+					"Cache-Control": "public, max-age=300, s-maxage=300", // 5分間キャッシュ
+				},
+			},
+		);
 	} catch (error) {
 		console.error("Classification API error:", error);
 		return NextResponse.json(
 			{ error: "Internal Server Error" },
-			{ status: 500 }
+			{ status: 500 },
 		);
 	}
 }
 
 export async function PUT(
 	request: NextRequest,
-	{ params }: { params: Promise<{ name: string }> }
+	{ params }: { params: Promise<{ name: string }> },
 ) {
 	try {
 		const { name } = await params;
@@ -319,7 +354,7 @@ export async function PUT(
 		if (!decodedName) {
 			return NextResponse.json(
 				{ error: "Classification name is required" },
-				{ status: 400 }
+				{ status: 400 },
 			);
 		}
 
@@ -328,22 +363,19 @@ export async function PUT(
 		const accessToken = authHeader?.replace("Bearer ", "");
 
 		if (!accessToken) {
-			return NextResponse.json(
-				{ error: "認証が必要です" },
-				{ status: 401 }
-			);
+			return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
 		}
 
 		// アクセストークンを使ってSupabaseクライアントを作成
 		const supabase = await createClient(accessToken);
 
 		// ユーザー情報を取得
-		const { data: { user }, error: authError } = await supabase.auth.getUser();
+		const {
+			data: { user },
+			error: authError,
+		} = await supabase.auth.getUser();
 		if (authError || !user) {
-			return NextResponse.json(
-				{ error: "認証が必要です" },
-				{ status: 401 }
-			);
+			return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
 		}
 
 		// 分類が存在するかチェック
@@ -363,8 +395,8 @@ export async function PUT(
 				english_name: body.english_name || decodedName,
 				scientific_name: body.scientific_name || "",
 				description: body.description || "",
-				era_start: body.era_start || null,
-				era_end: body.era_end || null,
+				appearance_period: body.appearance_period || null,
+				extinction_period: body.extinction_period || null,
 				created_at: new Date().toISOString(),
 				updated_at: new Date().toISOString(),
 			} as const;
@@ -382,7 +414,7 @@ export async function PUT(
 			console.error("Classification check error:", checkError);
 			return NextResponse.json(
 				{ error: "Failed to check classification" },
-				{ status: 500 }
+				{ status: 500 },
 			);
 		} else {
 			// 分類が存在する場合は更新
@@ -397,8 +429,8 @@ export async function PUT(
 				english_name: body.english_name,
 				scientific_name: body.scientific_name,
 				description: body.description,
-				era_start: body.era_start,
-				era_end: body.era_end,
+				appearance_period: body.appearance_period,
+				extinction_period: body.extinction_period,
 				updated_at: new Date().toISOString(),
 			};
 
@@ -417,7 +449,7 @@ export async function PUT(
 			console.error("Classification update error:", operationError);
 			return NextResponse.json(
 				{ error: "Failed to update classification" },
-				{ status: 500 }
+				{ status: 500 },
 			);
 		}
 
@@ -426,7 +458,7 @@ export async function PUT(
 		console.error("Classification API error:", error);
 		return NextResponse.json(
 			{ error: "Internal Server Error" },
-			{ status: 500 }
+			{ status: 500 },
 		);
 	}
-} 
+}

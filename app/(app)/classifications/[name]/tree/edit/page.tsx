@@ -1,22 +1,26 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { Button } from "@/app/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card";
-import { ArrowLeft, Save, Download, Upload, Sparkles } from "lucide-react";
-import { createClient } from "@/app/lib/supabase-browser";
-import { toast } from "sonner";
-import dynamic from "next/dynamic";
-import { GeologicalAgeProvider } from "@/app/components/geological/geological-context";
 import { GeologicalAgeCard } from "@/app/components/geological/geological-age-card";
+import { GeologicalAgeProvider } from "@/app/components/geological/geological-context";
 import { PhylogeneticTree } from "@/app/components/phylogenetic/phylogenetic-tree";
+import { Button } from "@/app/components/ui/button";
+import {
+	Card,
+	CardContent,
+	CardHeader,
+	CardTitle,
+} from "@/app/components/ui/card";
+import { createClient } from "@/app/lib/supabase-browser";
+import { ArrowLeft, Download, Save, Sparkles, Upload } from "lucide-react";
+import dynamic from "next/dynamic";
+import { useParams, useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 
 // Monaco Editorを動的インポート（SSRを避けるため）
-const MonacoEditor = dynamic(
-	() => import("@monaco-editor/react"),
-	{ ssr: false }
-);
+const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
+	ssr: false,
+});
 
 export default function PhylogeneticTreeEditPage() {
 	const params = useParams();
@@ -28,7 +32,7 @@ export default function PhylogeneticTreeEditPage() {
 	const [isGenerating, setIsGenerating] = useState(false);
 	const [originalContent, setOriginalContent] = useState("");
 	const [yamlError, setYamlError] = useState<string | null>(null);
-	
+
 	// 自動保存用のタイマーとフラグ
 	const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
 	const [isAutoSaving, setIsAutoSaving] = useState(false);
@@ -39,7 +43,9 @@ export default function PhylogeneticTreeEditPage() {
 		const fetchTreeData = async () => {
 			setIsLoading(true);
 			try {
-				const response = await fetch(`/api/classifications/${encodeURIComponent(decodedName)}/phylogenetic-trees`);
+				const response = await fetch(
+					`/api/classifications/${encodeURIComponent(decodedName)}/phylogenetic-trees`,
+				);
 				if (response.ok) {
 					const data = await response.json();
 					const content = data.phylogeneticTree?.content || "";
@@ -47,8 +53,8 @@ export default function PhylogeneticTreeEditPage() {
 					setOriginalContent(content);
 				}
 			} catch (error) {
-				console.error('系統樹データの取得に失敗しました:', error);
-				toast.error('系統樹データの取得に失敗しました');
+				console.error("系統樹データの取得に失敗しました:", error);
+				toast.error("系統樹データの取得に失敗しました");
 			} finally {
 				setIsLoading(false);
 			}
@@ -66,32 +72,39 @@ export default function PhylogeneticTreeEditPage() {
 		setIsAutoSaving(true);
 		try {
 			const supabase = createClient();
-			const { data: { session } } = await supabase.auth.getSession();
-			
-			const response = await fetch(`/api/classifications/${encodeURIComponent(decodedName)}/phylogenetic-trees`, {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-					'Authorization': `Bearer ${session?.access_token}`,
+			const {
+				data: { session },
+			} = await supabase.auth.getSession();
+
+			const response = await fetch(
+				`/api/classifications/${encodeURIComponent(decodedName)}/phylogenetic-trees`,
+				{
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+						Authorization: `Bearer ${session?.access_token}`,
+					},
+					body: JSON.stringify({
+						content: treeContent,
+					}),
 				},
-				body: JSON.stringify({
-					content: treeContent
-				}),
-			});
+			);
 
 			if (!response.ok) {
-				throw new Error('自動保存に失敗しました');
+				throw new Error("自動保存に失敗しました");
 			}
 
 			setOriginalContent(treeContent);
 			setLastAutoSaveTime(new Date());
-			toast.success('自動保存しました', {
+			toast.success("自動保存しました", {
 				duration: 2000,
-				description: lastAutoSaveTime ? `前回: ${lastAutoSaveTime.toLocaleTimeString()}` : undefined
+				description: lastAutoSaveTime
+					? `前回: ${lastAutoSaveTime.toLocaleTimeString()}`
+					: undefined,
 			});
 		} catch (error) {
-			console.error('自動保存エラー:', error);
-			toast.error('自動保存に失敗しました');
+			console.error("自動保存エラー:", error);
+			toast.error("自動保存に失敗しました");
 		} finally {
 			setIsAutoSaving(false);
 		}
@@ -134,28 +147,35 @@ export default function PhylogeneticTreeEditPage() {
 			}
 
 			const supabase = createClient();
-			const { data: { session } } = await supabase.auth.getSession();
-			
-			const response = await fetch(`/api/classifications/${encodeURIComponent(decodedName)}/generate-tree`, {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-					'Authorization': `Bearer ${session?.access_token}`,
+			const {
+				data: { session },
+			} = await supabase.auth.getSession();
+
+			const response = await fetch(
+				`/api/classifications/${encodeURIComponent(decodedName)}/generate-tree`,
+				{
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+						Authorization: `Bearer ${session?.access_token}`,
+					},
 				},
-			});
+			);
 
 			if (!response.ok) {
 				const errorData = await response.json();
-				throw new Error(errorData.error || '生成に失敗しました');
+				throw new Error(errorData.error || "生成に失敗しました");
 			}
 
 			const data = await response.json();
 			setTreeContent(data.yaml);
 			setOriginalContent(data.yaml);
-			toast.success('Wikipediaから系統樹を生成しました');
+			toast.success("Wikipediaから系統樹を生成しました");
 		} catch (error) {
-			console.error('系統樹生成エラー:', error);
-			toast.error(error instanceof Error ? error.message : '系統樹の生成に失敗しました');
+			console.error("系統樹生成エラー:", error);
+			toast.error(
+				error instanceof Error ? error.message : "系統樹の生成に失敗しました",
+			);
 		} finally {
 			setIsGenerating(false);
 		}
@@ -166,29 +186,34 @@ export default function PhylogeneticTreeEditPage() {
 		setIsSaving(true);
 		try {
 			const supabase = createClient();
-			const { data: { session } } = await supabase.auth.getSession();
-			
-			const response = await fetch(`/api/classifications/${encodeURIComponent(decodedName)}/phylogenetic-trees`, {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-					'Authorization': `Bearer ${session?.access_token}`,
+			const {
+				data: { session },
+			} = await supabase.auth.getSession();
+
+			const response = await fetch(
+				`/api/classifications/${encodeURIComponent(decodedName)}/phylogenetic-trees`,
+				{
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+						Authorization: `Bearer ${session?.access_token}`,
+					},
+					body: JSON.stringify({
+						content: treeContent,
+					}),
 				},
-				body: JSON.stringify({
-					content: treeContent
-				}),
-			});
+			);
 
 			if (!response.ok) {
-				throw new Error('保存に失敗しました');
+				throw new Error("保存に失敗しました");
 			}
 
 			setOriginalContent(treeContent);
 			setLastAutoSaveTime(new Date());
-			toast.success('系統樹を保存しました');
+			toast.success("系統樹を保存しました");
 		} catch (error) {
-			console.error('保存エラー:', error);
-			toast.error('保存に失敗しました');
+			console.error("保存エラー:", error);
+			toast.error("保存に失敗しました");
 		} finally {
 			setIsSaving(false);
 		}
@@ -196,9 +221,9 @@ export default function PhylogeneticTreeEditPage() {
 
 	// ファイルダウンロード
 	const handleDownload = () => {
-		const blob = new Blob([treeContent], { type: 'text/plain' });
+		const blob = new Blob([treeContent], { type: "text/plain" });
 		const url = URL.createObjectURL(blob);
-		const a = document.createElement('a');
+		const a = document.createElement("a");
 		a.href = url;
 		a.download = `${decodedName}_phylogenetic_tree.yml`;
 		document.body.appendChild(a);
@@ -239,7 +264,9 @@ export default function PhylogeneticTreeEditPage() {
 				<div className="flex items-center gap-4 mb-6">
 					<Button
 						variant="outline"
-						onClick={() => router.push(`/classifications/${encodeURIComponent(decodedName)}`)}
+						onClick={() =>
+							router.push(`/classifications/${encodeURIComponent(decodedName)}`)
+						}
 					>
 						<ArrowLeft className="h-4 w-4 lg:mr-2" />
 						<span className="hidden lg:inline">戻る</span>
@@ -266,7 +293,9 @@ export default function PhylogeneticTreeEditPage() {
 							disabled={isGenerating}
 						>
 							<Sparkles className="h-4 w-4 lg:mr-2" />
-							<span className="hidden lg:inline">{isGenerating ? "生成中..." : "生成"}</span>
+							<span className="hidden lg:inline">
+								{isGenerating ? "生成中..." : "生成"}
+							</span>
 						</Button>
 						<Button
 							variant="outline"
@@ -280,7 +309,7 @@ export default function PhylogeneticTreeEditPage() {
 						<Button
 							variant="outline"
 							size="sm"
-							onClick={() => document.getElementById('file-upload')?.click()}
+							onClick={() => document.getElementById("file-upload")?.click()}
 						>
 							<Upload className="h-4 w-4 lg:mr-2" />
 							<span className="hidden lg:inline">アップロード</span>
@@ -291,7 +320,9 @@ export default function PhylogeneticTreeEditPage() {
 							size="sm"
 						>
 							<Save className="h-4 w-4 lg:mr-2" />
-							<span className="hidden lg:inline">{isSaving ? "保存中..." : "保存"}</span>
+							<span className="hidden lg:inline">
+								{isSaving ? "保存中..." : "保存"}
+							</span>
 						</Button>
 						<input
 							id="file-upload"
@@ -318,54 +349,60 @@ export default function PhylogeneticTreeEditPage() {
 										minimap: { enabled: true },
 										scrollBeyondLastLine: false,
 										fontSize: 14,
-										wordWrap: 'on',
+										wordWrap: "on",
 										automaticLayout: true,
-										theme: 'vs-dark',
-										lineNumbers: 'on',
+										theme: "vs-dark",
+										lineNumbers: "on",
 										glyphMargin: true,
 										folding: true,
 										lineDecorationsWidth: 10,
 										lineNumbersMinChars: 3,
-										renderLineHighlight: 'all',
+										renderLineHighlight: "all",
 										selectOnLineNumbers: true,
 										roundedSelection: false,
 										readOnly: false,
-										cursorStyle: 'line',
+										cursorStyle: "line",
 										contextmenu: true,
 										mouseWheelZoom: true,
 										quickSuggestions: false,
-										wordBasedSuggestions: 'off',
+										wordBasedSuggestions: "off",
 										parameterHints: {
-											enabled: false
+											enabled: false,
 										},
-										tabCompletion: 'on',
+										tabCompletion: "on",
 										tabSize: 2,
 										insertSpaces: true,
-										wrappingIndent: 'indent',
+										wrappingIndent: "indent",
 										scrollbar: {
-											vertical: 'visible',
-											horizontal: 'visible',
+											vertical: "visible",
+											horizontal: "visible",
 											verticalScrollbarSize: 14,
-											horizontalScrollbarSize: 14
-										}
+											horizontalScrollbarSize: 14,
+										},
 									}}
 									onMount={(editor, monaco) => {
-										console.log('MonacoEditor onMount');
-										monaco.languages.registerCompletionItemProvider('yaml', {
-											triggerCharacters: ['-', 'c', 'f', 't', 'e', 'p', 'n'],
+										console.log("MonacoEditor onMount");
+										monaco.languages.registerCompletionItemProvider("yaml", {
+											triggerCharacters: ["-", "c", "f", "t", "e", "p", "n"],
 											provideCompletionItems: (model, position) => {
-												const lineContent = model.getLineContent(position.lineNumber).slice(0, position.column - 1);
+												const lineContent = model
+													.getLineContent(position.lineNumber)
+													.slice(0, position.column - 1);
 												const indentMatch = lineContent.match(/^\s*/);
-												const indentLength = indentMatch ? indentMatch[0].length : 0;
+												const indentLength = indentMatch
+													? indentMatch[0].length
+													: 0;
 												const startColumn = indentLength + 1;
 												const endColumn = position.column;
 												const suggestions = [];
 												if (/^\s*-$/.test(lineContent)) {
 													suggestions.push({
-														label: '- name:',
+														label: "- name:",
 														kind: monaco.languages.CompletionItemKind.Snippet,
-														insertText: '- name: ',
-														insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+														insertText: "- name: ",
+														insertTextRules:
+															monaco.languages.CompletionItemInsertTextRule
+																.InsertAsSnippet,
 														range: {
 															startLineNumber: position.lineNumber,
 															startColumn: startColumn,
@@ -373,14 +410,19 @@ export default function PhylogeneticTreeEditPage() {
 															endColumn: endColumn,
 														},
 													});
-													console.log('Triggered - name: snippet');
+													console.log("Triggered - name: snippet");
 												}
-												if (/^\s*c$/.test(lineContent) || /^\s*children$/.test(lineContent)) {
+												if (
+													/^\s*c$/.test(lineContent) ||
+													/^\s*children$/.test(lineContent)
+												) {
 													suggestions.push({
-														label: 'children:',
+														label: "children:",
 														kind: monaco.languages.CompletionItemKind.Snippet,
-														insertText: 'children: ',
-														insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+														insertText: "children: ",
+														insertTextRules:
+															monaco.languages.CompletionItemInsertTextRule
+																.InsertAsSnippet,
 														range: {
 															startLineNumber: position.lineNumber,
 															startColumn: startColumn,
@@ -388,14 +430,19 @@ export default function PhylogeneticTreeEditPage() {
 															endColumn: endColumn,
 														},
 													});
-													console.log('Triggered children: snippet');
+													console.log("Triggered children: snippet");
 												}
-												if (/^\s*f$/.test(lineContent) || /^\s*from$/.test(lineContent)) {
+												if (
+													/^\s*f$/.test(lineContent) ||
+													/^\s*from$/.test(lineContent)
+												) {
 													suggestions.push({
-														label: 'from:',
+														label: "from:",
 														kind: monaco.languages.CompletionItemKind.Snippet,
-														insertText: 'from: ',
-														insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+														insertText: "from: ",
+														insertTextRules:
+															monaco.languages.CompletionItemInsertTextRule
+																.InsertAsSnippet,
 														range: {
 															startLineNumber: position.lineNumber,
 															startColumn: startColumn,
@@ -403,14 +450,19 @@ export default function PhylogeneticTreeEditPage() {
 															endColumn: endColumn,
 														},
 													});
-													console.log('Triggered from: snippet');
+													console.log("Triggered from: snippet");
 												}
-												if (/^\s*t$/.test(lineContent) || /^\s*to$/.test(lineContent)) {
+												if (
+													/^\s*t$/.test(lineContent) ||
+													/^\s*to$/.test(lineContent)
+												) {
 													suggestions.push({
-														label: 'to:',
+														label: "to:",
 														kind: monaco.languages.CompletionItemKind.Snippet,
-														insertText: 'to: ',
-														insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+														insertText: "to: ",
+														insertTextRules:
+															monaco.languages.CompletionItemInsertTextRule
+																.InsertAsSnippet,
 														range: {
 															startLineNumber: position.lineNumber,
 															startColumn: startColumn,
@@ -418,15 +470,17 @@ export default function PhylogeneticTreeEditPage() {
 															endColumn: endColumn,
 														},
 													});
-													console.log('Triggered to: snippet');
+													console.log("Triggered to: snippet");
 												}
 												// en_name補完
 												if (/^\s*e$/.test(lineContent)) {
 													suggestions.push({
-														label: 'en_name:',
+														label: "en_name:",
 														kind: monaco.languages.CompletionItemKind.Snippet,
-														insertText: 'en_name: ',
-														insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+														insertText: "en_name: ",
+														insertTextRules:
+															monaco.languages.CompletionItemInsertTextRule
+																.InsertAsSnippet,
 														range: {
 															startLineNumber: position.lineNumber,
 															startColumn: startColumn,
@@ -434,15 +488,17 @@ export default function PhylogeneticTreeEditPage() {
 															endColumn: endColumn,
 														},
 													});
-													console.log('Triggered en_name: snippet');
+													console.log("Triggered en_name: snippet");
 												}
 												// post_branch補完
 												if (/^\s*p$/.test(lineContent)) {
 													suggestions.push({
-														label: 'post_branch:',
+														label: "post_branch:",
 														kind: monaco.languages.CompletionItemKind.Snippet,
-														insertText: 'post_branch: true',
-														insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+														insertText: "post_branch: true",
+														insertTextRules:
+															monaco.languages.CompletionItemInsertTextRule
+																.InsertAsSnippet,
 														range: {
 															startLineNumber: position.lineNumber,
 															startColumn: startColumn,
@@ -450,15 +506,17 @@ export default function PhylogeneticTreeEditPage() {
 															endColumn: endColumn,
 														},
 													});
-													console.log('Triggered post_branch: snippet');
+													console.log("Triggered post_branch: snippet");
 												}
 												// non_post_leaf補完（nで始まる場合）
 												if (/^\s*n$/.test(lineContent)) {
 													suggestions.push({
-														label: 'non_post_leaf:',
+														label: "non_post_leaf:",
 														kind: monaco.languages.CompletionItemKind.Snippet,
-														insertText: 'non_post_leaf: true',
-														insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+														insertText: "non_post_leaf: true",
+														insertTextRules:
+															monaco.languages.CompletionItemInsertTextRule
+																.InsertAsSnippet,
 														range: {
 															startLineNumber: position.lineNumber,
 															startColumn: startColumn,
@@ -466,13 +524,13 @@ export default function PhylogeneticTreeEditPage() {
 															endColumn: endColumn,
 														},
 													});
-													console.log('Triggered non_post_leaf: snippet');
+													console.log("Triggered non_post_leaf: snippet");
 												}
-												console.log('suggestions:', suggestions);
+												console.log("suggestions:", suggestions);
 												return { suggestions };
 											},
 										});
-										console.log('registerCompletionItemProvider called');
+										console.log("registerCompletionItemProvider called");
 									}}
 								/>
 							</CardContent>
@@ -490,8 +548,8 @@ export default function PhylogeneticTreeEditPage() {
 										<GeologicalAgeCard enableMenu={true} />
 									</div>
 									{treeContent ? (
-										<PhylogeneticTree 
-											customTreeContent={treeContent} 
+										<PhylogeneticTree
+											customTreeContent={treeContent}
 											onError={(error) => setYamlError(error)}
 										/>
 									) : (
@@ -512,4 +570,4 @@ export default function PhylogeneticTreeEditPage() {
 			</div>
 		</GeologicalAgeProvider>
 	);
-} 
+}

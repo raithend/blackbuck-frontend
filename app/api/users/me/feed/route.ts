@@ -3,52 +3,49 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
-  try {
-    const supabase = await createClient();
-    
-    // 認証トークンの取得
-    const authHeader = request.headers.get("Authorization");
-    if (!authHeader?.startsWith("Bearer ")) {
-      return NextResponse.json(
-        { error: "認証が必要です" },
-        { status: 401 }
-      );
-    }
+	try {
+		const supabase = await createClient();
 
-    const token = authHeader.split(" ")[1];
+		// 認証トークンの取得
+		const authHeader = request.headers.get("Authorization");
+		if (!authHeader?.startsWith("Bearer ")) {
+			return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
+		}
 
-    // トークンの検証
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-    if (authError || !user) {
-      console.error("認証エラー:", authError);
-      return NextResponse.json(
-        { error: "認証が必要です" },
-        { status: 401 }
-      );
-    }
+		const token = authHeader.split(" ")[1];
 
-    // フォロー中のユーザーIDを取得
-    const { data: followingData, error: followingError } = await supabase
-      .from("follows")
-      .select("following_id")
-      .eq("follower_id", user.id);
+		// トークンの検証
+		const {
+			data: { user },
+			error: authError,
+		} = await supabase.auth.getUser(token);
+		if (authError || !user) {
+			console.error("認証エラー:", authError);
+			return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
+		}
 
-    if (followingError) {
-      console.error("フォロー中ユーザー取得エラー:", followingError);
-      return NextResponse.json(
-        { error: "フォロー中ユーザーの取得に失敗しました" },
-        { status: 500 }
-      );
-    }
+		// フォロー中のユーザーIDを取得
+		const { data: followingData, error: followingError } = await supabase
+			.from("follows")
+			.select("following_id")
+			.eq("follower_id", user.id);
 
-    // 自分自身とフォロー中のユーザーIDを結合
-    const followingIds = followingData?.map(f => f.following_id) || [];
-    const allUserIds = [user.id, ...followingIds];
+		if (followingError) {
+			console.error("フォロー中ユーザー取得エラー:", followingError);
+			return NextResponse.json(
+				{ error: "フォロー中ユーザーの取得に失敗しました" },
+				{ status: 500 },
+			);
+		}
 
-    // 投稿を取得（自分自身とフォロー中のユーザーの投稿）
-    const { data: postsData, error: postsError } = await supabase
-      .from("posts")
-      .select(`
+		// 自分自身とフォロー中のユーザーIDを結合
+		const followingIds = followingData?.map((f) => f.following_id) || [];
+		const allUserIds = [user.id, ...followingIds];
+
+		// 投稿を取得（自分自身とフォロー中のユーザーの投稿）
+		const { data: postsData, error: postsError } = await supabase
+			.from("posts")
+			.select(`
         id,
         content,
         location,
@@ -68,94 +65,95 @@ export async function GET(request: NextRequest) {
           image_url
         )
       `)
-      .in("user_id", allUserIds)
-      .order("created_at", { ascending: false })
-      .limit(50);
+			.in("user_id", allUserIds)
+			.order("created_at", { ascending: false })
+			.limit(50);
 
-    if (postsError) {
-      console.error("投稿取得エラー:", postsError);
-      return NextResponse.json(
-        { error: "投稿の取得に失敗しました" },
-        { status: 500 }
-      );
-    }
+		if (postsError) {
+			console.error("投稿取得エラー:", postsError);
+			return NextResponse.json(
+				{ error: "投稿の取得に失敗しました" },
+				{ status: 500 },
+			);
+		}
 
-    // 各投稿のいいね数を取得
-    const postIds = postsData?.map(post => post.id) || [];
-    const { data: likeCounts, error: likeCountsError } = await supabase
-      .from("likes")
-      .select("post_id")
-      .in("post_id", postIds);
+		// 各投稿のいいね数を取得
+		const postIds = postsData?.map((post) => post.id) || [];
+		const { data: likeCounts, error: likeCountsError } = await supabase
+			.from("likes")
+			.select("post_id")
+			.in("post_id", postIds);
 
-    if (likeCountsError) {
-      console.error("いいね数取得エラー:", likeCountsError);
-    }
+		if (likeCountsError) {
+			console.error("いいね数取得エラー:", likeCountsError);
+		}
 
-    // いいね数を集計
-    const likeCountMap = new Map<string, number>();
-    likeCounts?.forEach(like => {
-      const count = likeCountMap.get(like.post_id) || 0;
-      likeCountMap.set(like.post_id, count + 1);
-    });
+		// いいね数を集計
+		const likeCountMap = new Map<string, number>();
+		likeCounts?.forEach((like) => {
+			const count = likeCountMap.get(like.post_id) || 0;
+			likeCountMap.set(like.post_id, count + 1);
+		});
 
-    // 各投稿のコメント数を取得
-    const { data: commentCounts, error: commentCountsError } = await supabase
-      .from("comments")
-      .select("post_id")
-      .in("post_id", postIds);
+		// 各投稿のコメント数を取得
+		const { data: commentCounts, error: commentCountsError } = await supabase
+			.from("comments")
+			.select("post_id")
+			.in("post_id", postIds);
 
-    if (commentCountsError) {
-      console.error("コメント数取得エラー:", commentCountsError);
-    }
+		if (commentCountsError) {
+			console.error("コメント数取得エラー:", commentCountsError);
+		}
 
-    // コメント数を集計
-    const commentCountMap = new Map<string, number>();
-    commentCounts?.forEach(comment => {
-      if (comment.post_id) {
-        const count = commentCountMap.get(comment.post_id) || 0;
-        commentCountMap.set(comment.post_id, count + 1);
-      }
-    });
+		// コメント数を集計
+		const commentCountMap = new Map<string, number>();
+		commentCounts?.forEach((comment) => {
+			if (comment.post_id) {
+				const count = commentCountMap.get(comment.post_id) || 0;
+				commentCountMap.set(comment.post_id, count + 1);
+			}
+		});
 
-    // ユーザーがいいねした投稿を取得
-    const { data: userLikes, error: userLikesError } = await supabase
-      .from("likes")
-      .select("post_id")
-      .eq("user_id", user.id);
+		// ユーザーがいいねした投稿を取得
+		const { data: userLikes, error: userLikesError } = await supabase
+			.from("likes")
+			.select("post_id")
+			.eq("user_id", user.id);
 
-    if (userLikesError) {
-      console.error("ユーザーいいね取得エラー:", userLikesError);
-    }
+		if (userLikesError) {
+			console.error("ユーザーいいね取得エラー:", userLikesError);
+		}
 
-    const userLikedPostIds = userLikes?.map(like => like.post_id) || [];
+		const userLikedPostIds = userLikes?.map((like) => like.post_id) || [];
 
-    // 投稿データを整形
-    const formattedPosts = postsData?.map(post => ({
-      id: post.id,
-      content: post.content,
-      location: post.location,
-      event: post.event,
-      classification: post.classification,
-      created_at: post.created_at,
-      updated_at: post.updated_at,
-      likeCount: likeCountMap.get(post.id) || 0,
-      commentCount: commentCountMap.get(post.id) || 0,
-      isLiked: userLikedPostIds.includes(post.id),
-      user: {
-        id: post.users.id,
-        account_id: post.users.account_id,
-        username: post.users.username,
-        avatar_url: post.users.avatar_url,
-      },
-      post_images: post.post_images || [],
-    })) || [];
+		// 投稿データを整形
+		const formattedPosts =
+			postsData?.map((post) => ({
+				id: post.id,
+				content: post.content,
+				location: post.location,
+				event: post.event,
+				classification: post.classification,
+				created_at: post.created_at,
+				updated_at: post.updated_at,
+				likeCount: likeCountMap.get(post.id) || 0,
+				commentCount: commentCountMap.get(post.id) || 0,
+				isLiked: userLikedPostIds.includes(post.id),
+				user: {
+					id: post.users.id,
+					account_id: post.users.account_id,
+					username: post.users.username,
+					avatar_url: post.users.avatar_url,
+				},
+				post_images: post.post_images || [],
+			})) || [];
 
-    return NextResponse.json({ posts: formattedPosts });
-  } catch (error) {
-    console.error("フィード取得エラー:", error);
-    return NextResponse.json(
-      { error: "サーバーエラーが発生しました" },
-      { status: 500 }
-    );
-  }
-} 
+		return NextResponse.json({ posts: formattedPosts });
+	} catch (error) {
+		console.error("フィード取得エラー:", error);
+		return NextResponse.json(
+			{ error: "サーバーエラーが発生しました" },
+			{ status: 500 },
+		);
+	}
+}

@@ -1,7 +1,7 @@
-import { useRef, useState, useCallback, useEffect } from "react";
 import { Circle, FabricText } from "fabric";
 import type { Canvas, Object as FabricObject } from "fabric";
-import type { HabitatElement, FabricObjectWithHabitatId } from "./types";
+import { useCallback, useEffect, useRef, useState } from "react";
+import type { FabricObjectWithHabitatId, HabitatElement } from "./types";
 
 interface UseFabricCanvasProps {
 	width: number;
@@ -20,7 +20,9 @@ export function useFabricCanvas({
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 	const [isInitialized, setIsInitialized] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
-	const [currentMap, setCurrentMap] = useState("Map1a_PALEOMAP_PaleoAtlas_000.jpg");
+	const [currentMap, setCurrentMap] = useState(
+		"Map1a_PALEOMAP_PaleoAtlas_000.jpg",
+	);
 	const habitatDataRef = useRef(habitatData);
 
 	// habitatDataの更新を追跡
@@ -29,80 +31,86 @@ export function useFabricCanvas({
 	}, [habitatData]);
 
 	// ポイントをキャンバスに追加する関数
-	const addPointToCanvas = useCallback((point: HabitatElement) => {
-		console.log('addPointToCanvas呼び出し:', point);
-		
-		if (!fabricCanvasRef.current) {
-			console.log('Canvasが存在しないためポイント追加をスキップ');
-			return;
-		}
+	const addPointToCanvas = useCallback(
+		(point: HabitatElement) => {
+			console.log("addPointToCanvas呼び出し:", point);
 
-		const canvas = fabricCanvasRef.current;
+			if (!fabricCanvasRef.current) {
+				console.log("Canvasが存在しないためポイント追加をスキップ");
+				return;
+			}
 
-		// 緯度経度をキャンバス座標に変換
-		const x = ((point.lng + 180) / 360) * width;
-		const y = ((90 - point.lat) / 180) * height;
-		console.log('キャンバス座標に変換:', x, y);
+			const canvas = fabricCanvasRef.current;
 
-		let fabricObject: FabricObject;
+			// 緯度経度をキャンバス座標に変換
+			const x = ((point.lng + 180) / 360) * width;
+			const y = ((90 - point.lat) / 180) * height;
+			console.log("キャンバス座標に変換:", x, y);
 
-		if (point.shape === 'circle') {
-			// 円形オブジェクトを作成
-			fabricObject = new Circle({
-				left: x,
-				top: y,
-				fill: point.color,
-				stroke: '#ffffff',
-				strokeWidth: 2,
-				radius: point.size / 2,
-				originX: 'center' as const,
-				originY: 'center' as const,
-				selectable: true,
-				evented: true,
-			});
-		} else if (point.shape === 'text') {
-			// テキストオブジェクトを作成
-			fabricObject = new FabricText(point.text || 'テキスト', {
-				left: x,
-				top: y,
-				fontSize: point.fontSize || 16,
-				fill: point.color,
-				originX: 'center' as const,
-				originY: 'center' as const,
-				selectable: true,
-				evented: true,
-			});
-		} else {
-			return; // 不明な形状の場合は処理をスキップ
-		}
+			let fabricObject: FabricObject;
 
-		// 保存されたtransform情報を復元
-		if (point.scaleX !== undefined) fabricObject.set('scaleX', point.scaleX);
-		if (point.scaleY !== undefined) fabricObject.set('scaleY', point.scaleY);
-		if (point.angle !== undefined) fabricObject.set('angle', point.angle);
-		if (point.flipX !== undefined) fabricObject.set('flipX', point.flipX);
-		if (point.flipY !== undefined) fabricObject.set('flipY', point.flipY);
+			if (point.shape === "circle") {
+				// 円形オブジェクトを作成
+				fabricObject = new Circle({
+					left: x,
+					top: y,
+					fill: point.color,
+					stroke: "#ffffff",
+					strokeWidth: 2,
+					radius: point.size / 2,
+					originX: "center" as const,
+					originY: "center" as const,
+					selectable: true,
+					evented: true,
+				});
+			} else if (point.shape === "text") {
+				// テキストオブジェクトを作成
+				fabricObject = new FabricText(point.text || "テキスト", {
+					left: x,
+					top: y,
+					fontSize: point.fontSize || 16,
+					fill: point.color,
+					originX: "center" as const,
+					originY: "center" as const,
+					selectable: true,
+					evented: true,
+				});
+			} else {
+				return; // 不明な形状の場合は処理をスキップ
+			}
 
-		// オブジェクトにカスタムデータを追加
-		(fabricObject as FabricObjectWithHabitatId).habitatPointId = point.id;
-		canvas.add(fabricObject);
-		canvas.renderAll();
-		console.log('ポイントをCanvasに追加完了:', point.id);
-		
-		// habitatPointsの状態を更新
-		// setHabitatPoints(prev => {
-		// 	const exists = prev.find(p => p.id === point.id);
-		// 	if (!exists) {
-		// 		return [...prev, point];
-		// 	}
-		// 	return prev;
-		// });
-	}, [width, height]);
+			// 保存されたtransform情報を復元
+			if (point.scaleX !== undefined) fabricObject.set("scaleX", point.scaleX);
+			if (point.scaleY !== undefined) fabricObject.set("scaleY", point.scaleY);
+			if (point.angle !== undefined) fabricObject.set("angle", point.angle);
+			if (point.flipX !== undefined) fabricObject.set("flipX", point.flipX);
+			if (point.flipY !== undefined) fabricObject.set("flipY", point.flipY);
+
+			// オブジェクトにカスタムデータを追加
+			(fabricObject as FabricObjectWithHabitatId).habitatPointId = point.id;
+			canvas.add(fabricObject);
+			canvas.renderAll();
+			console.log("ポイントをCanvasに追加完了:", point.id);
+
+			// habitatPointsの状態を更新
+			// setHabitatPoints(prev => {
+			// 	const exists = prev.find(p => p.id === point.id);
+			// 	if (!exists) {
+			// 		return [...prev, point];
+			// 	}
+			// 	return prev;
+			// });
+		},
+		[width, height],
+	);
 
 	// 生息地ポイントの位置を更新
-	const updateHabitatPointPosition = useCallback((id: string, left: number, top: number) => {
-		// この関数は外部から呼ばれるため、実装は外部で行う
-	}, []);
+	const updateHabitatPointPosition = useCallback(
+		(id: string, left: number, top: number) => {
+			// この関数は外部から呼ばれるため、実装は外部で行う
+		},
+		[],
+	);
 
 	// 生息地ポイントを削除
 	const removeHabitatPoint = useCallback((id: string) => {
@@ -110,18 +118,23 @@ export function useFabricCanvas({
 		if (fabricCanvasRef.current) {
 			const canvas = fabricCanvasRef.current;
 			const objects = canvas.getObjects();
-			const objectToRemove = objects.find((obj: FabricObject) => (obj as FabricObjectWithHabitatId).habitatPointId === id);
+			const objectToRemove = objects.find(
+				(obj: FabricObject) =>
+					(obj as FabricObjectWithHabitatId).habitatPointId === id,
+			);
 			if (objectToRemove) {
 				canvas.remove(objectToRemove);
 				canvas.renderAll();
-				console.log('Canvasからオブジェクトを削除:', id);
+				console.log("Canvasからオブジェクトを削除:", id);
 			}
 		}
 	}, []);
 
 	// 選択されたオブジェクトのIDを取得
 	const getSelectedObjectId = useCallback(() => {
-		return (fabricCanvasRef.current?.getActiveObject() as FabricObjectWithHabitatId)?.habitatPointId;
+		return (
+			fabricCanvasRef.current?.getActiveObject() as FabricObjectWithHabitatId
+		)?.habitatPointId;
 	}, []);
 
 	// 選択されたオブジェクトのタイプを取得
@@ -130,106 +143,121 @@ export function useFabricCanvas({
 	}, []);
 
 	// 選択されたポイントの情報を取得
-	const getSelectedPoint = useCallback((habitatPoints: HabitatElement[]) => {
-		const selectedId = getSelectedObjectId();
-		const point = selectedId ? habitatPoints.find(p => p.id === selectedId) : null;
-		return point;
-	}, [getSelectedObjectId]);
+	const getSelectedPoint = useCallback(
+		(habitatPoints: HabitatElement[]) => {
+			const selectedId = getSelectedObjectId();
+			const point = selectedId
+				? habitatPoints.find((p) => p.id === selectedId)
+				: null;
+			return point;
+		},
+		[getSelectedObjectId],
+	);
 
 	// 選択されたポイントを更新
-	const updateSelectedPoint = useCallback((
-		habitatPoints: HabitatElement[],
-		setHabitatPoints: React.Dispatch<React.SetStateAction<HabitatElement[]>>,
-		field: keyof HabitatElement,
-		value: string | number | undefined
-	) => {
-		const selectedId = getSelectedObjectId();
-		if (!selectedId) {
-			return;
-		}
-		const updatedPoints = habitatPoints.map(point => {
-			if (point.id === selectedId) {
-				return { ...point, [field]: value };
+	const updateSelectedPoint = useCallback(
+		(
+			habitatPoints: HabitatElement[],
+			setHabitatPoints: React.Dispatch<React.SetStateAction<HabitatElement[]>>,
+			field: keyof HabitatElement,
+			value: string | number | undefined,
+		) => {
+			const selectedId = getSelectedObjectId();
+			if (!selectedId) {
+				return;
 			}
-			return point;
-		});
-		setHabitatPoints(updatedPoints);
-		if (fabricCanvasRef.current) {
-			const canvas = fabricCanvasRef.current;
-			for (const obj of canvas.getObjects()) {
-				if ((obj as FabricObjectWithHabitatId).habitatPointId === selectedId) {
-					if (field === 'color') {
-						obj.set('fill', value);
-					} else if (field === 'size' && typeof value === 'number') {
-						if (obj.type === 'circle') {
-							obj.set('radius', value / 2);
-						} else {
-							obj.set('width', value);
-							obj.set('height', value);
-						}
-					} else if (field === 'text' && typeof value === 'string') {
-						if (obj.type === 'text') {
-							obj.set('text', value);
-						}
-					} else if (field === 'fontSize' && typeof value === 'number') {
-						if (obj.type === 'text') {
-							obj.set('fontSize', value);
+			const updatedPoints = habitatPoints.map((point) => {
+				if (point.id === selectedId) {
+					return { ...point, [field]: value };
+				}
+				return point;
+			});
+			setHabitatPoints(updatedPoints);
+			if (fabricCanvasRef.current) {
+				const canvas = fabricCanvasRef.current;
+				for (const obj of canvas.getObjects()) {
+					if (
+						(obj as FabricObjectWithHabitatId).habitatPointId === selectedId
+					) {
+						if (field === "color") {
+							obj.set("fill", value);
+						} else if (field === "size" && typeof value === "number") {
+							if (obj.type === "circle") {
+								obj.set("radius", value / 2);
+							} else {
+								obj.set("width", value);
+								obj.set("height", value);
+							}
+						} else if (field === "text" && typeof value === "string") {
+							if (obj.type === "text") {
+								obj.set("text", value);
+							}
+						} else if (field === "fontSize" && typeof value === "number") {
+							if (obj.type === "text") {
+								obj.set("fontSize", value);
+							}
 						}
 					}
 				}
+				canvas.renderAll();
 			}
-			canvas.renderAll();
-		}
-	}, [getSelectedObjectId]);
+		},
+		[getSelectedObjectId],
+	);
 
 	// 地図変更時の処理
-	const handleMapChange = useCallback((mapFile: string) => {
-		setCurrentMap(mapFile);
-		if (onMapChange) {
-			onMapChange(mapFile);
-		}
-		
-		// 地図変更時にキャンバスを更新
-		if (fabricCanvasRef.current) {
-			const canvas = fabricCanvasRef.current;
-			// 既存のオブジェクトをクリア
-			canvas.clear();
-			
-			// 新しい地図画像を読み込み
-			import('fabric').then(({ Image: FabricImage }) => {
-				FabricImage.fromURL(`/PALEOMAP_PaleoAtlas_Rasters_v3/${mapFile}`, {
-					crossOrigin: 'anonymous',
-				}).then((img) => {
-					// 画像の縦横比を保持しながらキャンバス全体にフィットさせる
-					const scaleX = width / (img.width || 1);
-					const scaleY = height / (img.height || 1);
-					const scale = Math.min(scaleX, scaleY);
+	const handleMapChange = useCallback(
+		(mapFile: string) => {
+			setCurrentMap(mapFile);
+			if (onMapChange) {
+				onMapChange(mapFile);
+			}
 
-					img.set({
-						scaleX: scale,
-						scaleY: scale,
-						left: (width - (img.width || 0) * scale) / 2,
-						top: (height - (img.height || 0) * scale) / 2,
-						selectable: false,
-						evented: false,
-					});
+			// 地図変更時にキャンバスを更新
+			if (fabricCanvasRef.current) {
+				const canvas = fabricCanvasRef.current;
+				// 既存のオブジェクトをクリア
+				canvas.clear();
 
-					canvas.add(img);
-					canvas.sendObjectToBack(img);
-					canvas.renderAll();
-					
-					// 既存のポイントを再追加
-					for (const point of habitatDataRef.current) {
-						addPointToCanvas(point);
-					}
-					
-					console.log('地図変更完了:', mapFile);
-				}).catch((error) => {
-					console.error('地図画像読み込みエラー:', error);
+				// 新しい地図画像を読み込み
+				import("fabric").then(({ Image: FabricImage }) => {
+					FabricImage.fromURL(`/PALEOMAP_PaleoAtlas_Rasters_v3/${mapFile}`, {
+						crossOrigin: "anonymous",
+					})
+						.then((img) => {
+							// 画像の縦横比を保持しながらキャンバス全体にフィットさせる
+							const scaleX = width / (img.width || 1);
+							const scaleY = height / (img.height || 1);
+							const scale = Math.min(scaleX, scaleY);
+
+							img.set({
+								scaleX: scale,
+								scaleY: scale,
+								left: (width - (img.width || 0) * scale) / 2,
+								top: (height - (img.height || 0) * scale) / 2,
+								selectable: false,
+								evented: false,
+							});
+
+							canvas.add(img);
+							canvas.sendObjectToBack(img);
+							canvas.renderAll();
+
+							// 既存のポイントを再追加
+							for (const point of habitatDataRef.current) {
+								addPointToCanvas(point);
+							}
+
+							console.log("地図変更完了:", mapFile);
+						})
+						.catch((error) => {
+							console.error("地図画像読み込みエラー:", error);
+						});
 				});
-			});
-		}
-	}, [onMapChange, width, height, addPointToCanvas]);
+			}
+		},
+		[onMapChange, width, height, addPointToCanvas],
+	);
 
 	return {
 		fabricCanvasRef,
@@ -248,4 +276,4 @@ export function useFabricCanvas({
 		updateSelectedPoint,
 		handleMapChange,
 	};
-} 
+}

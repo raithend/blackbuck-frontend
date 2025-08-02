@@ -4,10 +4,10 @@ import { EventDialog } from "@/app/components/event/event-dialog";
 import { Button } from "@/app/components/ui/button";
 import { Dialog, DialogTrigger } from "@/app/components/ui/dialog";
 import { useUser } from "@/app/contexts/user-context";
+import type { Event } from "@/app/types/types";
+import { Edit } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Edit } from "lucide-react";
-import type { Event } from "@/app/types/types";
 
 interface EventEditButtonProps {
 	event: Event;
@@ -28,14 +28,17 @@ export function EventEditButton({ event }: EventEditButtonProps) {
 				return;
 			}
 
-			const response = await fetch(`/api/events/${encodeURIComponent(event.name)}`, {
-				method: "PUT",
-				headers: {
-					"Content-Type": "application/json",
-					Authorization: `Bearer ${session.access_token}`,
+			const response = await fetch(
+				`/api/events/${encodeURIComponent(event.name)}`,
+				{
+					method: "PUT",
+					headers: {
+						"Content-Type": "application/json",
+						Authorization: `Bearer ${session.access_token}`,
+					},
+					body: JSON.stringify(data),
 				},
-				body: JSON.stringify(data),
-			});
+			);
 
 			if (!response.ok) {
 				const error = await response.json();
@@ -69,4 +72,4 @@ export function EventEditButton({ event }: EventEditButtonProps) {
 			<EventDialog event={event} onSave={handleSave} />
 		</Dialog>
 	);
-} 
+}

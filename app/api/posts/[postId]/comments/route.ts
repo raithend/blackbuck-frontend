@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 
 export async function POST(
 	request: NextRequest,
-	{ params }: { params: Promise<{ postId: string }> }
+	{ params }: { params: Promise<{ postId: string }> },
 ) {
 	try {
 		const { postId } = await params;
@@ -13,10 +13,7 @@ export async function POST(
 		// 認証トークンの取得
 		const authHeader = request.headers.get("Authorization");
 		if (!authHeader?.startsWith("Bearer ")) {
-			return NextResponse.json(
-				{ error: "認証が必要です" },
-				{ status: 401 }
-			);
+			return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
 		}
 
 		const token = authHeader.split(" ")[1];
@@ -25,12 +22,12 @@ export async function POST(
 		const supabaseWithAuth = await createClient(token);
 
 		// トークンの検証
-		const { data: { user }, error: authError } = await supabaseWithAuth.auth.getUser();
+		const {
+			data: { user },
+			error: authError,
+		} = await supabaseWithAuth.auth.getUser();
 		if (authError || !user) {
-			return NextResponse.json(
-				{ error: "認証が必要です" },
-				{ status: 401 }
-			);
+			return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
 		}
 
 		// 投稿の存在確認
@@ -43,18 +40,28 @@ export async function POST(
 		if (postError || !post) {
 			return NextResponse.json(
 				{ error: "投稿が見つかりません" },
-				{ status: 404 }
+				{ status: 404 },
 			);
 		}
 
 		// リクエストボディを取得
-		const { content, location, event, classification, imageUrls, parentCommentId } = await request.json();
+		const {
+			content,
+			location,
+			event,
+			classification,
+			imageUrls,
+			parentCommentId,
+		} = await request.json();
 
 		// コメント内容または画像のいずれかが必要
-		if ((!content || content.trim() === "") && (!imageUrls || imageUrls.length === 0)) {
+		if (
+			(!content || content.trim() === "") &&
+			(!imageUrls || imageUrls.length === 0)
+		) {
 			return NextResponse.json(
 				{ error: "コメント内容または画像のいずれかが必要です" },
-				{ status: 400 }
+				{ status: 400 },
 			);
 		}
 
@@ -77,7 +84,7 @@ export async function POST(
 			console.error("コメント作成エラー:", commentError);
 			return NextResponse.json(
 				{ error: "コメントの作成に失敗しました" },
-				{ status: 500 }
+				{ status: 500 },
 			);
 		}
 
@@ -99,22 +106,22 @@ export async function POST(
 			}
 		}
 
-		return NextResponse.json({ 
+		return NextResponse.json({
 			message: "コメントを投稿しました",
-			comment 
+			comment,
 		});
 	} catch (error) {
 		console.error("コメント投稿エラー:", error);
 		return NextResponse.json(
 			{ error: "サーバーエラーが発生しました" },
-			{ status: 500 }
+			{ status: 500 },
 		);
 	}
 }
 
 export async function GET(
 	request: NextRequest,
-	{ params }: { params: Promise<{ postId: string }> }
+	{ params }: { params: Promise<{ postId: string }> },
 ) {
 	try {
 		const { postId } = await params;
@@ -130,7 +137,7 @@ export async function GET(
 		if (postError || !post) {
 			return NextResponse.json(
 				{ error: "投稿が見つかりません" },
-				{ status: 404 }
+				{ status: 404 },
 			);
 		}
 
@@ -158,7 +165,7 @@ export async function GET(
 			console.error("コメント取得エラー:", commentsError);
 			return NextResponse.json(
 				{ error: "コメントの取得に失敗しました" },
-				{ status: 500 }
+				{ status: 500 },
 			);
 		}
 
@@ -167,7 +174,7 @@ export async function GET(
 		console.error("コメント取得エラー:", error);
 		return NextResponse.json(
 			{ error: "サーバーエラーが発生しました" },
-			{ status: 500 }
+			{ status: 500 },
 		);
 	}
-} 
+}

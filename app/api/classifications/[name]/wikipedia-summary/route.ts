@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/app/lib/supabase-server";
+import { type NextRequest, NextResponse } from "next/server";
 
 export async function GET(
 	request: NextRequest,
-	{ params }: { params: { name: string } }
+	{ params }: { params: { name: string } },
 ) {
 	try {
 		// Authorizationヘッダーからアクセストークンを取得
@@ -11,34 +11,32 @@ export async function GET(
 		const accessToken = authHeader?.replace("Bearer ", "");
 
 		if (!accessToken) {
-			return NextResponse.json(
-				{ error: "認証が必要です" },
-				{ status: 401 }
-			);
+			return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
 		}
 
 		// アクセストークンを使ってSupabaseクライアントを作成
 		const supabase = await createClient(accessToken);
 
 		// ユーザー情報を取得
-		const { data: { user }, error: authError } = await supabase.auth.getUser();
+		const {
+			data: { user },
+			error: authError,
+		} = await supabase.auth.getUser();
 		if (authError || !user) {
-			return NextResponse.json(
-				{ error: "認証が必要です" },
-				{ status: 401 }
-			);
+			return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
 		}
 
 		const decodedName = decodeURIComponent(params.name);
-		
+
 		// Wikipedia APIを使用して概要を取得
 		const wikipediaResponse = await fetch(
 			`https://ja.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(decodedName)}`,
 			{
 				headers: {
-					'User-Agent': 'BlackBuck-Frontend/1.0 (https://blackbuck-frontend.vercel.app)'
-				}
-			}
+					"User-Agent":
+						"BlackBuck-Frontend/1.0 (https://blackbuck-frontend.vercel.app)",
+				},
+			},
 		);
 
 		if (!wikipediaResponse.ok) {
@@ -47,15 +45,16 @@ export async function GET(
 				`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(decodedName)}`,
 				{
 					headers: {
-						'User-Agent': 'BlackBuck-Frontend/1.0 (https://blackbuck-frontend.vercel.app)'
-					}
-				}
+						"User-Agent":
+							"BlackBuck-Frontend/1.0 (https://blackbuck-frontend.vercel.app)",
+					},
+				},
 			);
 
 			if (!englishResponse.ok) {
 				return NextResponse.json(
 					{ error: "Wikipediaに該当する記事が見つかりませんでした" },
-					{ status: 404 }
+					{ status: 404 },
 				);
 			}
 
@@ -64,24 +63,23 @@ export async function GET(
 				summary: englishData.extract,
 				title: englishData.title,
 				url: englishData.content_urls?.desktop?.page,
-				language: "en"
+				language: "en",
 			});
 		}
 
 		const data = await wikipediaResponse.json();
-		
+
 		return NextResponse.json({
 			summary: data.extract,
 			title: data.title,
 			url: data.content_urls?.desktop?.page,
-			language: "ja"
+			language: "ja",
 		});
-
 	} catch (error) {
 		console.error("Wikipedia API エラー:", error);
 		return NextResponse.json(
 			{ error: "Wikipedia APIの呼び出しに失敗しました" },
-			{ status: 500 }
+			{ status: 500 },
 		);
 	}
-} 
+}

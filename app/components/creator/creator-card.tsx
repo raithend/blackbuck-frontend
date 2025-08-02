@@ -7,8 +7,8 @@ import {
 } from "@/app/components/ui/avatar";
 import { Card, CardContent } from "@/app/components/ui/card";
 import type { User } from "@/app/types/types";
-import { FollowButton } from "../follow/follow-button";
 import Link from "next/link";
+import { FollowButton } from "../follow/follow-button";
 
 interface CreatorCardProps {
 	user: User;
@@ -29,13 +29,19 @@ export function CreatorCard({ user, className = "" }: CreatorCardProps) {
 					<Link href={`/users/${user.account_id}`}>
 						<Avatar className="h-6 w-6">
 							<AvatarImage src={user.avatar_url || ""} alt={user.username} />
-							<AvatarFallback>{user.username ? user.username[0] : "U"}</AvatarFallback>
+							<AvatarFallback>
+								{user.username ? user.username[0] : "U"}
+							</AvatarFallback>
 						</Avatar>
 					</Link>
 					<div className="flex-1 min-w-0">
 						<Link href={`/users/${user.account_id}`} className="block">
-							<h4 className="text-sm font-medium truncate">{user.username || "Unknown User"}</h4>
-							<p className="text-xs text-muted-foreground truncate">@{user.account_id}</p>
+							<h4 className="text-sm font-medium truncate">
+								{user.username || "Unknown User"}
+							</h4>
+							<p className="text-xs text-muted-foreground truncate">
+								@{user.account_id}
+							</p>
 						</Link>
 					</div>
 					<FollowButton
@@ -47,4 +53,4 @@ export function CreatorCard({ user, className = "" }: CreatorCardProps) {
 			</CardContent>
 		</Card>
 	);
-} 
+}

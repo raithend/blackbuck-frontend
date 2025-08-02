@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
 			console.error("場所検索エラー:", error);
 			return NextResponse.json(
 				{ error: "場所検索に失敗しました" },
-				{ status: 500 }
+				{ status: 500 },
 			);
 		}
 
@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
 	} catch (error) {
 		return NextResponse.json(
 			{ error: "Internal Server Error" },
-			{ status: 500 }
+			{ status: 500 },
 		);
 	}
-} 
+}

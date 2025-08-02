@@ -5,7 +5,7 @@ import { NextResponse } from "next/server";
 // いいねの追加
 export async function POST(
 	request: NextRequest,
-	{ params }: { params: Promise<{ commentId: string }> }
+	{ params }: { params: Promise<{ commentId: string }> },
 ) {
 	try {
 		const { commentId } = await params;
@@ -13,10 +13,7 @@ export async function POST(
 		// 認証ヘッダーを確認
 		const authHeader = request.headers.get("Authorization");
 		if (!authHeader?.startsWith("Bearer ")) {
-			return NextResponse.json(
-				{ error: "認証が必要です" },
-				{ status: 401 }
-			);
+			return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
 		}
 
 		const token = authHeader.split(" ")[1];
@@ -25,12 +22,12 @@ export async function POST(
 		const supabase = await createClient(token);
 
 		// トークンの検証
-		const { data: { user }, error: authError } = await supabase.auth.getUser();
+		const {
+			data: { user },
+			error: authError,
+		} = await supabase.auth.getUser();
 		if (authError || !user) {
-			return NextResponse.json(
-				{ error: "認証が必要です" },
-				{ status: 401 }
-			);
+			return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
 		}
 
 		// コメントの存在確認
@@ -43,7 +40,7 @@ export async function POST(
 		if (commentError || !comment) {
 			return NextResponse.json(
 				{ error: "コメントが見つかりません" },
-				{ status: 404 }
+				{ status: 404 },
 			);
 		}
 
@@ -59,7 +56,7 @@ export async function POST(
 			console.error("既存いいね確認エラー:", existingLikeError);
 			return NextResponse.json(
 				{ error: "いいねの確認に失敗しました" },
-				{ status: 500 }
+				{ status: 500 },
 			);
 		}
 
@@ -67,7 +64,7 @@ export async function POST(
 		if (existingLike) {
 			return NextResponse.json(
 				{ error: "既にいいねしています" },
-				{ status: 400 }
+				{ status: 400 },
 			);
 		}
 
@@ -85,19 +82,19 @@ export async function POST(
 			console.error("いいね追加エラー:", likeError);
 			return NextResponse.json(
 				{ error: "いいねの追加に失敗しました" },
-				{ status: 500 }
+				{ status: 500 },
 			);
 		}
 
-		return NextResponse.json({ 
+		return NextResponse.json({
 			message: "いいねを追加しました",
-			like 
+			like,
 		});
 	} catch (error) {
 		console.error("いいね追加エラー:", error);
 		return NextResponse.json(
 			{ error: "サーバーエラーが発生しました" },
-			{ status: 500 }
+			{ status: 500 },
 		);
 	}
 }
@@ -105,7 +102,7 @@ export async function POST(
 // いいねの削除
 export async function DELETE(
 	request: NextRequest,
-	{ params }: { params: Promise<{ commentId: string }> }
+	{ params }: { params: Promise<{ commentId: string }> },
 ) {
 	try {
 		const { commentId } = await params;
@@ -113,10 +110,7 @@ export async function DELETE(
 		// 認証ヘッダーを確認
 		const authHeader = request.headers.get("Authorization");
 		if (!authHeader?.startsWith("Bearer ")) {
-			return NextResponse.json(
-				{ error: "認証が必要です" },
-				{ status: 401 }
-			);
+			return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
 		}
 
 		const token = authHeader.split(" ")[1];
@@ -125,12 +119,12 @@ export async function DELETE(
 		const supabase = await createClient(token);
 
 		// トークンの検証
-		const { data: { user }, error: authError } = await supabase.auth.getUser();
+		const {
+			data: { user },
+			error: authError,
+		} = await supabase.auth.getUser();
 		if (authError || !user) {
-			return NextResponse.json(
-				{ error: "認証が必要です" },
-				{ status: 401 }
-			);
+			return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
 		}
 
 		// いいねを削除
@@ -144,18 +138,18 @@ export async function DELETE(
 			console.error("いいね削除エラー:", deleteError);
 			return NextResponse.json(
 				{ error: "いいねの削除に失敗しました" },
-				{ status: 500 }
+				{ status: 500 },
 			);
 		}
 
-		return NextResponse.json({ 
-			message: "いいねを削除しました" 
+		return NextResponse.json({
+			message: "いいねを削除しました",
 		});
 	} catch (error) {
 		console.error("いいね削除エラー:", error);
 		return NextResponse.json(
 			{ error: "サーバーエラーが発生しました" },
-			{ status: 500 }
+			{ status: 500 },
 		);
 	}
 }
@@ -163,7 +157,7 @@ export async function DELETE(
 // いいねの状態取得
 export async function GET(
 	request: NextRequest,
-	{ params }: { params: Promise<{ commentId: string }> }
+	{ params }: { params: Promise<{ commentId: string }> },
 ) {
 	try {
 		// paramsをawait
@@ -178,7 +172,9 @@ export async function GET(
 			const token = authHeader.split(" ")[1];
 			// 認証トークン付きでSupabaseクライアントを作成
 			supabase = await createClient(token);
-			const { data: { user: authUser } } = await supabase.auth.getUser();
+			const {
+				data: { user: authUser },
+			} = await supabase.auth.getUser();
 			user = authUser;
 		} else {
 			// 認証なしでSupabaseクライアントを作成
@@ -195,7 +191,7 @@ export async function GET(
 			console.error("いいね数取得エラー:", countError);
 			return NextResponse.json(
 				{ error: "いいね数の取得に失敗しました" },
-				{ status: 500 }
+				{ status: 500 },
 			);
 		}
 
@@ -221,7 +217,7 @@ export async function GET(
 		console.error("いいね状態取得エラー:", error);
 		return NextResponse.json(
 			{ error: "サーバーエラーが発生しました" },
-			{ status: 500 }
+			{ status: 500 },
 		);
 	}
-} 
+}

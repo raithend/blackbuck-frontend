@@ -7,7 +7,13 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 interface LogoutButtonProps {
-	variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
+	variant?:
+		| "default"
+		| "destructive"
+		| "outline"
+		| "secondary"
+		| "ghost"
+		| "link";
 	size?: "default" | "sm" | "lg" | "icon";
 }
 

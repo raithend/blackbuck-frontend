@@ -11,9 +11,7 @@ interface FollowCardProps {
 	user: User;
 }
 
-export function FollowCard({
-	user,
-}: FollowCardProps) {
+export function FollowCard({ user }: FollowCardProps) {
 	return (
 		<Card className="">
 			<CardHeader className="flex flex-row items-center gap-4 py-2">

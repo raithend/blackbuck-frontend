@@ -1,14 +1,19 @@
-import React, { memo } from "react";
 import { Button } from "@/app/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card";
-import { Trash2 } from 'lucide-react';
+import {
+	Card,
+	CardContent,
+	CardHeader,
+	CardTitle,
+} from "@/app/components/ui/card";
+import { Trash2 } from "lucide-react";
+import React, { memo } from "react";
 import type { HabitatElement } from "./types";
 
 interface HabitatPointListProps {
-  habitatPoints: HabitatElement[];
-  selectedObjectId: string | undefined;
-  onPointSelect: (id: string) => void;
-  onPointDelete: (id: string) => void;
+	habitatPoints: HabitatElement[];
+	selectedObjectId: string | undefined;
+	onPointSelect: (id: string) => void;
+	onPointDelete: (id: string) => void;
 }
 
 export const HabitatPointList = memo(function HabitatPointList({
@@ -26,7 +31,9 @@ export const HabitatPointList = memo(function HabitatPointList({
 				{habitatPoints.length === 0 ? (
 					<div className="text-center text-gray-500 py-4">
 						<p>ポイントがありません</p>
-						<p className="text-sm mt-1">地図をクリックしてポイントを追加してください</p>
+						<p className="text-sm mt-1">
+							地図をクリックしてポイントを追加してください
+						</p>
 					</div>
 				) : (
 					habitatPoints.map((point) => (
@@ -34,12 +41,12 @@ export const HabitatPointList = memo(function HabitatPointList({
 							key={point.id}
 							className={`p-3 border rounded-lg cursor-pointer transition-colors ${
 								selectedObjectId === point.id
-									? 'border-blue-500 bg-blue-50'
-									: 'border-gray-200 hover:border-gray-300'
+									? "border-blue-500 bg-blue-50"
+									: "border-gray-200 hover:border-gray-300"
 							}`}
 							onClick={() => onPointSelect(point.id)}
 							onKeyDown={(e) => {
-								if (e.key === 'Enter' || e.key === ' ') {
+								if (e.key === "Enter" || e.key === " ") {
 									e.preventDefault();
 									onPointSelect(point.id);
 								}
@@ -57,7 +64,7 @@ export const HabitatPointList = memo(function HabitatPointList({
 									<span className="font-medium">
 										{point.label || `ポイント${point.id}`}
 									</span>
-									{point.shape === 'text' && point.text && (
+									{point.shape === "text" && point.text && (
 										<span className="text-sm text-gray-500">
 											({point.text})
 										</span>
@@ -83,4 +90,4 @@ export const HabitatPointList = memo(function HabitatPointList({
 			</CardContent>
 		</Card>
 	);
-}); 
+});
