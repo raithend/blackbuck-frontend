@@ -136,7 +136,6 @@ export default function HabitatEditPage() {
 			}
 
 			toast.success('生息地データを保存しました');
-			router.push(`/classifications/${encodeURIComponent(decodedName)}`);
 		} catch (error) {
 			console.error('保存エラー:', error);
 			toast.error('保存に失敗しました');

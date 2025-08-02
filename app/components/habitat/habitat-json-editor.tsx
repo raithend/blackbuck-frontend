@@ -99,46 +99,7 @@ const HabitatJsonEditor = forwardRef<HabitatJsonEditorRef, HabitatJsonEditorProp
     }
   };
 
-  // フォーマット処理
-  const handleFormat = () => {
-    try {
-      const parsed = JSON.parse(jsonValue);
-      const formatted = JSON.stringify(parsed, null, 2);
-      setJsonValue(formatted);
-      setIsValid(true);
-    } catch (error) {
-      toast.error('JSONの形式が正しくありません');
-    }
-  };
 
-  // サンプルデータの挿入
-  const handleInsertSample = () => {
-    const sampleData: EraGroup[] = [
-      {
-        era: "新生代",
-        elements: [
-          {
-            id: "sample_1",
-            lat: 35.6762,
-            lng: 139.6503,
-            color: "#ff0000",
-            size: 20,
-            shape: "circle",
-            scaleX: 1,
-            scaleY: 1,
-            angle: 0,
-            flipX: false,
-            flipY: false
-          }
-        ]
-      }
-    ];
-    
-    const sampleJson = JSON.stringify(sampleData, null, 2);
-    setJsonValue(sampleJson);
-    setIsValid(true);
-    onDataChange(sampleData);
-  };
 
   // refの実装
   useImperativeHandle(ref, () => ({
@@ -181,21 +142,6 @@ const HabitatJsonEditor = forwardRef<HabitatJsonEditorRef, HabitatJsonEditorProp
             <CardTitle className="flex items-center justify-between">
               <span>JSONエディター</span>
               <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleFormat}
-                  disabled={!isValid}
-                >
-                  フォーマット
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleInsertSample}
-                >
-                  サンプル挿入
-                </Button>
                 <Button
                   onClick={handleSave}
                   disabled={!isValid || isSaving}
