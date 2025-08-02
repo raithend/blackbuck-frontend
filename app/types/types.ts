@@ -22,7 +22,8 @@ export type Location = Database["public"]["Tables"]["locations"]["Row"];
 
 export type Event = Database["public"]["Tables"]["events"]["Row"];
 
-export type Classification = Database["public"]["Tables"]["classifications"]["Row"];
+export type Classification =
+	Database["public"]["Tables"]["classifications"]["Row"];
 
 export type PhotoBubble = Database["public"]["Tables"]["photo_bubbles"]["Row"];
 
@@ -30,9 +31,9 @@ export type ProfilePhotoBubble =
 	Database["public"]["Views"]["profile_photo_bubbles"]["Row"];
 
 export interface TreeNode {
-  name?: string;
-  from?: string;
-  to?: string;
-  children?: TreeNode[];
-  color?: string;
+	name?: string;
+	from?: string;
+	to?: string;
+	children?: TreeNode[];
+	color?: string;
 }

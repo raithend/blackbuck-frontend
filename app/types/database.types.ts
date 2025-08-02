@@ -10,17 +10,17 @@ export type Database = {
 	// Allows to automatically instanciate createClient with right options
 	// instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
 	__InternalSupabase: {
-		PostgrestVersion: "12.2.3 (519615d)";
+		PostgrestVersion: "12.2.12 (cd3cf9e)";
 	};
 	public: {
 		Tables: {
 			classifications: {
 				Row: {
+					appearance_period: string | null;
 					created_at: string;
 					description: string | null;
 					english_name: string | null;
-					era_end: string | null;
-					era_start: string | null;
+					extinction_period: string | null;
 					header_url: string | null;
 					id: string;
 					name: string;
@@ -28,11 +28,11 @@ export type Database = {
 					updated_at: string;
 				};
 				Insert: {
+					appearance_period?: string | null;
 					created_at?: string;
 					description?: string | null;
 					english_name?: string | null;
-					era_end?: string | null;
-					era_start?: string | null;
+					extinction_period?: string | null;
 					header_url?: string | null;
 					id?: string;
 					name: string;
@@ -40,11 +40,11 @@ export type Database = {
 					updated_at?: string;
 				};
 				Update: {
+					appearance_period?: string | null;
 					created_at?: string;
 					description?: string | null;
 					english_name?: string | null;
-					era_end?: string | null;
-					era_start?: string | null;
+					extinction_period?: string | null;
 					header_url?: string | null;
 					id?: string;
 					name?: string;
@@ -115,6 +115,13 @@ export type Database = {
 						referencedRelation: "comments";
 						referencedColumns: ["id"];
 					},
+					{
+						foreignKeyName: "comment_likes_user_id_fkey";
+						columns: ["user_id"];
+						isOneToOne: false;
+						referencedRelation: "users";
+						referencedColumns: ["id"];
+					},
 				];
 			};
 			comments: {
@@ -122,10 +129,12 @@ export type Database = {
 					classification: string | null;
 					content: string;
 					created_at: string | null;
+					event: string | null;
 					id: string;
 					location: string | null;
 					parent_comment_id: string | null;
 					post_id: string | null;
+					shot_date: string | null;
 					updated_at: string | null;
 					user_id: string;
 				};
@@ -133,10 +142,12 @@ export type Database = {
 					classification?: string | null;
 					content: string;
 					created_at?: string | null;
+					event?: string | null;
 					id?: string;
 					location?: string | null;
 					parent_comment_id?: string | null;
 					post_id?: string | null;
+					shot_date?: string | null;
 					updated_at?: string | null;
 					user_id: string;
 				};
@@ -144,10 +155,12 @@ export type Database = {
 					classification?: string | null;
 					content?: string;
 					created_at?: string | null;
+					event?: string | null;
 					id?: string;
 					location?: string | null;
 					parent_comment_id?: string | null;
 					post_id?: string | null;
+					shot_date?: string | null;
 					updated_at?: string | null;
 					user_id?: string;
 				};
@@ -164,6 +177,13 @@ export type Database = {
 						columns: ["post_id"];
 						isOneToOne: false;
 						referencedRelation: "posts";
+						referencedColumns: ["id"];
+					},
+					{
+						foreignKeyName: "comments_user_id_fkey";
+						columns: ["user_id"];
+						isOneToOne: false;
+						referencedRelation: "users";
 						referencedColumns: ["id"];
 					},
 				];
@@ -262,6 +282,13 @@ export type Database = {
 						columns: ["classification_id"];
 						isOneToOne: false;
 						referencedRelation: "classifications";
+						referencedColumns: ["id"];
+					},
+					{
+						foreignKeyName: "habitat_data_creator_fkey";
+						columns: ["creator"];
+						isOneToOne: false;
+						referencedRelation: "users";
 						referencedColumns: ["id"];
 					},
 				];
@@ -366,7 +393,15 @@ export type Database = {
 					x_position?: number;
 					y_position?: number;
 				};
-				Relationships: [];
+				Relationships: [
+					{
+						foreignKeyName: "photo_bubbles_user_id_fkey";
+						columns: ["user_id"];
+						isOneToOne: false;
+						referencedRelation: "users";
+						referencedColumns: ["id"];
+					},
+				];
 			};
 			phylogenetic_trees: {
 				Row: {
@@ -399,6 +434,13 @@ export type Database = {
 						columns: ["classification_id"];
 						isOneToOne: false;
 						referencedRelation: "classifications";
+						referencedColumns: ["id"];
+					},
+					{
+						foreignKeyName: "phylogenetic_trees_creator_fkey";
+						columns: ["creator"];
+						isOneToOne: false;
+						referencedRelation: "users";
 						referencedColumns: ["id"];
 					},
 				];
@@ -446,6 +488,7 @@ export type Database = {
 					event: string | null;
 					id: string;
 					location: string | null;
+					shot_date: string | null;
 					updated_at: string;
 					user_id: string;
 				};
@@ -456,6 +499,7 @@ export type Database = {
 					event?: string | null;
 					id?: string;
 					location?: string | null;
+					shot_date?: string | null;
 					updated_at?: string;
 					user_id: string;
 				};
@@ -466,6 +510,7 @@ export type Database = {
 					event?: string | null;
 					id?: string;
 					location?: string | null;
+					shot_date?: string | null;
 					updated_at?: string;
 					user_id?: string;
 				};
@@ -554,7 +599,15 @@ export type Database = {
 					x_position?: number | null;
 					y_position?: number | null;
 				};
-				Relationships: [];
+				Relationships: [
+					{
+						foreignKeyName: "photo_bubbles_user_id_fkey";
+						columns: ["user_id"];
+						isOneToOne: false;
+						referencedRelation: "users";
+						referencedColumns: ["id"];
+					},
+				];
 			};
 		};
 		Functions: {

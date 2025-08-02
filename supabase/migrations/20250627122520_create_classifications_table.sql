@@ -5,8 +5,8 @@ CREATE TABLE public.classifications (
   english_name text, -- 英語の分類名
   scientific_name text, -- 学名
   description text, -- 説明文
-  era_start text, -- 生息年代（はじめ）
-  era_end text, -- 生息年代（おわり）
+  appearance_period text, -- 出現期
+  extinction_period text, -- 絶滅期
   header_url text, -- ヘッダー画像のURL
   created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
   updated_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL
@@ -16,8 +16,8 @@ CREATE TABLE public.classifications (
 CREATE INDEX idx_classifications_name ON public.classifications(name);
 CREATE INDEX idx_classifications_english_name ON public.classifications(english_name);
 CREATE INDEX idx_classifications_scientific_name ON public.classifications(scientific_name);
-CREATE INDEX idx_classifications_era_start ON public.classifications(era_start);
-CREATE INDEX idx_classifications_era_end ON public.classifications(era_end);
+CREATE INDEX idx_classifications_appearance_period ON public.classifications(appearance_period);
+CREATE INDEX idx_classifications_extinction_period ON public.classifications(extinction_period);
 
 -- RLSポリシーを設定
 ALTER TABLE public.classifications ENABLE ROW LEVEL SECURITY;
