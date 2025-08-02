@@ -3,19 +3,22 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { safeYamlParse } from "@/app/lib/yaml-utils";
 
-// YAMLデータからname要素を再帰的に抽出する関数
-function extractNamesFromYaml(yamlContent: string): string[] {
+// YAMLデータからname要素と分類名を抽出する関数
+function extractNamesWithRoot(yamlContent: string, classificationName: string): Array<{name: string, classificationName: string}> {
 	try {
 		const parsed = safeYamlParse(yamlContent);
 		if (!parsed) return [];
 
-		const names: string[] = [];
+		const results: Array<{name: string, classificationName: string}> = [];
 
 		// 再帰的にname要素を抽出する関数
 		const extractNames = (node: any): void => {
 			if (typeof node === 'object' && node !== null) {
 				if (node.name && typeof node.name === 'string') {
-					names.push(node.name);
+					results.push({
+						name: node.name,
+						classificationName: classificationName
+					});
 				}
 				if (node.children && Array.isArray(node.children)) {
 					node.children.forEach(extractNames);
@@ -24,7 +27,7 @@ function extractNamesFromYaml(yamlContent: string): string[] {
 		};
 
 		extractNames(parsed);
-		return names;
+		return results;
 	} catch (error) {
 		console.error("YAML解析エラー:", error);
 		return [];
@@ -72,10 +75,13 @@ export async function GET(request: NextRequest) {
 			);
 		}
 
-		// phylogenetic_treesテーブルから系統樹のname要素を検索
+		// phylogenetic_treesテーブルから系統樹のname要素を検索（classificationsテーブルとJOIN）
 		const { data: phylogeneticData, error: phylogeneticError } = await supabase
 			.from("phylogenetic_trees")
-			.select("content")
+			.select(`
+				content,
+				classifications(name)
+			`)
 			.not("content", "is", null);
 
 		if (phylogeneticError) {
@@ -86,19 +92,22 @@ export async function GET(request: NextRequest) {
 			);
 		}
 
-		// 系統樹のYAMLデータからname要素を抽出
-		const phylogeneticNames: string[] = [];
+		// 系統樹のYAMLデータからname要素と分類名を抽出
+		const phylogeneticResults: Array<{name: string, classificationName: string}> = [];
 		phylogeneticData?.forEach((tree) => {
-			if (tree.content) {
-				const names = extractNamesFromYaml(tree.content);
-				phylogeneticNames.push(...names);
+			if (tree.content && tree.classifications?.name) {
+				const results = extractNamesWithRoot(tree.content, tree.classifications.name);
+				phylogeneticResults.push(...results);
 			}
 		});
 
 		// 抽出したname要素から検索クエリに一致するものをフィルタリング
-		const matchingPhylogeneticNames = phylogeneticNames.filter(name =>
-			name.toLowerCase().includes(query.toLowerCase())
+		const matchingPhylogeneticResults = phylogeneticResults.filter(result =>
+			result.name.toLowerCase().includes(query.toLowerCase())
 		);
+
+		// 検索結果の形式を統一
+		const matchingPhylogeneticNames = matchingPhylogeneticResults.map(result => result.name);
 
 		// 両方の結果を結合
 		const postClassificationsList = postClassifications?.map((c) => c.classification).filter(Boolean) || [];
@@ -108,7 +117,23 @@ export async function GET(request: NextRequest) {
 		const allClassifications = [...postClassificationsList, ...classificationNamesList, ...matchingPhylogeneticNames];
 		const uniqueClassifications = Array.from(new Set(allClassifications)).slice(0, 10);
 
-		return NextResponse.json({ classifications: uniqueClassifications });
+		// 関連項目の情報を整理
+		const relatedItems: { [key: string]: string[] } = {};
+		
+		// 系統樹から抽出された分類名について、分類名を関連項目として追加
+		matchingPhylogeneticResults.forEach(result => {
+			if (result.classificationName && uniqueClassifications.includes(result.name)) {
+				if (!relatedItems[result.name]) {
+					relatedItems[result.name] = [];
+				}
+				relatedItems[result.name].push(result.classificationName);
+			}
+		});
+
+		return NextResponse.json({ 
+			classifications: uniqueClassifications,
+			relatedItems: relatedItems
+		});
 	} catch (error) {
 		console.error("分類検索エラー:", error);
 		return NextResponse.json(

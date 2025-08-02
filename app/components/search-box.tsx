@@ -109,7 +109,7 @@ export function SearchBox() {
 		},
 	);
 
-	const { data: classificationResults } = useSWR<{ classifications: string[] }>(
+	const { data: classificationResults } = useSWR<{ classifications: string[], relatedItems?: { [key: string]: string[] } }>(
 		classificationQuery.trim()
 			? `/api/classifications/search?q=${encodeURIComponent(classificationQuery.trim())}`
 			: null,
@@ -257,9 +257,9 @@ export function SearchBox() {
 							<div className="h-80 overflow-y-auto space-y-2">
 								{classificationQuery.trim() &&
 								classificationResults?.classifications ? (
-									classificationResults.classifications
-										.slice(0, 5)
-										.map((classification) => (
+									<>
+										{/* 検索結果 */}
+										{classificationResults.classifications.slice(0, 5).map((classification) => (
 											<button
 												key={`classification-${classification}`}
 												onClick={() =>
@@ -271,7 +271,39 @@ export function SearchBox() {
 												<Tag className="h-4 w-4 text-gray-500" />
 												<div className="font-medium">{classification}</div>
 											</button>
-										))
+										))}
+										
+										{/* 関連項目 */}
+										{(() => {
+											const relatedItems = classificationResults.relatedItems || {};
+											const allRelatedItems = Object.values(relatedItems).flat();
+											const uniqueRelatedItems = Array.from(new Set(allRelatedItems));
+											
+											if (uniqueRelatedItems.length > 0) {
+												return (
+													<>
+														<div className="text-xs font-medium text-gray-600 mt-4 mb-2 px-2">
+															関連項目
+														</div>
+														{uniqueRelatedItems.slice(0, 3).map((relatedItem) => (
+															<button
+																key={`related-${relatedItem}`}
+																onClick={() =>
+																	handleClassificationSelect(relatedItem)
+																}
+																className="w-full flex items-center space-x-3 p-2 hover:bg-gray-100 rounded-lg transition-colors text-left"
+																type="button"
+															>
+																<Tag className="h-4 w-4 text-gray-500" />
+																<div className="font-medium">{relatedItem}</div>
+															</button>
+														))}
+													</>
+												);
+											}
+											return null;
+										})()}
+									</>
 								) : (
 									<div className="text-sm text-gray-500 p-2">
 										分類を検索してください
