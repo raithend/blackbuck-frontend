@@ -1,4 +1,4 @@
-export const museum = [
+export const scienceMuseums = [
 	"三笠市立博物館",
 	"群馬県立自然史博物館",
 	"ミュージアムパーク 茨城県自然博物館",

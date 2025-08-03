@@ -13,8 +13,18 @@ import { Check, ChevronsUpDown, MapPin, Plus, X } from "lucide-react";
 import * as React from "react";
 
 import { famousLocations } from "./locations.ts.d/famous-locations";
+import { scienceMuseums } from "./locations.ts.d/science-museums";
+import { prefectures } from "./locations.ts.d/prefectures";
+import { zoos } from "./locations.ts.d/zoos";
+import { aquariums } from "./locations.ts.d/aquariums";
 
-const locations = famousLocations;
+const locations = [
+	...famousLocations,
+	...scienceMuseums,
+	...zoos,
+	...aquariums,
+	...prefectures,
+];
 
 interface LocationDropdownMenuProps {
 	value?: string;

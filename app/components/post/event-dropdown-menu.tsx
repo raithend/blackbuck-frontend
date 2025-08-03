@@ -12,9 +12,15 @@ import { cn } from "@/app/lib/utils";
 import { Calendar, Check, ChevronsUpDown, Plus, X } from "lucide-react";
 import * as React from "react";
 
-import { famousEvents } from "./events.ts.d/famous-events";
+import { museumEvents } from "./events.ts.d/museum-events";
+import { exhibitionEvents } from "./events.ts.d/exhibition-events";
+import { fukuiEvents } from "./events.ts.d/fukui-events";
 
-const events = famousEvents;
+const events = [
+	...museumEvents,
+	...exhibitionEvents,
+	...fukuiEvents,
+];
 
 interface EventDropdownMenuProps {
 	value?: string;
