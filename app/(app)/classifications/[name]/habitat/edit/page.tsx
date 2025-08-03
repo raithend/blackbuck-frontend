@@ -128,6 +128,7 @@ export default function HabitatEditPage() {
 
 		setIsSaving(true);
 		try {
+			const supabase = createClient();
 			const {
 				data: { session },
 			} = await supabase.auth.getSession();

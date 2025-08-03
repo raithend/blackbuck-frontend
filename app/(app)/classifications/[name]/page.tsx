@@ -424,7 +424,18 @@ const ClassificationContent = memo(
 										<div>
 											<h3 className="text-lg font-semibold mb-3">説明</h3>
 											<div className="leading-relaxed whitespace-pre-line">
-												{classification.description}
+												{classification.description.split('\n').map((line, index) => {
+													// Wikipediaの引用行を検出してURLをデコード
+													if (line.includes('出典: Wikipedia') && line.includes('https://ja.wikipedia.org/wiki/')) {
+														const urlMatch = line.match(/(https:\/\/ja\.wikipedia\.org\/wiki\/[^\s]+)/);
+														if (urlMatch) {
+															const encodedUrl = urlMatch[1];
+															const decodedUrl = decodeURIComponent(encodedUrl);
+															return line.replace(encodedUrl, decodedUrl);
+														}
+													}
+													return line;
+												}).join('\n')}
 											</div>
 										</div>
 									)}

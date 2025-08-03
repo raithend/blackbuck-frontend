@@ -13,6 +13,7 @@ import { Input } from "@/app/components/ui/input";
 import { Textarea } from "@/app/components/ui/textarea";
 import type { PostWithUser } from "@/app/types/types";
 import { useEffect, useState } from "react";
+import Image from "next/image";
 
 interface PostEditDialogProps {
 	post: PostWithUser;
@@ -128,9 +129,11 @@ export function PostEditDialog({ post, onEdit, onClose }: PostEditDialogProps) {
 						<div className="grid grid-cols-2 gap-2">
 							{existingImages.map((imageUrl, index) => (
 								<div key={imageUrl} className="relative">
-									<img
+									<Image
 										src={imageUrl}
 										alt={`既存画像 ${index + 1}`}
+										width={96}
+										height={96}
 										className="w-full h-24 object-cover rounded"
 									/>
 									<Button

@@ -98,8 +98,10 @@ export function ClassificationEditDialog({
 
 			const data = await response.json();
 			if (data.summary) {
+				// URLを日本語に変換
+				const displayUrl = data.url ? decodeURIComponent(data.url) : "https://wikipedia.org";
 				// Wikipediaからの引用元を明記
-				const citation = `\n\n---\n出典: Wikipedia (${data.language === "en" ? "英語版" : "日本語版"}) - ${data.url || "https://wikipedia.org"}`;
+				const citation = `\n\n---\n出典: Wikipedia (${data.language === "en" ? "英語版" : "日本語版"}) - ${displayUrl}`;
 				const summaryWithCitation = data.summary + citation;
 
 				setFormData((prev) => ({

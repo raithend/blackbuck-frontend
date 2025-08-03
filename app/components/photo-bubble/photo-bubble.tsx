@@ -85,7 +85,7 @@ export function PhotoBubble({
 				document.removeEventListener("mouseup", handleMouseUp);
 			};
 		}
-	}, [isDragging, dragOffset, isEditing, id, onPositionChange]);
+	}, [isDragging, dragOffset, isEditing, id, onPositionChange, handleMouseMove]);
 
 	const handleClick = (e: React.MouseEvent) => {
 		if (isDragging) {
