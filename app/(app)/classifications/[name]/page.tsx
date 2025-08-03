@@ -423,9 +423,9 @@ const ClassificationContent = memo(
 									{classification?.description && (
 										<div>
 											<h3 className="text-lg font-semibold mb-3">説明</h3>
-											<p className="leading-relaxed">
+											<div className="leading-relaxed whitespace-pre-line">
 												{classification.description}
-											</p>
+											</div>
 										</div>
 									)}
 									{(classification?.english_name ||
