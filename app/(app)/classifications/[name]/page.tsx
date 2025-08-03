@@ -3,7 +3,7 @@
 import { Edit, Eye } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import React, { memo, useCallback, useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
 
 import { AuthDialog } from "@/app/components/auth/auth-dialog";
@@ -425,17 +425,39 @@ const ClassificationContent = memo(
 											<h3 className="text-lg font-semibold mb-3">説明</h3>
 											<div className="leading-relaxed whitespace-pre-line">
 												{classification.description.split('\n').map((line, index) => {
-													// Wikipediaの引用行を検出してURLをデコード
+													// Wikipediaの引用行を検出してURLをデコードし、リンク化
 													if (line.includes('出典: Wikipedia') && line.includes('https://ja.wikipedia.org/wiki/')) {
 														const urlMatch = line.match(/(https:\/\/ja\.wikipedia\.org\/wiki\/[^\s]+)/);
 														if (urlMatch) {
 															const encodedUrl = urlMatch[1];
 															const decodedUrl = decodeURIComponent(encodedUrl);
-															return line.replace(encodedUrl, decodedUrl);
+															const linkText = line.replace(encodedUrl, decodedUrl);
+															const parts = linkText.split(decodedUrl);
+															
+															return (
+																<React.Fragment key={index}>
+																	{parts[0]}
+																	<a
+																		href={encodedUrl}
+																		target="_blank"
+																		rel="noopener noreferrer"
+																		className="text-blue-600 hover:text-blue-800 underline"
+																	>
+																		{decodedUrl}
+																	</a>
+																	{parts[1]}
+																	{index < classification.description.split('\n').length - 1 && <br />}
+																</React.Fragment>
+															);
 														}
 													}
-													return line;
-												}).join('\n')}
+													return (
+														<React.Fragment key={index}>
+															{line}
+															{index < classification.description.split('\n').length - 1 && <br />}
+														</React.Fragment>
+													);
+												})}
 											</div>
 										</div>
 									)}
