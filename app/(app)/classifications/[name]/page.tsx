@@ -446,7 +446,7 @@ const ClassificationContent = memo(
 																		{decodedUrl}
 																	</a>
 																	{parts[1]}
-																	{index < classification.description.split('\n').length - 1 && <br />}
+																	{index < (classification.description?.split('\n') || []).length - 1 && <br />}
 																</React.Fragment>
 															);
 														}
@@ -454,7 +454,7 @@ const ClassificationContent = memo(
 													return (
 														<React.Fragment key={index}>
 															{line}
-															{index < classification.description.split('\n').length - 1 && <br />}
+															{index < (classification.description?.split('\n') || []).length - 1 && <br />}
 														</React.Fragment>
 													);
 												})}
