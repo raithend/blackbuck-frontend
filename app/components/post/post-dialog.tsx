@@ -31,6 +31,7 @@ export function PostDialog({ onPost }: PostDialogProps) {
 	const [classification, setClassification] = useState("");
 	const [imageFiles, setImageFiles] = useState<File[]>([]);
 	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [resetKey, setResetKey] = useState(0); // リセット用のキー
 	const { session } = useUser();
 
 	const uploadToS3 = async (file: File): Promise<string> => {
@@ -73,8 +74,17 @@ export function PostDialog({ onPost }: PostDialogProps) {
 				classification,
 				imageUrls,
 			});
+
+			// 投稿成功後にフォームをリセット
+			setContent("");
+			setLocation("");
+			setEvent("");
+			setClassification("");
+			setImageFiles([]);
+			setResetKey(prev => prev + 1); // リセットキーを更新
 		} catch (error) {
 			// エラー処理
+			console.error("投稿エラー:", error);
 		} finally {
 			setIsSubmitting(false);
 		}
@@ -99,7 +109,11 @@ export function PostDialog({ onPost }: PostDialogProps) {
 					value={classification}
 					onChange={(e) => setClassification(e.target.value)}
 				/>
-				<ImageUpload value={imageFiles} onChange={setImageFiles} />
+				<ImageUpload 
+					value={imageFiles} 
+					onChange={setImageFiles} 
+					key={resetKey}
+				/>
 				<Button
 					onClick={handleSubmit}
 					disabled={

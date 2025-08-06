@@ -4,7 +4,7 @@ import { Button } from "@/app/components/ui/button";
 import { cn } from "@/app/lib/utils";
 import { ImagePlus, X } from "lucide-react";
 import Image from "next/image";
-import { useCallback, useState } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
 
 interface ImageUploadProps {
@@ -14,19 +14,70 @@ interface ImageUploadProps {
 
 export function ImageUpload({ value, onChange }: ImageUploadProps) {
 	const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+	
+	// valueが空になった場合（リセット時）にプレビューURLもクリア
+	useEffect(() => {
+		if (value.length === 0) {
+			setPreviewUrls([]);
+		}
+	}, [value]);
+	
+	// Chrome特有の問題を検出
+	const isChrome = typeof window !== 'undefined' && 
+		window.navigator.userAgent.includes('Chrome') && 
+		!window.navigator.userAgent.includes('Edge') && 
+		!window.navigator.userAgent.includes('Brave');
 
 	const onDrop = useCallback(
 		(acceptedFiles: File[]) => {
-			// プレビューURLの生成
-			const newPreviewUrls = acceptedFiles.map((file) =>
-				URL.createObjectURL(file),
-			);
-			setPreviewUrls((prev) => [...prev, ...newPreviewUrls]);
+			try {
+				// ChromeでのSTATUS_ILLEGAL_INSTRUCTIONエラーを回避するため、
+				// エラーハンドリングを追加
+				const processFiles = async () => {
+					const newPreviewUrls: string[] = [];
+					
+					for (const file of acceptedFiles) {
+						try {
+							// Chromeでの問題を回避するため、少し遅延を入れる
+							if (isChrome) {
+								await new Promise(resolve => setTimeout(resolve, 50));
+							}
+							
+							// まずURL.createObjectURLを試す
+							const url = URL.createObjectURL(file);
+							newPreviewUrls.push(url);
+						} catch (error) {
+							console.error("URL.createObjectURL error:", error);
+							
+							// エラーが発生した場合は、FileReaderを使用
+							try {
+								const reader = new FileReader();
+								const url = await new Promise<string>((resolve, reject) => {
+									reader.onload = () => resolve(reader.result as string);
+									reader.onerror = () => reject(reader.error);
+									reader.readAsDataURL(file);
+								});
+								newPreviewUrls.push(url);
+							} catch (fileReaderError) {
+								console.error("FileReader error:", fileReaderError);
+								// 両方の方法が失敗した場合は、ファイルをスキップ
+							}
+						}
+					}
 
-			// 親コンポーネントにファイルを渡す
-			onChange([...value, ...acceptedFiles]);
+					setPreviewUrls((prev) => [...prev, ...newPreviewUrls]);
+					// 親コンポーネントにファイルを渡す
+					onChange([...value, ...acceptedFiles]);
+				};
+
+				processFiles();
+			} catch (error) {
+				console.error("Image upload error:", error);
+				// エラーが発生した場合の処理
+				alert("画像の読み込み中にエラーが発生しました。別の画像を試してください。");
+			}
 		},
-		[value, onChange],
+		[value, onChange, isChrome],
 	);
 
 	const { getRootProps, getInputProps } = useDropzone({

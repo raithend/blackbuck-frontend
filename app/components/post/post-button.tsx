@@ -11,6 +11,7 @@ import { toast } from "sonner";
 export function PostButton() {
 	const [open, setOpen] = useState(false);
 	const [authDialogOpen, setAuthDialogOpen] = useState(false);
+	const [resetKey, setResetKey] = useState(0); // リセット用のキー
 	const { user, session } = useUser();
 
 	const handlePost = async (data: {
@@ -58,6 +59,7 @@ export function PostButton() {
 
 			toast.success("投稿が完了しました");
 			setOpen(false);
+			setResetKey(prev => prev + 1); // リセットキーを更新
 		} catch (error) {
 			console.error("投稿エラー:", error);
 			toast.error(
@@ -84,7 +86,7 @@ export function PostButton() {
 			<DialogTrigger asChild>
 				<Button>投稿する</Button>
 			</DialogTrigger>
-			<PostDialog onPost={handlePost} />
+			<PostDialog key={resetKey} onPost={handlePost} />
 		</Dialog>
 	);
 }
