@@ -3,7 +3,7 @@
 import { AuthDialog } from "@/app/components/auth/auth-dialog";
 import { GeologicalAgeCard } from "@/app/components/geological/geological-age-card";
 import { GeologicalAgeProvider } from "@/app/components/geological/geological-context";
-import { PhylogeneticTree } from "@/app/components/phylogenetic/phylogenetic-tree";
+import PhylogeneticTreeArea from "@/app/components/phylogenetic/phylogenetic-tree-area";
 import { Button } from "@/app/components/ui/button";
 import {
 	Card,
@@ -564,9 +564,8 @@ export default function PhylogeneticTreeEditPage() {
 									<GeologicalAgeCard enableMenu={true} />
 								</div>
 								{treeContent ? (
-									<PhylogeneticTree
+									<PhylogeneticTreeArea
 										customTreeContent={treeContent}
-										onError={(error) => setYamlError(error)}
 									/>
 								) : (
 									<div className="flex items-center justify-center h-full text-gray-500">
