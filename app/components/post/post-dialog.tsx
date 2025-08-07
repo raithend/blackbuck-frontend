@@ -1,8 +1,8 @@
 "use client";
 
-import { EventDropdownMenu } from "@/app/components/post/event-dropdown-menu";
+import { EventDropdownMenu } from "@/app/components/event/event-dropdown-menu";
 import { ImageUpload } from "@/app/components/post/image-upload";
-import { LocationDropdownMenu } from "@/app/components/post/location-dropdown-menu";
+import { LocationDropdownMenu } from "@/app/components/location/location-dropdown-menu";
 import { Button } from "@/app/components/ui/button";
 import {
 	DialogContent,

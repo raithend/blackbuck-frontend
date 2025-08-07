@@ -1,9 +1,9 @@
 "use client";
 
 import { AuthDialog } from "@/app/components/auth/auth-dialog";
-import { EventDropdownMenu } from "@/app/components/post/event-dropdown-menu";
+import { EventDropdownMenu } from "@/app/components/event/event-dropdown-menu";
 import { ImageUpload } from "@/app/components/post/image-upload";
-import { LocationDropdownMenu } from "@/app/components/post/location-dropdown-menu";
+import { LocationDropdownMenu } from "@/app/components/location/location-dropdown-menu";
 import {
 	Avatar,
 	AvatarFallback,
