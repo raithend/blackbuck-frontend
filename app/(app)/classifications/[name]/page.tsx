@@ -132,6 +132,10 @@ const ClassificationContent = memo(
 		phylogeneticTreeCreator,
 		habitatDataCreator,
 		setAuthDialogOpen,
+		postsData,
+		displayedPosts,
+		loadNextBatch,
+		isLoadingMore,
 	}: {
 		decodedName: string;
 		classification: Classification | null;
@@ -161,6 +165,10 @@ const ClassificationContent = memo(
 		phylogeneticTreeCreator?: User;
 		habitatDataCreator?: User;
 		setAuthDialogOpen: (open: boolean) => void;
+		postsData: { posts: PostWithUser[]; phaseResults: any } | undefined;
+		displayedPosts: PostWithUser[];
+		loadNextBatch: () => void;
+		isLoadingMore: boolean;
 	}) => {
 		const { selectedAgeIds } = useGeologicalAge();
 
@@ -521,12 +529,14 @@ const ClassificationContent = memo(
 							<p>投稿の取得でエラーが発生しました</p>
 						</div>
 					) : posts.length > 0 ? (
-						<PostCards
-							posts={posts}
-							onLikeChange={handleLikeChange}
-							onPostUpdate={handlePostUpdate}
-							onPostDelete={handlePostDelete}
-						/>
+						<div className="space-y-6">
+							<PostCards
+								posts={posts}
+								onLikeChange={handleLikeChange}
+								onPostUpdate={handlePostUpdate}
+								onPostDelete={handlePostDelete}
+							/>
+						</div>
 					) : (
 						<div className="flex items-center justify-center h-64 text-gray-500">
 							<p>投稿がありません</p>
@@ -774,6 +784,7 @@ export default function ClassificationPage() {
 						"取得された投稿の分類名:",
 						data?.posts?.map((post) => post.classification).filter(Boolean),
 					);
+					console.log("フェーズ別結果:", data?.phaseResults);
 				}
 			},
 			onError: (error) => {
@@ -787,6 +798,7 @@ export default function ClassificationPage() {
 	console.log("=== 分類情報デバッグ ===");
 	console.log("classificationData:", classificationData);
 	console.log("classification:", classification);
+	
 	const posts = postsData?.posts || [];
 
 	// 生息地データを時代別にグループ化
@@ -980,6 +992,10 @@ export default function ClassificationPage() {
 					phylogeneticTreeCreator={phylogeneticTreeCreator}
 					habitatDataCreator={habitatDataCreator}
 					setAuthDialogOpen={setAuthDialogOpen}
+					postsData={postsData}
+					displayedPosts={posts}
+					loadNextBatch={() => {}}
+					isLoadingMore={false}
 				/>
 
 				{/* 共通の地質時代カードをタブの下部に配置（系統樹・生息地タブでのみ表示） */}

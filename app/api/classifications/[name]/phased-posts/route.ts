@@ -57,16 +57,17 @@ interface FormattedPost {
 	images: PostImage[];
 }
 
-// 投稿を取得して整形する関数
+// 投稿を取得して整形する関数（バッチごとに投稿を返す）
 async function fetchAndFormatPosts(
 	supabase: any,
 	classifications: string[],
 	userLikes: string[],
 	phase: string,
-): Promise<FormattedPost[]> {
+): Promise<{ posts: FormattedPost[]; batches: FormattedPost[][] }> {
 	// 配列を分割するサイズ（Supabaseの制限を考慮）
 	const BATCH_SIZE = 100;
 	const allPosts: FormattedPost[] = [];
+	const batches: FormattedPost[][] = [];
 
 	// 配列を分割して処理
 	for (let i = 0; i < classifications.length; i += BATCH_SIZE) {
@@ -122,10 +123,11 @@ async function fetchAndFormatPosts(
 			})) || [];
 
 		allPosts.push(...formattedPosts);
+		batches.push(formattedPosts);
 	}
 
-	console.log(`${phase} 全バッチ完了: ${allPosts.length}件の投稿を取得`);
-	return allPosts;
+	console.log(`${phase} 全バッチ完了: ${allPosts.length}件の投稿を取得（${batches.length}バッチ）`);
+	return { posts: allPosts, batches };
 }
 
 export async function GET(
@@ -166,23 +168,25 @@ export async function GET(
 		}
 
 		const results = {
-			phase1: { posts: [] as FormattedPost[], count: 0, phase: "完全一致" },
+			phase1: { posts: [] as FormattedPost[], batches: [] as FormattedPost[][], count: 0, phase: "完全一致" },
 			phase2: {
 				posts: [] as FormattedPost[],
+				batches: [] as FormattedPost[][],
 				count: 0,
 				phase: "分類ページ系統樹",
 			},
 			phase3: {
 				posts: [] as FormattedPost[],
+				batches: [] as FormattedPost[][],
 				count: 0,
 				phase: "データベース系統樹",
 			},
-			phase4: { posts: [] as FormattedPost[], count: 0, phase: "Claudeマッチ" },
+			phase4: { posts: [] as FormattedPost[], batches: [] as FormattedPost[][], count: 0, phase: "Claudeマッチ" },
 		};
 
 		// Phase 1: 完全一致の投稿を取得
 		console.log("=== Phase 1: 完全一致の投稿を取得 ===");
-		const phase1Posts = await fetchAndFormatPosts(
+		const { posts: phase1Posts, batches: phase1Batches } = await fetchAndFormatPosts(
 			supabase,
 			[decodedName],
 			userLikes,
@@ -190,6 +194,7 @@ export async function GET(
 		);
 		results.phase1.posts = phase1Posts;
 		results.phase1.count = phase1Posts.length;
+		results.phase1.batches = phase1Batches;
 		console.log(`Phase 1 完了: ${phase1Posts.length}件の投稿を取得`);
 
 		// Phase 2: 分類ページに紐づけられている系統樹から子要素を取得（常に実行）
@@ -235,7 +240,7 @@ export async function GET(
 							`Phase 2: ${children.length}個の子要素を発見:`,
 							children,
 						);
-						const phase2Posts = await fetchAndFormatPosts(
+						const { posts: phase2Posts, batches: phase2Batches } = await fetchAndFormatPosts(
 							supabase,
 							children,
 							userLikes,
@@ -244,6 +249,7 @@ export async function GET(
 						console.log("Phase 2: fetchAndFormatPosts result:", phase2Posts);
 						results.phase2.posts = phase2Posts;
 						results.phase2.count = phase2Posts.length;
+						results.phase2.batches = phase2Batches;
 						console.log(`Phase 2 完了: ${phase2Posts.length}件の投稿を取得`);
 					} else {
 						console.log("Phase 2: 子要素が見つかりませんでした");
@@ -295,7 +301,7 @@ export async function GET(
 						`Phase 3: ${allChildren.length}個の関連分類名を発見:`,
 						allChildren,
 					);
-					const phase3Posts = await fetchAndFormatPosts(
+					const { posts: phase3Posts, batches: phase3Batches } = await fetchAndFormatPosts(
 						supabase,
 						allChildren,
 						userLikes,
@@ -303,6 +309,7 @@ export async function GET(
 					);
 					results.phase3.posts = phase3Posts;
 					results.phase3.count = phase3Posts.length;
+					results.phase3.batches = phase3Batches;
 					console.log(`Phase 3 完了: ${phase3Posts.length}件の投稿を取得`);
 				}
 			}
@@ -366,7 +373,7 @@ ${JSON.stringify(classifications)}`,
 									`Phase 4: Claude APIで${matchedClassifications.length}個の分類名をマッチ:`,
 									matchedClassifications,
 								);
-								const phase4Posts = await fetchAndFormatPosts(
+								const { posts: phase4Posts, batches: phase4Batches } = await fetchAndFormatPosts(
 									supabase,
 									matchedClassifications,
 									userLikes,
@@ -374,6 +381,7 @@ ${JSON.stringify(classifications)}`,
 								);
 								results.phase4.posts = phase4Posts;
 								results.phase4.count = phase4Posts.length;
+								results.phase4.batches = phase4Batches;
 								console.log(
 									`Phase 4 完了: ${phase4Posts.length}件の投稿を取得`,
 								);

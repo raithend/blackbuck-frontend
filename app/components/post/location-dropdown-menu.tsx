@@ -24,7 +24,7 @@ const locations = [
 	...zoos,
 	...aquariums,
 	...prefectures,
-];
+].filter((location, index, array) => array.indexOf(location) === index);
 
 interface LocationDropdownMenuProps {
 	value?: string;
