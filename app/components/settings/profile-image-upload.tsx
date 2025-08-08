@@ -104,7 +104,7 @@ export function ProfileImageUpload({
 	const { getRootProps, getInputProps, isDragActive } = useDropzone({
 		onDrop,
 		accept: {
-			"image/*": [".jpeg", ".jpg", ".png", ".webp"],
+			"image/*": [".jpeg", ".jpg", ".png"],
 		},
 		maxFiles: 1,
 		maxSize: type === "avatar" ? 5 * 1024 * 1024 : 10 * 1024 * 1024, // アバター5MB、ヘッダー10MB
@@ -158,7 +158,7 @@ export function ProfileImageUpload({
 										クリックまたはドラッグ&ドロップで画像をアップロード
 									</p>
 									<p className="text-xs text-gray-500">
-										JPEG、PNG、WebP形式、最大{getMaxSizeText()}
+										JPEG、PNG形式、最大{getMaxSizeText()}
 									</p>
 								</div>
 							)}

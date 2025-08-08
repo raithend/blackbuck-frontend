@@ -21,7 +21,7 @@ export function ImageUploadCropper({
 	onRemoveImage,
 	currentImageUrl,
 	className = "",
-	accept = { "image/*": [".jpeg", ".jpg", ".png", ".gif", ".webp"] },
+	accept = { "image/*": [".jpeg", ".jpg", ".png", ".gif"] },
 	maxSize = 5 * 1024 * 1024, // 5MB
 	placeholder = "クリックまたはドラッグ&ドロップで画像をアップロード",
 }: ImageUploadCropperProps) {
@@ -82,9 +82,9 @@ export function ImageUploadCropper({
 				if (blob) {
 					const croppedFile = new File(
 						[blob],
-						selectedFile?.name || "cropped-image.webp",
+						selectedFile?.name || "cropped-image.jpg",
 						{
-							type: "image/webp",
+							type: "image/jpeg",
 						},
 					);
 					const croppedUrl = URL.createObjectURL(blob);
@@ -92,9 +92,9 @@ export function ImageUploadCropper({
 					setIsCropping(false);
 				}
 			},
-			"image/webp",
+			"image/jpeg",
 			0.9,
-		); // WebP形式で品質0.9に設定
+		); // JPEG形式で品質0.9に設定
 	}, [selectedFile, onImageSelected]);
 
 	const handleRemoveImage = () => {
@@ -130,7 +130,7 @@ export function ImageUploadCropper({
 					) : (
 						<div>
 							<p className="text-gray-600">{placeholder}</p>
-							<p className="text-sm text-gray-500">PNG, JPG, GIF, WebP</p>
+							<p className="text-sm text-gray-500">PNG, JPG, GIF</p>
 						</div>
 					)}
 				</div>

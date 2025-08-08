@@ -79,19 +79,19 @@ export async function uploadToS3(
 export const UPLOAD_CONFIGS = {
 	general: {
 		maxSize: 10 * 1024 * 1024, // 10MB
-		allowedTypes: ["image/jpeg", "image/png", "image/webp"] as string[],
+		allowedTypes: ["image/jpeg", "image/png"] as string[],
 		directory: "uploads",
 		requireAuth: false,
 	},
 	avatar: {
 		maxSize: 5 * 1024 * 1024, // 5MB
-		allowedTypes: ["image/jpeg", "image/png", "image/webp"] as string[],
+		allowedTypes: ["image/jpeg", "image/png"] as string[],
 		directory: "avatars",
 		requireAuth: false,
 	},
 	header: {
 		maxSize: 10 * 1024 * 1024, // 10MB
-		allowedTypes: ["image/jpeg", "image/png", "image/webp"] as string[],
+		allowedTypes: ["image/jpeg", "image/png"] as string[],
 		directory: "headers",
 		requireAuth: false,
 	},
@@ -102,7 +102,6 @@ export const UPLOAD_CONFIGS = {
 			"image/jpg",
 			"image/png",
 			"image/gif",
-			"image/webp",
 		] as string[],
 		directory: "photo-bubbles",
 		requireAuth: true,
@@ -114,7 +113,6 @@ export const UPLOAD_CONFIGS = {
 			"image/jpg",
 			"image/png",
 			"image/gif",
-			"image/webp",
 		] as string[],
 		directory: "posts",
 		requireAuth: true,

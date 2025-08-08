@@ -51,10 +51,10 @@ export async function POST(request: NextRequest) {
 		}
 
 		// ファイル形式チェック
-		const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+		const allowedTypes = ["image/jpeg", "image/png"];
 		if (!allowedTypes.includes(file.type)) {
 			return NextResponse.json(
-				{ error: "対応していないファイル形式です。JPEG、PNG、WebPのみ対応" },
+				{ error: "対応していないファイル形式です。JPEG、PNGのみ対応" },
 				{ status: 400 },
 			);
 		}

@@ -44,7 +44,6 @@ export async function POST(request: NextRequest) {
 			"image/jpg",
 			"image/png",
 			"image/gif",
-			"image/webp",
 		];
 		if (!allowedTypes.includes(file.type)) {
 			return NextResponse.json(

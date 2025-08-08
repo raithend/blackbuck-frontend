@@ -117,7 +117,7 @@
 
 **制限:**
 - ファイルサイズ: 5MB以下
-- 対応形式: JPEG, JPG, PNG, GIF, WebP
+- 対応形式: JPEG, JPG, PNG, GIF
 
 **レスポンス:**
 ```json
