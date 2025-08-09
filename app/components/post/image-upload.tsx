@@ -105,8 +105,9 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
 						<Image
 							src={url}
 							alt={`アップロード画像 ${index + 1}`}
-							fill
-							className="object-cover rounded-lg"
+							width={300}
+							height={300}
+							className="w-full h-full object-cover rounded-lg"
 						/>
 						<Button
 							variant="destructive"

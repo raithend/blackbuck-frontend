@@ -38,19 +38,31 @@ export function PostDialog({ onPost }: PostDialogProps) {
 		const formData = new FormData();
 		formData.append("file", file);
 
-		const headers: HeadersInit = {};
-		if (session?.access_token) {
-			headers.Authorization = `Bearer ${session.access_token}`;
+		// 認証トークンを取得
+		const supabase = await import("@/app/lib/supabase-browser").then((m) =>
+			m.createClient(),
+		);
+		const {
+			data: { session },
+		} = await supabase.auth.getSession();
+
+		console.log("Session:", session); // デバッグ用
+
+		if (!session?.access_token) {
+			throw new Error("認証トークンが取得できません");
 		}
 
 		const response = await fetch("/api/upload/posts", {
 			method: "POST",
-			headers,
+			headers: {
+				Authorization: `Bearer ${session.access_token}`,
+			},
 			body: formData,
 		});
 
 		if (!response.ok) {
-			throw new Error("アップロードに失敗しました");
+			const errorData = await response.json().catch(() => ({ error: "不明なエラー" }));
+			throw new Error(errorData.error || `アップロードに失敗しました (${response.status})`);
 		}
 
 		const data = await response.json();

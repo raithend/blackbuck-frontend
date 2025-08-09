@@ -173,7 +173,6 @@ export function PhotoBubble({
 										width={96}
 										height={96}
 										className="w-full h-full object-cover"
-										style={{ width: "auto", height: "auto" }}
 										onError={(e) => {
 											// 画像読み込みエラー時のフォールバック
 											e.currentTarget.style.display = "none";

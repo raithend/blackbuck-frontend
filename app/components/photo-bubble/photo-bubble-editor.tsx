@@ -105,11 +105,9 @@ export function PhotoBubbleEditor({
 						<Image
 							src={user.header_url}
 							alt="ヘッダー画像"
-							width={800}
-							height={384}
-							priority
+							width={1200}
+							height={400}
 							className="w-full h-full object-cover"
-							style={{ height: "auto" }}
 							onError={(e) => {
 								e.currentTarget.style.display = "none";
 							}}

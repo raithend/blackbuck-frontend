@@ -26,6 +26,8 @@ export async function POST(request: NextRequest) {
 		const authHeader = request.headers.get("authorization");
 		const accessToken = authHeader?.replace("Bearer ", "");
 
+
+
 		if (!accessToken) {
 			return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
 		}
@@ -73,6 +75,8 @@ export async function POST(request: NextRequest) {
 			);
 		}
 
+
+
 		// 投稿画像専用のディレクトリに保存
 		const key = `posts/${Date.now()}-${file.name}`;
 		const command = new PutObjectCommand({
@@ -81,9 +85,14 @@ export async function POST(request: NextRequest) {
 			ContentType: file.type,
 		});
 
-		const signedUrl = await getSignedUrl(s3Client, command, {
-			expiresIn: 3600,
-		});
+		let signedUrl: string;
+		try {
+			signedUrl = await getSignedUrl(s3Client, command, {
+				expiresIn: 3600,
+			});
+		} catch (error) {
+			throw new Error(`署名付きURLの生成に失敗しました: ${error instanceof Error ? error.message : "不明なエラー"}`);
+		}
 
 		const uploadResponse = await fetch(signedUrl, {
 			method: "PUT",
@@ -94,14 +103,15 @@ export async function POST(request: NextRequest) {
 		});
 
 		if (!uploadResponse.ok) {
-			throw new Error("S3へのアップロードに失敗しました");
+			const errorText = await uploadResponse.text();
+			throw new Error(`S3へのアップロードに失敗しました: ${uploadResponse.status} - ${errorText}`);
 		}
 
 		const url = `https://${process.env.AWS_S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
 		return NextResponse.json({ url });
 	} catch (error) {
 		return NextResponse.json(
-			{ error: "投稿画像のアップロードに失敗しました" },
+			{ error: `投稿画像のアップロードに失敗しました: ${error instanceof Error ? error.message : "不明なエラー"}` },
 			{ status: 500 },
 		);
 	}

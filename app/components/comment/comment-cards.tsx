@@ -279,7 +279,7 @@ export function CommentCards({
 													<CardContent className="flex aspect-square items-center justify-center p-0">
 														<Image
 															src={image.image_url}
-															alt="comment image"
+															alt="コメント画像"
 															width={1000}
 															height={1000}
 															style={{ width: "auto", height: "auto" }}

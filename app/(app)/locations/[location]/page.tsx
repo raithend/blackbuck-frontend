@@ -131,8 +131,9 @@ export default function LocationPage() {
 						<Image
 							src={locationInfo.header_url}
 							alt={`${location}のヘッダー画像`}
-							fill
-							className="object-cover"
+							width={1200}
+							height={400}
+							className="w-full h-full object-cover"
 						/>
 					</div>
 				)}
