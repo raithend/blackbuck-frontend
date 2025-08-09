@@ -83,24 +83,36 @@ export async function PUT(
 			console.error("既存画像URL取得エラー:", imageFetchError);
 		}
 
-		// 既存の画像を削除
+		// 削除された画像を特定（既存の画像から新しい画像を除いたもの）
+		const existingImageUrls = existingImages?.map(img => img.image_url) || [];
+		const newImageUrls = imageUrls || [];
+		
+		// 削除された画像のURLを特定
+		const deletedImageUrls = existingImageUrls.filter(
+			existingUrl => !newImageUrls.includes(existingUrl)
+		);
+
+		// 削除された画像のみをS3から削除
+		if (deletedImageUrls.length > 0) {
+			const deleteResults = await deleteMultipleFromS3(deletedImageUrls);
+		}
+
+		// 既存の画像レコードを削除
 		const { error: deleteImagesError } = await supabaseWithAuth
 			.from("post_images")
 			.delete()
 			.eq("post_id", postId);
 
-		// S3から既存の画像を削除
-		if (existingImages && existingImages.length > 0) {
-			const imageUrls = existingImages.map((img) => img.image_url);
-			const deleteResults = await deleteMultipleFromS3(imageUrls);
-
-			// 削除結果をログ出力（デバッグ用）
-			console.log("投稿編集時のS3削除結果:", deleteResults);
+		if (deleteImagesError) {
+			return NextResponse.json(
+				{ error: deleteImagesError.message },
+				{ status: 500 },
+			);
 		}
 
 		// 新しい画像を挿入
-		if (imageUrls && imageUrls.length > 0) {
-			const imageData = imageUrls.map((url: string, index: number) => ({
+		if (newImageUrls.length > 0) {
+			const imageData = newImageUrls.map((url: string, index: number) => ({
 				post_id: postId,
 				image_url: url,
 				order_index: index,
