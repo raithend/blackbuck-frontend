@@ -779,12 +779,25 @@ export default function ClassificationPage() {
 			onSuccess: (data) => {
 				if (process.env.NODE_ENV === "development") {
 					console.log("=== 投稿情報取得完了 ===");
+					console.log("取得完了時刻:", new Date().toISOString());
 					console.log("取得された投稿の数:", data?.posts?.length || 0);
 					console.log(
 						"取得された投稿の分類名:",
 						data?.posts?.map((post) => post.classification).filter(Boolean),
 					);
 					console.log("フェーズ別結果:", data?.phaseResults);
+					
+					// Phase 2の詳細情報をログ出力
+					if (data?.phaseResults?.phase2) {
+						console.log("=== Phase 2 詳細情報 ===");
+						console.log("Phase 2 投稿数:", data.phaseResults.phase2.count);
+						console.log("Phase 2 バッチ数:", data.phaseResults.phase2.batches?.length || 0);
+						if (data.phaseResults.phase2.batches) {
+							data.phaseResults.phase2.batches.forEach((batch: any[], index: number) => {
+								console.log(`Phase 2 バッチ${index + 1}: ${batch.length}件`);
+							});
+						}
+					}
 				}
 			},
 			onError: (error) => {
@@ -800,6 +813,13 @@ export default function ClassificationPage() {
 	console.log("classification:", classification);
 	
 	const posts = postsData?.posts || [];
+
+	// 投稿表示のデバッグ情報
+	console.log("=== 投稿表示デバッグ ===");
+	console.log("postsData:", postsData);
+	console.log("posts:", posts);
+	console.log("postsLoading:", postsLoading);
+	console.log("投稿表示時刻:", new Date().toISOString());
 
 	// 生息地データを時代別にグループ化
 	const eraGroups = useMemo(() => {

@@ -69,12 +69,19 @@ async function fetchAndFormatPosts(
 	const allPosts: FormattedPost[] = [];
 	const batches: FormattedPost[][] = [];
 
+	console.log(`${phase} fetchAndFormatPosts開始: ${classifications.length}個の分類を処理`);
+	console.log(`${phase} 処理対象分類:`, classifications);
+
 	// 配列を分割して処理
 	for (let i = 0; i < classifications.length; i += BATCH_SIZE) {
 		const batch = classifications.slice(i, i + BATCH_SIZE);
+		const batchNumber = Math.floor(i / BATCH_SIZE) + 1;
+		const batchStartTime = new Date().toISOString();
+		
 		console.log(
-			`${phase} バッチ処理: ${i + 1}-${Math.min(i + BATCH_SIZE, classifications.length)}/${classifications.length} (${batch.length}個)`,
+			`${phase} バッチ${batchNumber}開始: ${i + 1}-${Math.min(i + BATCH_SIZE, classifications.length)}/${classifications.length} (${batch.length}個)`,
 		);
+		console.log(`${phase} バッチ${batchNumber}処理対象:`, batch);
 
 		const { data: posts, error } = await supabase
 			.from("posts")
@@ -104,7 +111,7 @@ async function fetchAndFormatPosts(
 
 		if (error) {
 			console.error(
-				`${phase} バッチ${Math.floor(i / BATCH_SIZE) + 1} 投稿取得エラー:`,
+				`${phase} バッチ${batchNumber} 投稿取得エラー:`,
 				error,
 			);
 			continue; // エラーが発生しても次のバッチを処理
@@ -122,11 +129,16 @@ async function fetchAndFormatPosts(
 					) || [],
 			})) || [];
 
+		const batchEndTime = new Date().toISOString();
+		console.log(`${phase} バッチ${batchNumber}完了: ${formattedPosts.length}件の投稿を取得 (${batchStartTime} → ${batchEndTime})`);
+		console.log(`${phase} バッチ${batchNumber}取得投稿の分類:`, formattedPosts.map((p: FormattedPost) => p.classification));
+
 		allPosts.push(...formattedPosts);
 		batches.push(formattedPosts);
 	}
 
 	console.log(`${phase} 全バッチ完了: ${allPosts.length}件の投稿を取得（${batches.length}バッチ）`);
+	console.log(`${phase} 最終結果の投稿分類:`, allPosts.map((p: FormattedPost) => p.classification));
 	return { posts: allPosts, batches };
 }
 
@@ -199,6 +211,7 @@ export async function GET(
 
 		// Phase 2: 分類ページに紐づけられている系統樹から子要素を取得（常に実行）
 		console.log("=== Phase 2: 分類ページ系統樹から子要素を取得 ===");
+		console.log("Phase 2 開始時刻:", new Date().toISOString());
 		let hasLinkedTree = false;
 		const { data: classification, error: classificationError } = await supabase
 			.from("classifications")
@@ -227,6 +240,7 @@ export async function GET(
 				console.log("Phase 2: treeData:", treeData);
 				if (treeData) {
 					// linked_tree対応の子要素収集
+					console.log("Phase 2: collectAllChildrenNamesWithLinkedTree開始");
 					const children = await collectAllChildrenNamesWithLinkedTree(
 						treeData,
 						supabase,
@@ -240,13 +254,18 @@ export async function GET(
 							`Phase 2: ${children.length}個の子要素を発見:`,
 							children,
 						);
+						console.log("Phase 2: fetchAndFormatPosts開始時刻:", new Date().toISOString());
 						const { posts: phase2Posts, batches: phase2Batches } = await fetchAndFormatPosts(
 							supabase,
 							children,
 							userLikes,
 							"Phase 2",
 						);
+						console.log("Phase 2: fetchAndFormatPosts完了時刻:", new Date().toISOString());
 						console.log("Phase 2: fetchAndFormatPosts result:", phase2Posts);
+						console.log("Phase 2: バッチ数:", phase2Batches.length);
+						console.log("Phase 2: 各バッチの投稿数:", phase2Batches.map((batch, index) => `バッチ${index + 1}: ${batch.length}件`));
+						
 						results.phase2.posts = phase2Posts;
 						results.phase2.count = phase2Posts.length;
 						results.phase2.batches = phase2Batches;

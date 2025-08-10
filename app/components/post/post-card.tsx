@@ -64,6 +64,16 @@ export function PostCard({
 	onPostUpdate,
 	onPostDelete,
 }: PostCardProps) {
+	// 開発環境でのデバッグ情報
+	if (process.env.NODE_ENV === "development") {
+		console.log("=== PostCard デバッグ情報 ===");
+		console.log("PostCard レンダリング時刻:", new Date().toISOString());
+		console.log("投稿ID:", post.id);
+		console.log("投稿分類:", post.classification);
+		console.log("投稿内容:", post.content.substring(0, 50) + "...");
+		console.log("画像数:", post.post_images?.length || 0);
+	}
+
 	const { user: currentUser } = useUser();
 	const isOwnPost = currentUser?.account_id === post.user.account_id;
 	const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
