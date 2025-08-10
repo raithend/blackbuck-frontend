@@ -2,6 +2,8 @@ import { createClient } from "@/app/lib/supabase-server";
 import Anthropic from "@anthropic-ai/sdk";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/app/types/database.types";
 
 const anthropic = new Anthropic({
 	apiKey: process.env.ANTHROPIC_API_KEY,
@@ -72,7 +74,7 @@ export async function GET(
 
 		// 認証ヘッダーを確認
 		const authHeader = request.headers.get("Authorization");
-		let supabase;
+		let supabase: SupabaseClient<Database>;
 		let user = null;
 
 		if (authHeader?.startsWith("Bearer ")) {
