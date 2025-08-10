@@ -21,18 +21,18 @@ const s3Client = new S3Client({
 });
 
 // S3クライアント設定のデバッグ情報
-console.log("S3クライアント設定:", {
-	region: process.env.AWS_REGION,
-	accessKeyId: process.env.AWS_ACCESS_KEY_ID ? "設定済み" : "未設定",
-	secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY ? "設定済み" : "未設定",
-	bucket: process.env.AWS_S3_BUCKET,
-});
+// console.log("S3クライアント設定:", {
+// 	region: process.env.AWS_REGION,
+// 	accessKeyId: process.env.AWS_ACCESS_KEY_ID ? "設定済み" : "未設定",
+// 	secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY ? "設定済み" : "未設定",
+// 	bucket: process.env.AWS_S3_BUCKET,
+// });
 
 // S3クライアントの詳細設定を確認
-console.log("S3クライアント詳細:", {
-	config: s3Client.config,
-	region: s3Client.config.region,
-});
+// console.log("S3クライアント詳細:", {
+// 	config: s3Client.config,
+// 	region: s3Client.config.region,
+// });
 
 /**
  * S3にファイルが存在するかを確認する

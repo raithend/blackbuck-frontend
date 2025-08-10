@@ -19,12 +19,8 @@ export async function GET(
 		// Supabaseクライアントを作成
 		const supabase = await createClient();
 
-		// Authorizationヘッダーを確認
+		// Authorizationヘッダーを確認（認証は任意）
 		const authHeader = request.headers.get("Authorization");
-
-		if (!authHeader) {
-			return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
-		}
 
 		// まずユーザー情報を取得
 		const { data: user, error: userError } = await supabase
@@ -92,21 +88,21 @@ export async function GET(
 		let currentUser = null;
 		let userLikes: string[] = [];
 
-		// Authorizationヘッダーからトークンを取得
+		// Authorizationヘッダーからトークンを取得（認証は任意）
 		if (authHeader?.startsWith("Bearer ")) {
 			const token = authHeader.split(" ")[1];
 			const {
-				data: { user },
+				data: { user: authUser },
 				error: authError,
 			} = await supabase.auth.getUser(token);
 
-			if (user && !authError) {
-				currentUser = user;
+			if (authUser && !authError) {
+				currentUser = authUser;
 
 				const { data: likes, error: likesError } = await supabase
 					.from("likes")
 					.select("post_id")
-					.eq("user_id", user.id);
+					.eq("user_id", authUser.id);
 
 				if (!likesError) {
 					userLikes = likes?.map((like) => like.post_id) || [];

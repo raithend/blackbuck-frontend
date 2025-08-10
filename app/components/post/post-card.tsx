@@ -217,6 +217,8 @@ export function PostCard({
 													width={1000}
 													height={1000}
 													style={{ width: "auto", height: "auto" }}
+													priority={false}
+													sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
 												/>
 											</CardContent>
 										</Card>

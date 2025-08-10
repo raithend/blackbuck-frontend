@@ -12,7 +12,7 @@ const allowedHostnames = [
 
 const nextConfig: NextConfig = {
   images: {
-    unoptimized: true,
+    // unoptimized: true,
     remotePatterns: allowedHostnames.flatMap(hostname => [
       {
         protocol: 'https' as const,
