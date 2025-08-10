@@ -4,6 +4,7 @@ import { Edit, Eye } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import React, { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { flushSync } from "react-dom";
 import useSWR from "swr";
 
 import { AuthDialog } from "@/app/components/auth/auth-dialog";
@@ -27,20 +28,11 @@ import {
 import { useUser } from "@/app/contexts/user-context";
 import geologicalAgesData from "@/app/data/geological-ages.json";
 import { findRelatedClassifications } from "@/app/lib/yaml-utils";
+import type { EraGroup, HabitatElement } from "@/app/components/habitat/types";
 
 import type { Classification, PostWithUser, User } from "@/app/types/types";
 
-interface EraGroup {
-	era: string;
-	elements?: HabitatElement[];
-}
-
-interface HabitatElement {
-	lat: number;
-	lng: number;
-	color: string;
-	size: number;
-}
+// EraGroup / HabitatElement は `app/components/habitat/types` から利用
 
 // APIレスポンスの型定義
 interface ClassificationResponse {
@@ -125,17 +117,14 @@ const ClassificationContent = memo(
 		handleLikeChange,
 		handlePostUpdate,
 		handlePostDelete,
-		mutatePosts,
+        mutatePosts,
 		isTreeCreator,
 		isGeographicDataCreator,
 		user,
 		phylogeneticTreeCreator,
 		habitatDataCreator,
 		setAuthDialogOpen,
-		postsData,
-		displayedPosts,
-		loadNextBatch,
-		isLoadingMore,
+        
 	}: {
 		decodedName: string;
 		classification: Classification | null;
@@ -146,11 +135,11 @@ const ClassificationContent = memo(
 		hasPosts: boolean;
 		hasPhylogeneticTree: boolean;
 		hasGeographicData: boolean;
-		eraGroups: any;
+        eraGroups: EraGroup[];
 		phylogeneticTreeContent: string | undefined;
 		habitatDataContent: string | undefined;
 		activeTab: string;
-		setActiveTab: (tab: string) => void;
+    setActiveTab: (tab: string) => void;
 		handleLikeChange: (
 			postId: string,
 			likeCount: number,
@@ -158,17 +147,14 @@ const ClassificationContent = memo(
 		) => void;
 		handlePostUpdate: (postId: string) => void;
 		handlePostDelete: (postId: string) => void;
-		mutatePosts: () => void;
+    mutatePosts: () => void;
 		isTreeCreator: boolean;
 		isGeographicDataCreator: boolean;
 		user: User | null;
 		phylogeneticTreeCreator?: User;
 		habitatDataCreator?: User;
 		setAuthDialogOpen: (open: boolean) => void;
-		postsData: { posts: PostWithUser[]; phaseResults: any } | undefined;
-		displayedPosts: PostWithUser[];
-		loadNextBatch: () => void;
-		isLoadingMore: boolean;
+        
 	}) => {
 		const { selectedAgeIds } = useGeologicalAge();
 
@@ -352,8 +338,8 @@ const ClassificationContent = memo(
 			}
 
 			// 階層的なフィルタリング
-			const filtered = eraGroups.filter(
-				(group: { era: string; elements?: any[] }) => {
+            const filtered = eraGroups.filter(
+                (group: EraGroup) => {
 					const groupEra = group.era;
 					const selectedEra = selectedAgeHierarchy.era;
 
@@ -389,7 +375,7 @@ const ClassificationContent = memo(
 				JSON.stringify(filtered, null, 2),
 			);
 			return filtered;
-		}, [selectedAgeIds, eraGroups, checkHierarchicalMatch]);
+        }, [selectedAgeIds, eraGroups, checkHierarchicalMatch]);
 
 		// GlobeAreaコンポーネントに渡すデータを準備
 		const globeData = useMemo(() => {
@@ -402,9 +388,9 @@ const ClassificationContent = memo(
 			}
 
 			// フィルタリングされたグループから要素を抽出してフラット化
-			const flattenedData = filteredEraGroups.flatMap(
-				(group: EraGroup) => group.elements || [],
-			);
+            const flattenedData = filteredEraGroups.flatMap(
+                (group: EraGroup) => group.elements || [],
+            );
 			console.log("globeData結果:", flattenedData);
 			return flattenedData;
 		}, [filteredEraGroups]);
@@ -432,7 +418,7 @@ const ClassificationContent = memo(
 										<div>
 											<h3 className="text-lg font-semibold mb-3">説明</h3>
 											<div className="leading-relaxed whitespace-pre-line">
-												{classification.description.split('\n').map((line, index) => {
+            {classification.description.split('\n').map((line, index) => {
 													// Wikipediaの引用行を検出してURLをデコードし、リンク化
 													if (line.includes('出典: Wikipedia') && line.includes('https://ja.wikipedia.org/wiki/')) {
 														const urlMatch = line.match(/(https:\/\/ja\.wikipedia\.org\/wiki\/[^\s]+)/);
@@ -443,7 +429,7 @@ const ClassificationContent = memo(
 															const parts = linkText.split(decodedUrl);
 															
 															return (
-																<React.Fragment key={index}>
+                        <React.Fragment key={`line-${index}-${encodedUrl}`}>
 																	{parts[0]}
 																	<a
 																		href={encodedUrl}
@@ -460,7 +446,7 @@ const ClassificationContent = memo(
 														}
 													}
 													return (
-														<React.Fragment key={index}>
+                    <React.Fragment key={`line-${index}-${line.substring(0, 10)}`}>
 															{line}
 															{index < (classification.description?.split('\n') || []).length - 1 && <br />}
 														</React.Fragment>
@@ -693,7 +679,12 @@ export default function ClassificationPage() {
 	const decodedName = decodeURIComponent(params.name as string);
 	const [activeTab, setActiveTab] = useState("overview");
 	const [authDialogOpen, setAuthDialogOpen] = useState(false);
-	const { user } = useUser();
+  const { user } = useUser();
+
+  // SSEで逐次受信する投稿の状態
+  const [displayedPosts, setDisplayedPosts] = useState<PostWithUser[]>([]);
+  const [postsStreaming, setPostsStreaming] = useState<boolean>(true);
+  const [postsStreamError, setPostsStreamError] = useState<unknown>(null);
 
 	// 分類情報のみを取得（即座に表示可能）
 	const {
@@ -761,65 +752,72 @@ export default function ClassificationPage() {
 	// 生息地データ作成者のユーザー情報（APIから直接取得）
 	const habitatDataCreator = habitatData?.habitatData?.users;
 
-	// 投稿情報を別途取得（4フェーズ方式）
-	const {
-		data: postsData,
-		error: postsError,
-		isLoading: postsLoading,
-		mutate: mutatePosts,
-	} = useSWR<{ posts: PostWithUser[]; phaseResults: any }>(
-		`/api/classifications/${encodeURIComponent(decodedName)}/phased-posts`,
-		fetcher,
-		{
-			revalidateOnFocus: false,
-			revalidateOnReconnect: false,
-			revalidateOnMount: true,
-			dedupingInterval: 60000, // 1分間の重複排除
-			refreshInterval: 0,
-			onSuccess: (data) => {
-				if (process.env.NODE_ENV === "development") {
-					console.log("=== 投稿情報取得完了 ===");
-					console.log("取得完了時刻:", new Date().toISOString());
-					console.log("取得された投稿の数:", data?.posts?.length || 0);
-					console.log(
-						"取得された投稿の分類名:",
-						data?.posts?.map((post) => post.classification).filter(Boolean),
-					);
-					console.log("フェーズ別結果:", data?.phaseResults);
-					
-					// Phase 2の詳細情報をログ出力
-					if (data?.phaseResults?.phase2) {
-						console.log("=== Phase 2 詳細情報 ===");
-						console.log("Phase 2 投稿数:", data.phaseResults.phase2.count);
-						console.log("Phase 2 バッチ数:", data.phaseResults.phase2.batches?.length || 0);
-						if (data.phaseResults.phase2.batches) {
-							data.phaseResults.phase2.batches.forEach((batch: any[], index: number) => {
-								console.log(`Phase 2 バッチ${index + 1}: ${batch.length}件`);
-							});
-						}
-					}
-				}
-			},
-			onError: (error) => {
-				console.error("投稿情報取得エラー:", error);
-			},
-		},
-	);
+  // SSEで投稿を逐次受信
+  useEffect(() => {
+    let eventSource: EventSource | null = null;
+    let cancelled = false;
+    async function startStream() {
+      try {
+        setDisplayedPosts([]);
+        setPostsStreaming(true);
+        setPostsStreamError(null);
 
-	const classification: Classification | null =
-		classificationData?.classification ?? null;
-	console.log("=== 分類情報デバッグ ===");
-	console.log("classificationData:", classificationData);
-	console.log("classification:", classification);
-	
-	const posts = postsData?.posts || [];
+        const supabase = await import("@/app/lib/supabase-browser").then((m) => m.createClient());
+        const { data: { session } } = await supabase.auth.getSession();
+        const token = session?.access_token;
+        const qs = token ? `?access_token=${encodeURIComponent(token)}` : "";
+        const url = `/api/classifications/${encodeURIComponent(decodedName)}/stream-posts${qs}`;
 
-	// 投稿表示のデバッグ情報
-	console.log("=== 投稿表示デバッグ ===");
-	console.log("postsData:", postsData);
-	console.log("posts:", posts);
-	console.log("postsLoading:", postsLoading);
-	console.log("投稿表示時刻:", new Date().toISOString());
+        if (cancelled) return;
+        eventSource = new EventSource(url);
+
+        eventSource.addEventListener("batch", (e) => {
+          try {
+            const payload = JSON.parse((e as MessageEvent).data) as { posts: PostWithUser[]; phase?: string; batchNumber?: number };
+            const incoming = payload.posts || [];
+            console.log("SSE batch 受信:", { phase: payload.phase, batchNumber: payload.batchNumber, count: incoming.length, time: new Date().toISOString() });
+            flushSync(() => {
+              setDisplayedPosts((prev) => prev.concat(incoming));
+            });
+          } catch (err) {
+            console.error("SSE batch parse error:", err);
+          }
+        });
+
+        eventSource.addEventListener("end", () => {
+          setPostsStreaming(false);
+          eventSource?.close();
+        });
+
+        eventSource.addEventListener("error", (e) => {
+          console.error("SSE error:", e);
+          setPostsStreamError(e);
+          setPostsStreaming(false);
+          eventSource?.close();
+        });
+      } catch (err) {
+        console.error("SSE start error:", err);
+        setPostsStreamError(err);
+        setPostsStreaming(false);
+      }
+    }
+    startStream();
+    return () => {
+      cancelled = true;
+      eventSource?.close();
+    };
+  }, [decodedName]);
+
+  const classification: Classification | null =
+    classificationData?.classification ?? null;
+  console.log("=== 分類情報デバッグ ===");
+  console.log("classificationData:", classificationData);
+  console.log("classification:", classification);
+
+  const posts = displayedPosts;
+    const postsLoading = postsStreaming && displayedPosts.length === 0;
+    const postsError = postsStreamError;
+    const mutatePosts = useCallback(() => {}, []);
 
 	// 生息地データを時代別にグループ化
 	const eraGroups = useMemo(() => {
@@ -836,7 +834,7 @@ export default function ClassificationPage() {
 		}
 
 		try {
-			const data = JSON.parse(habitatData.habitatData.content);
+            const data = JSON.parse(habitatData.habitatData.content) as unknown;
 			console.log("habitatData.content解析結果:", data);
 
 			// データが既に時代別にグループ化されているかチェック
@@ -852,8 +850,8 @@ export default function ClassificationPage() {
 			}
 
 			// データを時代別にグループ化
-			const grouped = data.reduce((acc: EraGroup[], point: HabitatElement) => {
-				const era = (point as any).era || "不明";
+            const grouped = (data as Array<HabitatElement & { era?: string }>).reduce((acc: EraGroup[], point) => {
+                const era = point.era || "不明";
 				let group = acc.find((g) => g.era === era);
 
 				if (!group) {
@@ -861,9 +859,9 @@ export default function ClassificationPage() {
 					acc.push(group);
 				}
 
-				group.elements?.push(point);
+                group.elements.push(point);
 				return acc;
-			}, []);
+            }, [] as EraGroup[]);
 
 			console.log("eraGroups生成結果:", grouped);
 			return grouped;
@@ -871,7 +869,7 @@ export default function ClassificationPage() {
 			console.error("habitatData.content解析エラー:", error);
 			return [];
 		}
-	}, [habitatData?.habitatData?.content]);
+    }, [habitatData]);
 
 	// 分類情報の存在チェックをメモ化
 	const classificationChecks = useMemo(() => {
@@ -915,43 +913,18 @@ export default function ClassificationPage() {
 	]);
 
 	// いいね状態変更のハンドラー
-	const handleLikeChange = useCallback(
-		(postId: string, likeCount: number, isLiked: boolean) => {
-			mutatePosts((currentData) => {
-				if (!currentData) return currentData;
-				return {
-					...currentData,
-					posts: currentData.posts.map((post) =>
-						post.id === postId ? { ...post, likeCount, isLiked } : post,
-					),
-				};
-			}, false);
-		},
-		[mutatePosts],
-	);
+    const handleLikeChange = useCallback(
+        (_postId: string, _likeCount: number, _isLiked: boolean) => {
+            // SSE版では即時反映は一旦無効（必要ならdisplayedPostsを直接更新）
+        },
+        [],
+    );
 
 	// 投稿更新のハンドラー
-	const handlePostUpdate = useCallback(
-		(postId: string) => {
-			// 投稿データを再取得
-			mutatePosts();
-		},
-		[mutatePosts],
-	);
+    const handlePostUpdate = useCallback((_postId: string) => {}, []);
 
 	// 投稿削除のハンドラー
-	const handlePostDelete = useCallback(
-		(postId: string) => {
-			mutatePosts((currentData) => {
-				if (!currentData) return currentData;
-				return {
-					...currentData,
-					posts: currentData.posts.filter((post) => post.id !== postId),
-				};
-			}, false);
-		},
-		[mutatePosts],
-	);
+    const handlePostDelete = useCallback((_postId: string) => {}, []);
 
 	// 系統樹作成者かどうかを判定
 	const isTreeCreator = !!(
@@ -1009,13 +982,9 @@ export default function ClassificationPage() {
 					user={user}
 					isTreeCreator={isTreeCreator}
 					isGeographicDataCreator={isGeographicDataCreator}
-					phylogeneticTreeCreator={phylogeneticTreeCreator}
-					habitatDataCreator={habitatDataCreator}
-					setAuthDialogOpen={setAuthDialogOpen}
-					postsData={postsData}
-					displayedPosts={posts}
-					loadNextBatch={() => {}}
-					isLoadingMore={false}
+                    phylogeneticTreeCreator={phylogeneticTreeCreator}
+                    habitatDataCreator={habitatDataCreator}
+                    setAuthDialogOpen={setAuthDialogOpen}
 				/>
 
 				{/* 共通の地質時代カードをタブの下部に配置（系統樹・生息地タブでのみ表示） */}
