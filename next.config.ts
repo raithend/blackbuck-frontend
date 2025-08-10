@@ -41,18 +41,7 @@ const nextConfig: NextConfig = {
       },
     ]),
   },
-  turbopack: {
-    rules: {
-      '*.yaml': {
-        loaders: ['raw-loader'],
-        as: '*.js',
-      },
-      '*.yml': {
-        loaders: ['raw-loader'],
-        as: '*.js',
-      },
-    },
-  },
+
 };
 
 export default nextConfig; 

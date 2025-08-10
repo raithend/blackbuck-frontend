@@ -3,9 +3,11 @@ import { type NextRequest, NextResponse } from "next/server";
 
 export async function GET(
 	request: NextRequest,
-	{ params }: { params: { name: string } },
+	{ params }: { params: Promise<{ name: string }> },
 ) {
 	try {
+		const { name } = await params;
+		
 		// Authorizationヘッダーからアクセストークンを取得
 		const authHeader = request.headers.get("authorization");
 		const accessToken = authHeader?.replace("Bearer ", "");
@@ -26,7 +28,7 @@ export async function GET(
 			return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
 		}
 
-		const decodedName = decodeURIComponent(params.name);
+		const decodedName = decodeURIComponent(name);
 
 		// Wikipedia APIを使用して概要を取得
 		const wikipediaResponse = await fetch(
