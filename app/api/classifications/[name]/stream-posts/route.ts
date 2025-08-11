@@ -1,5 +1,5 @@
 import { createClient } from "@/app/lib/supabase-server";
-import { safeYamlParse, collectAllChildrenNamesWithLinkedTree } from "@/app/lib/yaml-utils";
+import { safeYamlParse, collectAllChildrenNamesWithLinkedTree, collectDirectChildrenNamesOfTarget } from "@/app/lib/yaml-utils";
 import type { Database } from "@/app/types/database.types";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
@@ -210,7 +210,11 @@ export async function GET(request: Request, { params }: { params: Promise<{ name
                 try {
                   const treeData = tree?.content ? safeYamlParse(tree.content) : null;
                   if (!treeData) continue;
-                  const names = await collectAllChildrenNamesWithLinkedTree(treeData, supabase);
+                  const names = await collectDirectChildrenNamesOfTarget(
+                    treeData,
+                    decodedName,
+                    supabase,
+                  );
                   for (const n of names) if (n && n !== decodedName) allChildrenSet.add(n);
                 } catch (err) {
                   enqueue("warn", { phase: "Phase 3", message: `ツリー解析失敗 (${tree.id})`, error: String(err) });

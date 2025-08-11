@@ -1,8 +1,9 @@
 import { createClient } from "@/app/lib/supabase-server";
 import {
-	collectAllChildrenNamesWithLinkedTree,
-	findRelatedClassifications,
-	safeYamlParse,
+    collectAllChildrenNamesWithLinkedTree,
+    collectDirectChildrenNamesOfTarget,
+    findRelatedClassifications,
+    safeYamlParse,
 } from "@/app/lib/yaml-utils";
 import Anthropic from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
@@ -58,8 +59,11 @@ interface FormattedPost {
 }
 
 // 投稿を取得して整形する関数（バッチごとに投稿を返す）
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/app/types/database.types";
+
 async function fetchAndFormatPosts(
-	supabase: any,
+    supabase: SupabaseClient<Database>,
 	classifications: string[],
 	userLikes: string[],
 	phase: string,
@@ -283,7 +287,7 @@ export async function GET(
 			console.log("Phase 2: classificationがありません");
 		}
 
-		// Phase 3: データベース系統樹から関連分類名を取得（Phase 2で系統樹が設定されていない場合のみ実行）
+        // Phase 3: データベース系統樹から関連分類名を取得（Phase 2で系統樹が設定されていない場合のみ実行）
 		if (!hasLinkedTree) {
 			console.log("Phase 2で系統樹が設定されていないため、Phase 3を実行");
 			console.log("=== Phase 3: データベース系統樹から関連分類名を取得 ===");
@@ -299,11 +303,13 @@ export async function GET(
 					try {
 						const treeData = safeYamlParse(tree.content);
 						if (treeData) {
-							// linked_tree対応の子要素収集
-							const children = await collectAllChildrenNamesWithLinkedTree(
-								treeData,
-								supabase,
-							);
+                            // ターゲット名に一致するノードを見つけ、その部分木に対して
+                            // Phase 2 同様の link_only/linked_tree ルールで子要素名を収集
+                            const children = await collectDirectChildrenNamesOfTarget(
+                                treeData,
+                                decodedName,
+                                supabase,
+                            );
 							for (const child of children) {
 								if (!allChildren.includes(child)) {
 									allChildren.push(child);

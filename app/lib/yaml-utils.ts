@@ -214,6 +214,42 @@ export function findRelatedClassifications(
 	return result;
 }
 
+/**
+ * 指定した targetName と一致するノードをツリー内から探索し、
+ * そのノードの children の name を配列で返す（重複排除）。
+ * link_only / linked_tree の処理は Phase 2 と同様に扱うため、
+ * 対象ノードが見つかったらその部分木に対して collectAllChildrenNamesWithLinkedTree を適用する。
+ */
+export async function collectDirectChildrenNamesOfTarget(
+  treeData: unknown,
+  targetName: string,
+  supabase: unknown,
+): Promise<string[]> {
+  if (!treeData) return [];
+
+  // まず通常探索で targetName ノードを取得
+  function findNode(node: unknown): TreeNode | null {
+    if (!node || typeof node !== "object") return null;
+    const n = node as Partial<TreeNode>;
+    if (n.name === targetName) return n as TreeNode;
+    if (Array.isArray(n.children)) {
+      for (const child of n.children as unknown[]) {
+        const found = findNode(child);
+        if (found) return found;
+      }
+    }
+    return null;
+  }
+
+  const targetNode = findNode(treeData);
+  if (!targetNode) return [];
+
+  // 対象ノードの直下だけをサブツリーとして抽出し、Phase 2 と同等のロジックで子nameを収集
+  // link_only/linked_tree による分岐や外部参照も collectAllChildrenNamesWithLinkedTree に任せる
+  const subTree = { ...targetNode };
+  return await collectAllChildrenNamesWithLinkedTree(subTree, supabase);
+}
+
 // Supabaseクライアントの型（必要なメソッドのみ）
 // type SupabaseLike = { ... } // ← 削除
 
@@ -224,15 +260,27 @@ export function findRelatedClassifications(
  * @param visitedTreeIds 無限ループ防止用の訪問済みUUIDセット
  * @returns Promise<string[]>
  */
+export type SupabaseMinimal = {
+  from: (table: string) => {
+    select: (columns: string) => {
+      eq: (column: string, value: string) => {
+        single: () => Promise<{ data: { content?: string } | null }>;
+      };
+    };
+  };
+};
+
 export async function collectAllChildrenNamesWithLinkedTree(
-	treeData: unknown,
-	supabase: any,
-	visitedTreeIds: Set<string> = new Set(),
+  treeData: unknown,
+  supabase: unknown,
+  visitedTreeIds: Set<string> = new Set(),
 ): Promise<string[]> {
 	const names = new Set<string>();
+  // Supabaseの最小インターフェースに寄せて利用
+  const sp = supabase as SupabaseMinimal as unknown as SupabaseMinimal;
 
 	// link_only用の再帰関数：linked_treeを持つノードのみを処理
-	async function collectLinkedTreeOnly(node: TreeNode) {
+  async function collectLinkedTreeOnly(node: TreeNode) {
 		console.log(
 			"collectLinkedTreeOnly:",
 			node.name,
@@ -241,14 +289,14 @@ export async function collectAllChildrenNamesWithLinkedTree(
 		);
 
 		// このノードにlinked_treeがある場合
-		if (node.linked_tree && !visitedTreeIds.has(node.linked_tree)) {
+    if (node.linked_tree && !visitedTreeIds.has(node.linked_tree)) {
 			console.log("linked_treeを辿ります:", node.linked_tree);
 			visitedTreeIds.add(node.linked_tree);
-			const { data: linkedTree } = await supabase
+      const { data: linkedTree } = await sp
 				.from("phylogenetic_trees")
 				.select("content")
-				.eq("id", node.linked_tree)
-				.single();
+        .eq("id", node.linked_tree)
+        .single();
 			if (linkedTree?.content) {
 				console.log("linked_treeの内容を取得しました");
 				const linkedTreeData = safeYamlParse(linkedTree.content);
@@ -271,7 +319,7 @@ export async function collectAllChildrenNamesWithLinkedTree(
 		}
 	}
 
-	async function collect(node: TreeNode) {
+  async function collect(node: TreeNode) {
 		// link_onlyがtrueの場合、このノード自身のnameは追加せず、linked_treeのみを辿る
 		if (node.link_only === true) {
 			console.log(
@@ -316,14 +364,14 @@ export async function collectAllChildrenNamesWithLinkedTree(
 		}
 
 		// linked_treeがあれば、その系統樹も再帰的にたどる
-		if (node.linked_tree && !visitedTreeIds.has(node.linked_tree)) {
+    if (node.linked_tree && !visitedTreeIds.has(node.linked_tree)) {
 			console.log("通常処理でlinked_treeを辿ります:", node.linked_tree);
 			visitedTreeIds.add(node.linked_tree);
-			const { data: linkedTree } = await supabase
+      const { data: linkedTree } = await sp
 				.from("phylogenetic_trees")
 				.select("content")
-				.eq("id", node.linked_tree)
-				.single();
+        .eq("id", node.linked_tree)
+        .single();
 			if (linkedTree?.content) {
 				const linkedTreeData = safeYamlParse(linkedTree.content);
 				if (linkedTreeData) {
