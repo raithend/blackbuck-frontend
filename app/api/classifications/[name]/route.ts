@@ -5,6 +5,11 @@ import { NextResponse } from "next/server";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/app/types/database.types";
 
+// Ensure Node.js runtime on Vercel to avoid Edge-specific fetch differences
+export const runtime = "nodejs";
+// Always compute on-demand; avoids stale cache affecting upstream calls
+export const dynamic = "force-dynamic";
+
 const anthropic = new Anthropic({
 	apiKey: process.env.ANTHROPIC_API_KEY,
 });
@@ -335,8 +340,21 @@ ${JSON.stringify(classifications)}`,
 				},
 			},
 		);
-	} catch (error) {
-		console.error("Classification API error:", error);
+	} catch (error: unknown) {
+		// Enrich error logging to help diagnose undici/network errors on Vercel
+		try {
+			const err = error as { message?: string; code?: string; name?: string; cause?: { message?: string }; stack?: string };
+			const detail = {
+				message: err?.message,
+				code: err?.code,
+				name: err?.name,
+				cause: err?.cause?.message ?? undefined,
+				stack: err?.stack?.split("\n").slice(0, 6).join("\n"),
+			};
+			console.error("Classification API error:", detail);
+		} catch (_) {
+			console.error("Classification API error:", error);
+		}
 		return NextResponse.json(
 			{ error: "Internal Server Error" },
 			{ status: 500 },

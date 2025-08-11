@@ -3,6 +3,10 @@ import Anthropic from "@anthropic-ai/sdk";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
+// Ensure Node.js runtime to avoid Edge limitations when calling external APIs
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
 const anthropic = new Anthropic({
 	apiKey: process.env.ANTHROPIC_API_KEY,
 });
@@ -121,8 +125,20 @@ ${JSON.stringify(classifications)}`,
 				},
 			},
 		);
-	} catch (error) {
-		console.error("Error processing classifications:", error);
+	} catch (error: unknown) {
+		try {
+			const err = error as { message?: string; code?: string; name?: string; cause?: { message?: string }; stack?: string };
+			const detail = {
+				message: err?.message,
+				code: err?.code,
+				name: err?.name,
+				cause: err?.cause?.message ?? undefined,
+				stack: err?.stack?.split("\n").slice(0, 6).join("\n"),
+			};
+			console.error("Classification API error:", detail);
+		} catch (_) {
+			console.error("Classification API error:", error);
+		}
 		return NextResponse.json(
 			{ error: "Failed to process classifications" },
 			{ status: 500 },
