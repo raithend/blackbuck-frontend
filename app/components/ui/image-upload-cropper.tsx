@@ -3,7 +3,7 @@
 import { Button } from "@/app/components/ui/button";
 import { Upload, X } from "lucide-react";
 import Image from "next/image";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useRef, useState, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
 
 interface ImageUploadCropperProps {
@@ -33,12 +33,12 @@ export function ImageUploadCropper({
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 	const imageRef = useRef<HTMLImageElement>(null);
 
-	const onDrop = useCallback((acceptedFiles: File[]) => {
+  const onDrop = useCallback((acceptedFiles: File[]) => {
 		const file = acceptedFiles[0];
 		if (file) {
 			setSelectedFile(file);
-			const url = URL.createObjectURL(file);
-			setPreviewUrl(url);
+      const url = URL.createObjectURL(file);
+      setPreviewUrl(url);
 			setIsCropping(true);
 		}
 	}, []);
@@ -50,15 +50,24 @@ export function ImageUploadCropper({
 		multiple: false,
 	});
 
+  // Revoke blob URL when preview changes or component unmounts
+  useEffect(() => {
+    return () => {
+      if (previewUrl?.startsWith("blob:")) {
+        try { URL.revokeObjectURL(previewUrl); } catch {}
+      }
+    };
+  }, [previewUrl]);
+
 	const cropImage = useCallback(() => {
 		if (!canvasRef.current || !imageRef.current) return;
 
 		const canvas = canvasRef.current;
 		const ctx = canvas.getContext("2d");
-		if (!ctx) return;
+    if (!ctx) return;
 
-		const image = imageRef.current;
-		const size = Math.min(image.naturalWidth, image.naturalHeight);
+    const image = imageRef.current;
+    const size = Math.min(image?.naturalWidth ?? 0, image?.naturalHeight ?? 0);
 		const x = (image.naturalWidth - size) / 2;
 		const y = (image.naturalHeight - size) / 2;
 
@@ -169,7 +178,7 @@ export function ImageUploadCropper({
 
 						{/* 切り抜きガイド */}
 						<div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-							<div className="w-64 h-64 rounded-full border-2 border-dashed border-white opacity-75"></div>
+            <div className="w-64 h-64 rounded-full border-2 border-dashed border-white opacity-75" />
 						</div>
 					</div>
 

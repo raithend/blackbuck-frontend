@@ -4,7 +4,7 @@ import { Button } from "@/app/components/ui/button";
 import { cn } from "@/app/lib/utils";
 import { ImagePlus, X } from "lucide-react";
 import Image from "next/image";
-import { useCallback, useState, useEffect } from "react";
+import { useCallback, useState, useEffect, useRef } from "react";
 import { useDropzone } from "react-dropzone";
 
 interface ImageUploadProps {
@@ -14,13 +14,30 @@ interface ImageUploadProps {
 
 export function ImageUpload({ value, onChange }: ImageUploadProps) {
 	const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+    // Track blob URLs created via URL.createObjectURL so we can revoke them
+    const objectUrlsRef = useRef<Set<string>>(new Set());
 	
 	// valueが空になった場合（リセット時）にプレビューURLもクリア
-	useEffect(() => {
-		if (value.length === 0) {
-			setPreviewUrls([]);
-		}
-	}, [value]);
+    useEffect(() => {
+        if (value.length === 0) {
+            // Revoke any remaining object URLs on reset
+            for (const u of objectUrlsRef.current) {
+                try { URL.revokeObjectURL(u); } catch {}
+            }
+            objectUrlsRef.current.clear();
+            setPreviewUrls([]);
+        }
+    }, [value]);
+
+    // Cleanup on unmount
+    useEffect(() => {
+        return () => {
+            for (const u of objectUrlsRef.current) {
+                try { URL.revokeObjectURL(u); } catch {}
+            }
+            objectUrlsRef.current.clear();
+        };
+    }, []);
 	
 	// Chrome特有の問題を検出
 	const isChrome = typeof window !== 'undefined' && 
@@ -36,7 +53,7 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
 				const processFiles = async () => {
 					const newPreviewUrls: string[] = [];
 					
-					for (const file of acceptedFiles) {
+                    for (const file of acceptedFiles) {
 						try {
 							// Chromeでの問題を回避するため、少し遅延を入れる
 							if (isChrome) {
@@ -44,8 +61,9 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
 							}
 							
 							// まずURL.createObjectURLを試す
-							const url = URL.createObjectURL(file);
-							newPreviewUrls.push(url);
+                            const url = URL.createObjectURL(file);
+                            newPreviewUrls.push(url);
+                            objectUrlsRef.current.add(url);
 						} catch (error) {
 							console.error("URL.createObjectURL error:", error);
 							
@@ -88,9 +106,14 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
 	});
 
 	const handleRemove = (index: number) => {
-		// プレビューURLの削除
-		const newPreviewUrls = previewUrls.filter((_, i) => i !== index);
-		setPreviewUrls(newPreviewUrls);
+        // プレビューURLの削除 + blob URLの解放
+        const targetUrl = previewUrls[index];
+        if (targetUrl && objectUrlsRef.current.has(targetUrl)) {
+            try { URL.revokeObjectURL(targetUrl); } catch {}
+            objectUrlsRef.current.delete(targetUrl);
+        }
+        const newPreviewUrls = previewUrls.filter((_, i) => i !== index);
+        setPreviewUrls(newPreviewUrls);
 
 		// 親コンポーネントに更新されたファイルリストを渡す
 		const newFiles = value.filter((_, i) => i !== index);
