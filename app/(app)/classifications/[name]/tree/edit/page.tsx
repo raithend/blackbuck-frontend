@@ -553,32 +553,28 @@ export default function PhylogeneticTreeEditPage() {
 				{/* プレビューエリア */}
 				<div className="mb-6">
 					<h2 className="text-xl font-semibold mb-4">プレビュー</h2>
-					<div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
-						<div
-							className="rounded-lg border p-0 bg-white"
-							style={{ width: "100%", height: "600px", position: "relative" }}
-						>
-							<div className="h-full relative">
-								{/* 地質時代カードを右上に重ねて配置 */}
-								<div className="absolute top-0 right-0 z-10">
-									<GeologicalAgeCard enableMenu={true} />
-								</div>
-								{treeContent ? (
-									<PhylogeneticTreeArea
-										customTreeContent={treeContent}
-									/>
-								) : (
-									<div className="flex items-center justify-center h-full text-gray-500">
-										<p>YAMLを入力して系統樹をプレビュー</p>
-									</div>
-								)}
-								{yamlError && (
-									<div className="absolute bottom-4 left-4 bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded-lg text-sm">
-										⚠️ YAMLエラー: {yamlError}
-									</div>
-								)}
-							</div>
+					<div
+						className="rounded-lg border p-0"
+						style={{ width: "100%", height: "900px", position: "relative" }}
+					>
+						{/* 地質時代カードを右上に重ねて配置 */}
+						<div className="absolute top-0 right-0 z-10">
+							<GeologicalAgeCard enableMenu={true} />
 						</div>
+						{treeContent ? (
+							<PhylogeneticTreeArea
+								customTreeContent={treeContent}
+							/>
+						) : (
+							<div className="flex items-center justify-center h-full text-gray-500">
+								<p>YAMLを入力して系統樹をプレビュー</p>
+							</div>
+						)}
+						{yamlError && (
+							<div className="absolute bottom-4 left-4 bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded-lg text-sm">
+								⚠️ YAMLエラー: {yamlError}
+							</div>
+						)}
 					</div>
 				</div>
 			</div>
