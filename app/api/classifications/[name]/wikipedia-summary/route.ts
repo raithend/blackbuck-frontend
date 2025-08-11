@@ -1,9 +1,6 @@
 import { createClient } from "@/app/lib/supabase-server";
 import { type NextRequest, NextResponse } from "next/server";
 
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
-
 export async function GET(
 	request: NextRequest,
 	{ params }: { params: Promise<{ name: string }> },
@@ -34,7 +31,6 @@ export async function GET(
 		const decodedName = decodeURIComponent(name);
 
 		// Wikipedia APIを使用して概要を取得
-		// Note: Some providers block requests without a UA or over HTTP
 		const wikipediaResponse = await fetch(
 			`https://ja.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(decodedName)}`,
 			{
@@ -81,18 +77,8 @@ export async function GET(
 			url: data.content_urls?.desktop?.page,
 			language: "ja",
 		});
-	} catch (error: unknown) {
-		try {
-			const err = error as { message?: string; code?: string; name?: string; cause?: { message?: string } };
-			console.error("Wikipedia API エラー:", {
-				message: err?.message,
-				code: err?.code,
-				name: err?.name,
-				cause: err?.cause?.message ?? undefined,
-			});
-		} catch (_) {
-			console.error("Wikipedia API エラー:", error);
-		}
+	} catch (error) {
+		console.error("Wikipedia API エラー:", error);
 		return NextResponse.json(
 			{ error: "Wikipedia APIの呼び出しに失敗しました" },
 			{ status: 500 },
