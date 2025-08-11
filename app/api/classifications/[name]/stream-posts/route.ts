@@ -3,6 +3,9 @@ import { safeYamlParse, collectAllChildrenNamesWithLinkedTree } from "@/app/lib/
 import type { Database } from "@/app/types/database.types";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+export const runtime = "edge";
+export const dynamic = "force-dynamic";
+
 interface PostImage {
   id: string;
   image_url: string;
@@ -104,8 +107,20 @@ export async function GET(request: Request, { params }: { params: Promise<{ name
       };
 
       try {
+        // Heartbeat to keep connection alive through proxies/CDN
+        let heartbeat: ReturnType<typeof setInterval> | undefined;
+        // Advise client to retry after 5s on network errors
+        controller.enqueue(encoder.encode("retry: 5000\n\n"));
+        enqueue("open", { ok: true, startedAt: new Date().toISOString() });
+        heartbeat = setInterval(() => {
+          try {
+            controller.enqueue(encoder.encode(":heartbeat\n\n"));
+          } catch (_) {}
+        }, 15000);
+
         if (!decodedName) {
           enqueue("error", { message: "分類名が必要です" });
+          if (heartbeat) clearInterval(heartbeat);
           controller.close();
           return;
         }
@@ -228,6 +243,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ name
 
         // ストリーム終了
         enqueue("end", { done: true });
+        if (heartbeat) clearInterval(heartbeat);
         controller.close();
       } catch (err) {
         try {
@@ -246,7 +262,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ name
     headers: {
       "Content-Type": "text/event-stream",
       "Cache-Control": "no-cache, no-transform",
-      Connection: "keep-alive",
+      // Connection header is managed by the platform when using edge runtime
     },
   });
 }
