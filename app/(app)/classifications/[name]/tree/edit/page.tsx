@@ -395,8 +395,8 @@ export default function PhylogeneticTreeEditPage() {
 									}}
 									onMount={(editor, monaco) => {
 										console.log("MonacoEditor onMount");
-										monaco.languages.registerCompletionItemProvider("yaml", {
-											triggerCharacters: ["-", "c", "f", "t", "e", "p", "n"],
+                                        monaco.languages.registerCompletionItemProvider("yaml", {
+                                            triggerCharacters: ["-", "c", "f", "t", "e", "p", "n", "l"],
 											provideCompletionItems: (model, position) => {
 												const lineContent = model
 													.getLineContent(position.lineNumber)
@@ -503,7 +503,7 @@ export default function PhylogeneticTreeEditPage() {
 													});
 													console.log("Triggered en_name: snippet");
 												}
-												// post_branch補完
+                                                // post_branch補完
 												if (/^\s*p$/.test(lineContent)) {
 													suggestions.push({
 														label: "post_branch:",
@@ -521,6 +521,22 @@ export default function PhylogeneticTreeEditPage() {
 													});
 													console.log("Triggered post_branch: snippet");
 												}
+                                                // linked_tree 補完（lで始まる場合）
+                                                if (/^\s*l$/.test(lineContent) || /^\s*linked_tree$/.test(lineContent)) {
+                                                    suggestions.push({
+                                                        label: "linked_tree:",
+                                                        kind: monaco.languages.CompletionItemKind.Snippet,
+                                                        insertText: "linked_tree: ",
+                                                        insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                                                        range: {
+                                                            startLineNumber: position.lineNumber,
+                                                            startColumn: startColumn,
+                                                            endLineNumber: position.lineNumber,
+                                                            endColumn: endColumn,
+                                                        },
+                                                    });
+                                                    console.log("Triggered linked_tree: snippet");
+                                                }
 												// non_post_leaf補完（nで始まる場合）
 												if (/^\s*n$/.test(lineContent)) {
 													suggestions.push({
