@@ -1,6 +1,6 @@
 "use client";
 
-import { LocationDialog } from "@/app/components/location/location-dialog";
+import { LocationEditDialog } from "@/app/components/location/location-edit-dialog";
 import { Button } from "@/app/components/ui/button";
 import { Dialog, DialogTrigger } from "@/app/components/ui/dialog";
 import { useUser } from "@/app/contexts/user-context";
@@ -61,7 +61,7 @@ export function LocationButton() {
 					場所を追加
 				</Button>
 			</DialogTrigger>
-			<LocationDialog onSave={handleSave} />
+            <LocationEditDialog onSave={handleSave} />
 		</Dialog>
 	);
 }

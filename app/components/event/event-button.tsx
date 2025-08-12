@@ -1,6 +1,6 @@
 "use client";
 
-import { EventDialog } from "@/app/components/event/event-dialog";
+import { EventEditDialog } from "@/app/components/event/event-edit-dialog";
 import { Button } from "@/app/components/ui/button";
 import { Dialog, DialogTrigger } from "@/app/components/ui/dialog";
 import { useUser } from "@/app/contexts/user-context";
@@ -61,7 +61,7 @@ export function EventButton() {
 					イベントを追加
 				</Button>
 			</DialogTrigger>
-			<EventDialog onSave={handleSave} />
+            <EventEditDialog onSave={handleSave} />
 		</Dialog>
 	);
 }
