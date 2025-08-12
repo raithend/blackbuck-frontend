@@ -42,15 +42,37 @@ export function LocationDialog({
 	const [open, setOpen] = React.useState(false);
 	const [searchQuery, setSearchQuery] = React.useState("");
 	const [customLocation, setCustomLocation] = React.useState("");
+    const [recentLocations, setRecentLocations] = React.useState<string[]>([]);
+
+    React.useEffect(() => {
+        try {
+            const raw = localStorage.getItem("recent_locations_v1");
+            if (raw) {
+                const arr = JSON.parse(raw);
+                if (Array.isArray(arr)) {
+                    setRecentLocations(arr.filter((x) => typeof x === "string").slice(0, 5));
+                }
+            }
+        } catch {}
+    }, []);
 
 	const filteredLocations = locations.filter((location) =>
 		location.toLowerCase().includes(searchQuery.toLowerCase()),
 	);
 
-	const handleLocationSelect = (location: string) => {
+    const pushRecent = (loc: string) => {
+        const next = [loc, ...recentLocations.filter((x) => x !== loc)].slice(0, 5);
+        setRecentLocations(next);
+        try {
+            localStorage.setItem("recent_locations_v1", JSON.stringify(next));
+        } catch {}
+    };
+
+    const handleLocationSelect = (location: string) => {
 		onChange?.(location);
 		setOpen(false);
 		setSearchQuery("");
+        pushRecent(location);
 	};
 
 	const handleCustomLocationSubmit = (e: React.FormEvent) => {
@@ -111,6 +133,28 @@ export function LocationDialog({
 								</Button>
 							</form>
 						</div>
+
+                        {/* 最近使った撮影地（最大5件） */}
+                        {recentLocations.length > 0 && (
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium">最近使った撮影地</label>
+                                <div className="flex flex-wrap gap-2">
+                                    {recentLocations.map((loc) => (
+                                        <button
+                                            key={loc}
+                                            type="button"
+                                            onClick={() => handleLocationSelect(loc)}
+                                            className={cn(
+                                                "px-3 py-1 rounded-full border text-sm hover:bg-gray-100",
+                                                value === loc && "bg-blue-50 border-blue-200",
+                                            )}
+                                        >
+                                            {loc}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
 
 						{/* 事前定義された撮影地リスト */}
 						<div className="space-y-2">

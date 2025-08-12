@@ -34,15 +34,31 @@ export function EventDialog({
 	const [open, setOpen] = React.useState(false);
 	const [searchQuery, setSearchQuery] = React.useState("");
 	const [customEvent, setCustomEvent] = React.useState("");
+    const [recentEvents, setRecentEvents] = React.useState<string[]>([]);
+
+    React.useEffect(() => {
+        try {
+            const raw = localStorage.getItem("recent_events_v1");
+            if (raw) {
+                const arr = JSON.parse(raw);
+                if (Array.isArray(arr)) {
+                    setRecentEvents(arr.filter((x) => typeof x === "string").slice(0, 5));
+                }
+            }
+        } catch {}
+    }, []);
 
 	const filtered = events.filter((e) =>
 		e.toLowerCase().includes(searchQuery.toLowerCase()),
 	);
 
-	const handleSelect = (e: string) => {
+    const handleSelect = (e: string) => {
 		onChange?.(e);
 		setOpen(false);
 		setSearchQuery("");
+        const next = [e, ...recentEvents.filter((x) => x !== e)].slice(0, 5);
+        setRecentEvents(next);
+        try { localStorage.setItem("recent_events_v1", JSON.stringify(next)); } catch {}
 	};
 
 	const handleSubmit = (ev: React.FormEvent) => {
@@ -96,6 +112,27 @@ export function EventDialog({
 								</Button>
 							</form>
 						</div>
+
+                        {recentEvents.length > 0 && (
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium">最近使ったイベント</label>
+                                <div className="flex flex-wrap gap-2">
+                                    {recentEvents.map((ev) => (
+                                        <button
+                                            key={ev}
+                                            type="button"
+                                            onClick={() => handleSelect(ev)}
+                                            className={cn(
+                                                "px-3 py-1 rounded-full border text-sm hover:bg-gray-100",
+                                                value === ev && "bg-blue-50 border-blue-200",
+                                            )}
+                                        >
+                                            {ev}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
 
 						<div className="space-y-2">
 							<label className="text-sm font-medium">
