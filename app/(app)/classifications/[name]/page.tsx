@@ -914,8 +914,10 @@ export default function ClassificationPage() {
 
 	// いいね状態変更のハンドラー
     const handleLikeChange = useCallback(
-        (_postId: string, _likeCount: number, _isLiked: boolean) => {
-            // SSE版では即時反映は一旦無効（必要ならdisplayedPostsを直接更新）
+        (postId: string, likeCount: number, isLiked: boolean) => {
+            setDisplayedPosts((prev) =>
+                prev.map((p) => (p.id === postId ? { ...p, likeCount, isLiked } : p)),
+            );
         },
         [],
     );
