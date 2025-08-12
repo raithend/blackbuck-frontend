@@ -1,8 +1,8 @@
 "use client";
 
-import { EventDropdownMenu } from "@/app/components/event/event-dropdown-menu";
+import { EventDialog } from "@/app/components/event/event-dialog";
+import { LocationDialog } from "@/app/components/location/location-dialog";
 import { ImageUpload } from "@/app/components/post/image-upload";
-import { LocationDropdownMenu } from "@/app/components/location/location-dropdown-menu";
 import { Button } from "@/app/components/ui/button";
 import {
 	DialogContent,
@@ -12,8 +12,8 @@ import {
 import { Input } from "@/app/components/ui/input";
 import { Textarea } from "@/app/components/ui/textarea";
 import type { PostWithUser } from "@/app/types/types";
-import { useEffect, useState } from "react";
 import Image from "next/image";
+import { useEffect, useState } from "react";
 
 interface PostEditDialogProps {
 	post: PostWithUser;
@@ -77,8 +77,12 @@ export function PostEditDialog({ post, onEdit, onClose }: PostEditDialogProps) {
 		});
 
 		if (!response.ok) {
-			const errorData = await response.json().catch(() => ({ error: "不明なエラー" }));
-			throw new Error(errorData.error || `アップロードに失敗しました (${response.status})`);
+			const errorData = await response
+				.json()
+				.catch(() => ({ error: "不明なエラー" }));
+			throw new Error(
+				errorData.error || `アップロードに失敗しました (${response.status})`,
+			);
 		}
 
 		const data = await response.json();
@@ -129,8 +133,8 @@ export function PostEditDialog({ post, onEdit, onClose }: PostEditDialogProps) {
 					value={content}
 					onChange={(e) => setContent(e.target.value)}
 				/>
-				<LocationDropdownMenu value={location} onChange={setLocation} />
-				<EventDropdownMenu value={event} onChange={setEvent} />
+				<LocationDialog value={location} onChange={setLocation} />
+				<EventDialog value={event} onChange={setEvent} />
 				<Input
 					type="text"
 					placeholder="分類"

@@ -3,7 +3,7 @@
 import { AuthDialog } from "@/app/components/auth/auth-dialog";
 import { useUser } from "@/app/contexts/user-context";
 import { HeartIcon } from "lucide-react";
-import { useOptimistic, useTransition, useState } from "react";
+import { useOptimistic, useState, useTransition } from "react";
 import { toast } from "sonner";
 
 interface CommentHeartButtonProps {

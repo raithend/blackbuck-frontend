@@ -1,9 +1,9 @@
 "use client";
 
 import { AuthDialog } from "@/app/components/auth/auth-dialog";
-import { EventDropdownMenu } from "@/app/components/event/event-dropdown-menu";
+import { EventDialog } from "@/app/components/event/event-dialog";
 import { ImageUpload } from "@/app/components/post/image-upload";
-import { LocationDropdownMenu } from "@/app/components/location/location-dropdown-menu";
+import { LocationDialog } from "@/app/components/location/location-dialog";
 import {
 	Avatar,
 	AvatarFallback,
@@ -186,8 +186,8 @@ export function CommentButton({
 						onChange={(e) => setContent(e.target.value)}
 						className="min-h-[100px]"
 					/>
-					<LocationDropdownMenu value={location} onChange={setLocation} />
-					<EventDropdownMenu value={event} onChange={setEvent} />
+					<LocationDialog value={location} onChange={setLocation} />
+					<EventDialog value={event} onChange={setEvent} />
 					<Input
 						type="text"
 						placeholder="分類"

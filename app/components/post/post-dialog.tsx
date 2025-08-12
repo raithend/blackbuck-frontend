@@ -1,8 +1,8 @@
 "use client";
 
-import { EventDropdownMenu } from "@/app/components/event/event-dropdown-menu";
+import { EventDialog } from "@/app/components/event/event-dialog";
+import { LocationDialog } from "@/app/components/location/location-dialog";
 import { ImageUpload } from "@/app/components/post/image-upload";
-import { LocationDropdownMenu } from "@/app/components/location/location-dropdown-menu";
 import { Button } from "@/app/components/ui/button";
 import {
 	DialogContent,
@@ -61,8 +61,12 @@ export function PostDialog({ onPost }: PostDialogProps) {
 		});
 
 		if (!response.ok) {
-			const errorData = await response.json().catch(() => ({ error: "不明なエラー" }));
-			throw new Error(errorData.error || `アップロードに失敗しました (${response.status})`);
+			const errorData = await response
+				.json()
+				.catch(() => ({ error: "不明なエラー" }));
+			throw new Error(
+				errorData.error || `アップロードに失敗しました (${response.status})`,
+			);
 		}
 
 		const data = await response.json();
@@ -93,7 +97,7 @@ export function PostDialog({ onPost }: PostDialogProps) {
 			setEvent("");
 			setClassification("");
 			setImageFiles([]);
-			setResetKey(prev => prev + 1); // リセットキーを更新
+			setResetKey((prev) => prev + 1); // リセットキーを更新
 		} catch (error) {
 			// エラー処理
 			console.error("投稿エラー:", error);
@@ -113,17 +117,17 @@ export function PostDialog({ onPost }: PostDialogProps) {
 					value={content}
 					onChange={(e) => setContent(e.target.value)}
 				/>
-				<LocationDropdownMenu value={location} onChange={setLocation} />
-				<EventDropdownMenu value={event} onChange={setEvent} />
+				<LocationDialog value={location} onChange={setLocation} />
+				<EventDialog value={event} onChange={setEvent} />
 				<Input
 					type="text"
 					placeholder="分類"
 					value={classification}
 					onChange={(e) => setClassification(e.target.value)}
 				/>
-				<ImageUpload 
-					value={imageFiles} 
-					onChange={setImageFiles} 
+				<ImageUpload
+					value={imageFiles}
+					onChange={setImageFiles}
 					key={resetKey}
 				/>
 				<Button
