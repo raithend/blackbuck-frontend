@@ -3,6 +3,7 @@
 import { safeYamlParse } from "@/app/lib/yaml-utils";
 import * as d3 from "d3";
 import React, { useEffect, useRef, useState } from "react";
+import { useTheme } from "next-themes";
 import type { TreeNode } from "../../types/types";
 import { useGeologicalAge } from "../geological/geological-context";
 import { processTreeData } from "./tree-data-processor";
@@ -27,6 +28,7 @@ export function PhylogeneticTree({
 }: PhylogeneticTreeProps) {
 	const svgRef = useRef<SVGSVGElement>(null);
 	const { selectedAgeIds } = useGeologicalAge();
+			const { theme, resolvedTheme } = useTheme();
 	const [customTreeData, setCustomTreeData] = useState<TreeNode | null>(null);
 	const [isLoading, setIsLoading] = useState(false);
 
@@ -101,8 +103,7 @@ export function PhylogeneticTree({
 	useEffect(() => {
 		if (!svgRef.current || isLoading) return;
 
-		console.log("PhylogeneticTree useEffect - selectedAgeIds:", selectedAgeIds);
-		console.log("PhylogeneticTree useEffect - customTreeData:", customTreeData);
+
 
 		// データの処理
 		let processedData: TreeNode | null;
@@ -115,7 +116,7 @@ export function PhylogeneticTree({
 			processedData = processTreeData(selectedAgeIds);
 		}
 
-		console.log("PhylogeneticTree useEffect - processedData:", processedData);
+
 
 		if (!processedData) {
 			return;
@@ -172,7 +173,7 @@ export function PhylogeneticTree({
 		const links = svg
 			.append("g")
 			.attr("fill", "none")
-			.attr("stroke", "#555")
+			.attr("stroke", (resolvedTheme || theme) === "dark" ? "#555" : "#999")
 			.attr("stroke-width", 2.5)
 			.selectAll("path")
 			.data(root.links())
@@ -201,7 +202,7 @@ export function PhylogeneticTree({
 			.attr(
 				"stroke",
 				(d: d3.HierarchyLink<TreeNode>) =>
-					(d.target as ExtendedHierarchyNode).color || "#555",
+					(d.target as ExtendedHierarchyNode).color || ((resolvedTheme || theme) === "dark" ? "#555" : "#999"),
 			)
 			.attr("stroke-opacity", 0.4)
 			.attr("id", (d: d3.HierarchyLink<TreeNode>, i: number) => `link-${i}`);
@@ -254,8 +255,9 @@ export function PhylogeneticTree({
 				return `rotate(${rotation}) translate(${translateX},0)`;
 			})
 			.text((d: ExtendedHierarchyNode) => d.data.name ?? "")
-			.style("fill", "white")
+			.style("fill", (resolvedTheme || theme) === "dark" ? "white" : "black")
 			.style("font-size", "24px")
+
 			.on("mouseover", (event: MouseEvent, d: ExtendedHierarchyNode) => {
 				// 現在のノードからルートまでのパスを強調
 				let current = d;
@@ -271,7 +273,7 @@ export function PhylogeneticTree({
 				// すべてのパスを元の状態に戻す
 				links.attr("stroke-opacity", 0.4).attr("stroke-width", 2.5);
 			});
-	}, [selectedAgeIds, customTreeData, isLoading]);
+	}, [selectedAgeIds, customTreeData, isLoading, theme, resolvedTheme]);
 
 	if (isLoading) {
 		return (
